@@ -26,6 +26,7 @@
 #include "Random.h"
 #include "ServerFacade.h"
 #include "ChannelMgr.h"
+#include "Unit.h"
 #include "World.h"
 
 #include <cstdlib>

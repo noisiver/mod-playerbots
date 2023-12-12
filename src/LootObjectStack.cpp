@@ -5,6 +5,7 @@
 #include "LootObjectStack.h"
 #include "LootMgr.h"
 #include "Playerbots.h"
+#include "Unit.h"
 
 #define MAX_LOOT_OBJECT_COUNT 10
 
