@@ -203,18 +203,11 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
         return;
     }
 
-    // cancel logout in combat
-    if (!bot->GetSession()) {
+    if (!bot->GetSession() || bot->GetSession()->isLogingOut())
+    {
         return;
     }
-    if (bot->GetSession()->isLogingOut())
-    {
-        // if (bot->IsInCombat() || (master && master->IsInCombat() && sServerFacade->GetDistance2d(bot, master) < 30.0f))
-        // {
-        //     WorldPackets::Character::LogoutCancel data = WorldPacket(CMSG_LOGOUT_CANCEL);
-        //     bot->GetSession()->HandleLogoutCancelOpcode(data);
-        //     TellMaster("Logout cancelled!");
-        // }
+    if (bot->IsDuringRemoveFromWorld()) {
         return;
     }
     // if (!GetMaster() || !GetMaster()->IsInWorld() || !GetMaster()->GetSession() || GetMaster()->GetSession()->isLogingOut()) {
@@ -1047,7 +1040,9 @@ void PlayerbotAI::DoNextAction(bool min)
     if ((!master || (masterBotAI && !masterBotAI->IsRealPlayer())) && group)
     {
         PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
-
+        if (!botAI) {
+            return;
+        }
         // Ideally we want to have the leader as master.
         Player* newMaster = botAI->GetGroupMaster();
         Player* playerMaster = nullptr;
