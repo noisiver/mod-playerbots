@@ -18,7 +18,7 @@ class DpsHunterStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
         {
             return new ActionNode ("aimed shot",
                 /*P*/ nullptr,
-                /*A*/ NextAction::array(0, new NextAction("multi-shot", 10.0f), nullptr),
+                /*A*/ NextAction::array(0, new NextAction("multi-shot"), nullptr),
                 /*C*/ nullptr);
         }
 };
@@ -52,7 +52,7 @@ void DpsHunterStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("concussive shot on snare target", NextAction::array(0, new NextAction("concussive shot", 20.0f), nullptr)));
     // triggers.push_back(new TriggerNode("no pet", NextAction::array(0, new NextAction("call pet", 21.0f), NULL)));
     triggers.push_back(new TriggerNode("hunters pet low health", NextAction::array(0, new NextAction("mend pet", 21.0f), NULL)));
-    /*triggers.push_back(new TriggerNode("has aggro", NextAction::array(0, new NextAction("concussive shot", 20.0f), nullptr)));*/
+    triggers.push_back(new TriggerNode("has aggro", NextAction::array(0, new NextAction("concussive shot", 20.0f), nullptr)));
 }
 
 void DpsAoeHunterStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
