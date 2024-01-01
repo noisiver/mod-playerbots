@@ -44,6 +44,14 @@ AiPlayerbot.MaxRandomBots = 50
 AiPlayerbot.RandomBotMinLevel = 1
 AiPlayerbot.RandomBotMaxLevel = 80
 
+# Enable/Disable rotation of bots (randomly select a bot from the bots pool to go online and rotate them periodically)
+# Need reset rndbot after changing the setting
+# default: 0 (disable, the online bots are fixed)
+AiPlayerbot.EnableRotation = 0
+
+# Bots pool size for rotation (should be less than RandomBotAccountCount * 10)
+AiPlayerbot.RotationPoolSize = 500
+
 # Accounts to create for random bots
 AiPlayerbot.RandomBotAccountPrefix = "rndbot"
 AiPlayerbot.RandomBotAccountCount = 200
@@ -166,7 +174,7 @@ AiPlayerbot.AutoEquipUpgradeLoot = 1
 AiPlayerbot.EquipUpgradeThreshold = 1.1
 
 # Sync quests with player (Bots will complete quests the moment you hand them in. Bots will ignore looting quest items.)
-# Default: 1 (disabled)
+# Default: 1 (enable)
 AiPlayerbot.SyncQuestWithPlayer = 1
 
 # Bots will auto-complete quests for the player when handing in
@@ -251,7 +259,7 @@ AiPlayerbot.LootDelay = 1000
 
 # Distances
 AiPlayerbot.FarDistance = 20.0
-AiPlayerbot.SightDistance = 100.0
+AiPlayerbot.SightDistance = 75.0
 AiPlayerbot.SpellDistance = 28.5
 AiPlayerbot.ShootDistance = 5.0
 AiPlayerbot.ReactDistance = 150.0
@@ -338,7 +346,7 @@ AiPlayerbot.RandomBotUpdateInterval = 20
 AiPlayerbot.RandomBotCountChangeMinInterval = 1800
 AiPlayerbot.RandomBotCountChangeMaxInterval = 7200
 AiPlayerbot.MinRandomBotInWorldTime = 3600
-AiPlayerbot.MaxRandomBotInWorldTime = 1209600
+AiPlayerbot.MaxRandomBotInWorldTime = 43200
 AiPlayerbot.MinRandomBotRandomizeTime = 302400
 AiPlayerbot.MaxRandomRandomizeTime = 1209600
 AiPlayerbot.RandomBotsPerInterval = 500
@@ -350,6 +358,7 @@ AiPlayerbot.MinRandomBotReviveTime = 60
 AiPlayerbot.MaxRandomBotReviveTime = 300
 AiPlayerbot.MinRandomBotTeleportInterval = 3600
 AiPlayerbot.MaxRandomBotTeleportInterval = 18000
+AiPlayerbot.RandomBotInWorldWithRotaionDisabled = 31104000
 
 # How far random bots are teleported after death
 AiPlayerbot.RandomBotTeleportDistance = 100
@@ -377,7 +386,7 @@ AiPlayerbot.AllowedLogFiles = ""
 # WorldBuff.Faction.Class.MinLevel.MaxLevel
 
 # Added following config
-# Selfbot permission level (0 = disabled, 1 = gm only (default), 2 = all players, 3 = activate on login) # AiPlayerbot.SelfBotLevel = 1
+# Selfbot permission level (0 = disabled, 1 = gm only (default), 2 = all players, 3 = activate on login)
 AiPlayerbot.SelfBotLevel = 1
 
 # Enables/Disables bot cheating
