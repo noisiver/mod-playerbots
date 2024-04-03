@@ -149,7 +149,13 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
     // if (bot->Unit::IsFalling()) {
     //     bot->Say("I'm falling", LANG_UNIVERSAL);
     // }
-    float distance = bot->GetDistance(x, y, z);
+    bool generatePath = !bot->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) &&
+            !bot->IsFlying() && !bot->HasUnitMovementFlag(MOVEMENTFLAG_SWIMMING) && !bot->IsInWater();
+    float modifiedZ = SearchBestGroundZForPath(x, y, z, generatePath, 20.0f, normal_only);
+    if (modifiedZ == INVALID_HEIGHT) {
+        return false;
+    }
+    float distance = bot->GetExactDist(x, y, modifiedZ);
     if (distance > sPlayerbotAIConfig->contactDistance)
     {
         WaitForReach(distance);
@@ -162,15 +168,9 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
             bot->CastStop();
             botAI->InterruptSpell();
         }
-        bool generatePath = !bot->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) &&
-                !bot->IsFlying() && !bot->HasUnitMovementFlag(MOVEMENTFLAG_SWIMMING) && !bot->IsInWater();
         MotionMaster &mm = *bot->GetMotionMaster();
         
         mm.Clear();
-        float modifiedZ = SearchBestGroundZForPath(x, y, z, generatePath, normal_only);
-        if (modifiedZ == INVALID_HEIGHT) {
-            return false;
-        }
         mm.MovePoint(mapId, x, y, modifiedZ, generatePath);
         AI_VALUE(LastMovement&, "last movement").Set(mapId, x, y, z, bot->GetOrientation());
         return true;
@@ -671,7 +671,41 @@ bool MovementAction::MoveTo(Unit* target, float distance)
     float ty = target->GetPositionY();
     float tz = target->GetPositionZ();
 
-    float distanceToTarget = bot->GetDistance2d(target);
+    float distanceToTarget = bot->GetDistance(target);
+    float angle = bot->GetAngle(target);
+    float needToGo = distanceToTarget - distance;
+
+    float maxDistance = sPlayerbotAIConfig->spellDistance;
+    if (needToGo > 0 && needToGo > maxDistance)
+        needToGo = maxDistance;
+    else if (needToGo < 0 && needToGo < -maxDistance)
+        needToGo = -maxDistance;
+
+    float dx = cos(angle) * needToGo + bx;
+    float dy = sin(angle) * needToGo + by;
+    float dz; // = std::max(bz, tz); // calc accurate z position to avoid stuck
+    if (distanceToTarget > CONTACT_DISTANCE) {
+        dz = bz + (tz - bz) * (needToGo / distanceToTarget);
+    } else {
+        dz = tz;
+    }
+    return MoveTo(target->GetMapId(), dx, dy, dz);
+}
+
+bool MovementAction::ReachCombatTo(Unit* target, float distance)
+{
+    if (!IsMovingAllowed(target))
+        return false;
+
+    float bx = bot->GetPositionX();
+    float by = bot->GetPositionY();
+    float bz = bot->GetPositionZ();
+
+    float tx = target->GetPositionX();
+    float ty = target->GetPositionY();
+    float tz = target->GetPositionZ();
+    float combatDistance = bot->GetCombatReach() + target->GetCombatReach();
+    float distanceToTarget = bot->GetExactDist(target) - combatDistance;
     float angle = bot->GetAngle(target);
     float needToGo = distanceToTarget - distance;
 
@@ -1055,7 +1089,8 @@ float MovementAction::MoveDelay(float distance)
 
 void MovementAction::WaitForReach(float distance)
 {
-    float delay = 1000.0f * MoveDelay(distance) + sPlayerbotAIConfig->reactDelay;
+    float delay = 1000.0f * MoveDelay(distance);
+
     if (delay > sPlayerbotAIConfig->maxWaitForMove)
         delay = sPlayerbotAIConfig->maxWaitForMove;
 
@@ -1289,41 +1324,58 @@ bool MovementAction::MoveInside(uint32 mapId, float x, float y, float z, float d
     return MoveNear(mapId, x, y, z, distance);
 }
 
-float MovementAction::SearchBestGroundZForPath(float x, float y, float z, bool generatePath, float range, bool normal_only)
+float MovementAction::SearchBestGroundZForPath(float x, float y, float z, bool generatePath, float range, bool normal_only, float step)
 {
     if (!generatePath) {
         return z;
     }
+    float min_length = 100000.0f;
+    float current_z = INVALID_HEIGHT;
     float modified_z;
     float delta;
-    for (delta = 0.0f; delta <= range / 2; delta++) {
+    for (delta = 0.0f; delta <= range / 2; delta += step) {
         modified_z = bot->GetMapWaterOrGroundLevel(x, y, z + delta);
         PathGenerator gen(bot);
         gen.CalculatePath(x, y, modified_z);
-        if (gen.GetPathType() == PATHFIND_NORMAL) {
-            return modified_z;
+        if (gen.GetPathType() == PATHFIND_NORMAL && gen.getPathLength() < min_length) {
+            min_length = gen.getPathLength();
+            current_z = modified_z;
+            if (abs(current_z - z) < 0.5f) {
+                return current_z;
+            }
         }
     }
-    for (delta = -1.0f; delta >= -range / 2; delta--) {
+    for (delta = -step; delta >= -range / 2; delta -= step) {
         modified_z = bot->GetMapWaterOrGroundLevel(x, y, z + delta);
         PathGenerator gen(bot);
         gen.CalculatePath(x, y, modified_z);
-        if (gen.GetPathType() == PATHFIND_NORMAL) {
-            return modified_z;
+        if (gen.GetPathType() == PATHFIND_NORMAL && gen.getPathLength() < min_length) {
+            min_length = gen.getPathLength();
+            current_z = modified_z;
+            if (abs(current_z - z) < 0.5f) {
+                return current_z;
+            }
         }
     }
-    for (delta = range / 2 + 1.0f; delta <= range; delta++) {
+    for (delta = range / 2 + step; delta <= range; delta += 2) {
         modified_z = bot->GetMapWaterOrGroundLevel(x, y, z + delta);
         PathGenerator gen(bot);
         gen.CalculatePath(x, y, modified_z);
-        if (gen.GetPathType() == PATHFIND_NORMAL) {
-            return modified_z;
+        if (gen.GetPathType() == PATHFIND_NORMAL && gen.getPathLength() < min_length) {
+            min_length = gen.getPathLength();
+            current_z = modified_z;
+            if (abs(current_z - z) < 0.5f) {
+                return current_z;
+            }
         }
     }
-    if (normal_only) {
+    if (current_z == INVALID_HEIGHT && normal_only) {
         return INVALID_HEIGHT;
     }
-    return z;
+    if (current_z == INVALID_HEIGHT && !normal_only) {
+        return z;
+    }
+    return current_z;
 }
     
 
@@ -1395,7 +1447,7 @@ bool SetFacingTargetAction::Execute(Event event)
         return true;
 
     sServerFacade->SetFacingTo(bot, target);
-    botAI->SetNextCheckDelay(sPlayerbotAIConfig->globalCoolDown);
+    botAI->SetNextCheckDelay(sPlayerbotAIConfig->reactDelay);
     return true;
 }
 
@@ -1481,7 +1533,7 @@ bool MoveRandomAction::Execute(Event event)
         if (map->IsInWater(bot->GetPhaseMask(), x, y, z, bot->GetCollisionHeight()))
             continue;
 
-        bool moved = MoveTo(bot->GetMapId(), x, y, z, false, false, true);
+        bool moved = MoveTo(bot->GetMapId(), x, y, z);
         if (moved)
             return true;
     }

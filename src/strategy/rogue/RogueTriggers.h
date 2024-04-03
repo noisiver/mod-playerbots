@@ -21,6 +21,12 @@ class SliceAndDiceTrigger : public BuffTrigger
         SliceAndDiceTrigger(PlayerbotAI* botAI) : BuffTrigger(botAI, "slice and dice") { }
 };
 
+class HungerForBloodTrigger : public BuffTrigger
+{
+    public:
+        HungerForBloodTrigger(PlayerbotAI* botAI) : BuffTrigger(botAI, "hunger for blood") { }
+};
+
 class AdrenalineRushTrigger : public BoostTrigger
 {
     public:
@@ -111,6 +117,15 @@ class TricksOfTheTradeOnMainTankTrigger : public BuffOnMainTankTrigger
 {
     public:
         TricksOfTheTradeOnMainTankTrigger(PlayerbotAI* ai) : BuffOnMainTankTrigger(ai, "tricks of the trade", true) {}
+};
+
+class TargetWithComboPointsLowerHealTrigger : public ComboPointsAvailableTrigger
+{
+    public:
+        TargetWithComboPointsLowerHealTrigger(PlayerbotAI* ai, int32 combo_point = 5, float lifeTime = 8.0f) : ComboPointsAvailableTrigger(ai, combo_point), lifeTime(lifeTime) {}
+        bool IsActive() override;
+    private:
+        float lifeTime;
 };
 
 #endif

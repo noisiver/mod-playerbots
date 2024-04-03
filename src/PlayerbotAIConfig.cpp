@@ -88,6 +88,8 @@ bool PlayerbotAIConfig::Initialize()
     almostFullHealth = sConfigMgr->GetOption<int32>("AiPlayerbot.AlmostFullHealth", 85);
     lowMana = sConfigMgr->GetOption<int32>("AiPlayerbot.LowMana", 15);
     mediumMana = sConfigMgr->GetOption<int32>("AiPlayerbot.MediumMana", 40);
+    autoSaveMana = sConfigMgr->GetOption<bool>("AiPlayerbot.AutoSaveMana", true);
+    saveManaThreshold = sConfigMgr->GetOption<int32>("AiPlayerbot.SaveManaThreshold", 60);
 
     randomGearLoweringChance = sConfigMgr->GetOption<float>("AiPlayerbot.RandomGearLoweringChance", 0.15f);
     randomBotMaxLevelChance = sConfigMgr->GetOption<float>("AiPlayerbot.RandomBotMaxLevelChance", 0.15f);
@@ -96,6 +98,7 @@ bool PlayerbotAIConfig::Initialize()
     iterationsPerTick = sConfigMgr->GetOption<int32>("AiPlayerbot.IterationsPerTick", 100);
 
     allowGuildBots = sConfigMgr->GetOption<bool>("AiPlayerbot.AllowGuildBots", true);
+    allowPlayerBots = sConfigMgr->GetOption<bool>("AiPlayerbot.AllowPlayerBots", false);
 
     randomBotMapsAsString = sConfigMgr->GetOption<std::string>("AiPlayerbot.RandomBotMaps", "0,1,530,571");
     LoadList<std::vector<uint32>>(randomBotMapsAsString, randomBotMaps);
@@ -104,7 +107,7 @@ bool PlayerbotAIConfig::Initialize()
     LoadList<std::vector<uint32>>(sConfigMgr->GetOption<std::string>("AiPlayerbot.RandomBotSpellIds", "54197"), randomBotSpellIds);
     LoadList<std::vector<uint32>>(sConfigMgr->GetOption<std::string>("AiPlayerbot.PvpProhibitedZoneIds", "2255,656,2361,2362,2363,976,35,2268,3425,392,541,1446,3828,3712,3738,3565,3539,3623,4152,3988,4658,4284,4418,4436,4275,4323,4395"), pvpProhibitedZoneIds);
     LoadList<std::vector<uint32>>(sConfigMgr->GetOption<std::string>("AiPlayerbot.PvpProhibitedAreaIds", "976,35"), pvpProhibitedAreaIds);
-    
+
     LoadList<std::vector<uint32>>(sConfigMgr->GetOption<std::string>("AiPlayerbot.RandomBotQuestIds", "7848,3802,5505,6502,7761"), randomBotQuestIds);
 
     botAutologin = sConfigMgr->GetOption<bool>("AiPlayerbot.BotAutologin", false);
@@ -164,95 +167,42 @@ bool PlayerbotAIConfig::Initialize()
 
     for (uint32 cls = 1; cls < MAX_CLASSES; ++cls)
     {
-        for (uint32 spec = 0; spec < 3; ++spec)
+        if (cls == 10) {
+            continue;
+        }
+        for (uint32 spec = 0; spec < MAX_SPECNO; ++spec)
         {
-            std::ostringstream os; 
-            os << "AiPlayerbot.RandomClassSpecProbability." << cls << "." << spec;
-            specProbability[cls][spec] = sConfigMgr->GetOption<uint32>(os.str().c_str(), 33);
+            std::ostringstream os;
+            os << "AiPlayerbot.PremadeSpecName." << cls << "." << spec;
+            premadeSpecName[cls][spec] = sConfigMgr->GetOption<std::string>(os.str().c_str(), "", false);
             os.str("");
             os.clear();
-            os << "AiPlayerbot.DefaultTalentsOrder." << cls << "." << spec;
-            std::string temp_talents_order = sConfigMgr->GetOption<std::string>(os.str().c_str(), "");
-            defaultTalentsOrder[cls][spec] = ParseTempTalentsOrder(cls, temp_talents_order);
-            if (defaultTalentsOrder[cls][spec].size() > 0) {
-                sLog->outMessage("playerbot", LOG_LEVEL_INFO, "default talents order for cls %d spec %d loaded.", cls, spec);
+            os << "AiPlayerbot.PremadeSpecGlyph." << cls << "." << spec;
+            premadeSpecGlyph[cls][spec] = sConfigMgr->GetOption<std::string>(os.str().c_str(), "", false);
+            std::vector<std::string> splitSpecGlyph = split(premadeSpecGlyph[cls][spec], ',');
+            for (std::string &split : splitSpecGlyph) {
+                if (split.size() != 0) {
+                    parsedSpecGlyph[cls][spec].push_back(atoi(split.c_str()));
+                }
+            }
+            for (uint32 level = 0; level < MAX_LEVEL; ++level) {
+                std::ostringstream os;
+                os << "AiPlayerbot.PremadeSpecLink." << cls << "." << spec << "." << level;
+                premadeSpecLink[cls][spec][level] = sConfigMgr->GetOption<std::string>(os.str().c_str(), "", false);
+                parsedSpecLinkOrder[cls][spec][level] = ParseTempTalentsOrder(cls, premadeSpecLink[cls][spec][level]);
             }
         }
         for (uint32 spec = 0; spec < 3; ++spec)
         {
-            std::ostringstream os; 
-            os << "AiPlayerbot.RandomClassSpecProbability." << cls << "." << spec;
-            specProbability[cls][spec] = sConfigMgr->GetOption<uint32>(os.str().c_str(), 33);
+            std::ostringstream os;
+            os << "AiPlayerbot.RandomClassSpecProb." << cls << "." << spec;
+            randomClassSpecProb[cls][spec] = sConfigMgr->GetOption<uint32>(os.str().c_str(), 33);
             os.str("");
             os.clear();
-            os << "AiPlayerbot.DefaultTalentsOrderLowLevel." << cls << "." << spec;
-            std::string temp_talents_order = sConfigMgr->GetOption<std::string>(os.str().c_str(), "");
-            defaultTalentsOrderLowLevel[cls][spec] = ParseTempTalentsOrder(cls, temp_talents_order);
-            if (defaultTalentsOrderLowLevel[cls][spec].size() > 0) {
-                sLog->outMessage("playerbot", LOG_LEVEL_INFO, "default low level talents order for cls %d spec %d loaded.", cls, spec);
-            }
+            os << "AiPlayerbot.RandomClassSpecIndex." << cls << "." << spec;
+            randomClassSpecIndex[cls][spec] = sConfigMgr->GetOption<uint32>(os.str().c_str(), spec + 1);
         }
     }
-
-    // for (uint32 cls = 1; cls < MAX_CLASSES; ++cls)
-    // {
-    //     classSpecs[cls] = ClassSpecs(1 << (cls - 1));
-
-    //     for (uint32 spec = 0; spec < MAX_LEVEL; ++spec)
-    //     {
-    //         std::ostringstream os;
-    //         os << "AiPlayerbot.PremadeSpecName." << cls << "." << spec;
-
-    //         std::string const specName = sConfigMgr->GetOption<std::string>(os.str().c_str(), "", false);
-    //         if (!specName.empty())
-    //         {
-    //             std::ostringstream os;
-    //             os << "AiPlayerbot.PremadeSpecProb." << cls << "." << spec;
-    //             uint32 probability = sConfigMgr->GetOption<int32>(os.str().c_str(), 100, false);
-
-    //             TalentPath talentPath(spec, specName, probability);
-
-    //             for (uint32 level = 10; level <= 80; level++)
-    //             {
-    //                 std::ostringstream os;
-    //                 os << "AiPlayerbot.PremadeSpecLink." << cls << "." << spec << "." << level;
-
-    //                 std::string specLink = sConfigMgr->GetOption<std::string>(os.str().c_str(), "", false);
-    //                 specLink = specLink.substr(0, specLink.find("#", 0));;
-    //                 specLink = specLink.substr(0, specLink.find(" ", 0));;
-
-    //                 if (!specLink.empty())
-    //                 {
-    //                     std::ostringstream out;
-
-    //                     // Ignore bad specs.
-    //                     if (!classSpecs[cls].baseSpec.CheckTalentLink(specLink, &out))
-    //                     {
-    //                         LOG_ERROR("playerbots", "Error with premade spec link: {}", specLink.c_str());
-    //                         LOG_ERROR("playerbots", "{}", out.str().c_str());
-    //                         continue;
-    //                     }
-
-    //                     TalentSpec linkSpec(&classSpecs[cls].baseSpec, specLink);
-
-    //                     if (!linkSpec.CheckTalents(level, &out))
-    //                     {
-    //                         LOG_ERROR("playerbots", "Error with premade spec: {}", specLink.c_str());
-    //                         LOG_ERROR("playerbots", "{}", out.str().c_str());
-    //                         continue;
-    //                     }
-
-
-    //                     talentPath.talentSpec.push_back(linkSpec);
-    //                 }
-    //             }
-
-    //             // Only add paths that have atleast 1 spec.
-    //             if (talentPath.talentSpec.size() > 0)
-    //                 classSpecs[cls].talentPath.push_back(talentPath);
-    //         }
-    //     }
-    // }
 
     botCheats.clear();
     LoadListString<std::vector<std::string>>(sConfigMgr->GetOption<std::string>("AiPlayerbot.BotCheats", "taxi"), botCheats);
@@ -322,12 +272,14 @@ bool PlayerbotAIConfig::Initialize()
     autoInitOnly = sConfigMgr->GetOption<bool>("AiPlayerbot.AutoInitOnly", false);
     autoInitEquipLevelLimitRatio = sConfigMgr->GetOption<float>("AiPlayerbot.AutoInitEquipLevelLimitRatio", 1.0);
     addClassCommand = sConfigMgr->GetOption<int32>("AiPlayerbot.AddClassCommand", 1);
+    maintenanceCommand = sConfigMgr->GetOption<int32>("AiPlayerbot.MaintenanceCommand", 1);
 
     playerbotsXPrate = sConfigMgr->GetOption<int32>("AiPlayerbot.KillXPRate", 1);
     botActiveAlone = sConfigMgr->GetOption<int32>("AiPlayerbot.BotActiveAlone", 10);
     randombotsWalkingRPG = sConfigMgr->GetOption<bool>("AiPlayerbot.RandombotsWalkingRPG", false);
     randombotsWalkingRPGInDoors = sConfigMgr->GetOption<bool>("AiPlayerbot.RandombotsWalkingRPG.InDoors", false);
     minEnchantingBotLevel = sConfigMgr->GetOption<int32>("AiPlayerbot.MinEnchantingBotLevel", 60);
+    limitEnchantExpansion = sConfigMgr->GetOption<int32>("AiPlayerbot.LimitEnchantExpansion", 1);
     randombotStartingLevel = sConfigMgr->GetOption<int32>("AiPlayerbot.RandombotStartingLevel", 5);
     enableRotation = sConfigMgr->GetOption<bool>("AiPlayerbot.EnableRotation", false);
     rotationPoolSize = sConfigMgr->GetOption<int32>("AiPlayerbot.RotationPoolSize", 500);
@@ -336,6 +288,7 @@ bool PlayerbotAIConfig::Initialize()
 
     // SPP automation
     freeMethodLoot = sConfigMgr->GetOption<bool>("AiPlayerbot.FreeMethodLoot", false);
+    lootRollLevel = sConfigMgr->GetOption<int32>("AiPlayerbot.LootRollLevel", 1);
     autoPickReward = sConfigMgr->GetOption<std::string>("AiPlayerbot.AutoPickReward", "yes");
     autoEquipUpgradeLoot = sConfigMgr->GetOption<bool>("AiPlayerbot.AutoEquipUpgradeLoot", true);
     equipUpgradeThreshold = sConfigMgr->GetOption<float>("AiPlayerbot.EquipUpgradeThreshold", 1.1f);
@@ -346,7 +299,7 @@ bool PlayerbotAIConfig::Initialize()
     autoUpgradeEquip = sConfigMgr->GetOption<bool>("AiPlayerbot.AutoUpgradeEquip", false);
     autoLearnTrainerSpells = sConfigMgr->GetOption<bool>("AiPlayerbot.AutoLearnTrainerSpells", true);
     autoLearnQuestSpells = sConfigMgr->GetOption<bool>("AiPlayerbot.AutoLearnQuestSpells", false);
-    autoTeleportForLevel = sConfigMgr->GetOption<bool>("AiPlayerbot.AutoTeleportForLevel", false); 
+    autoTeleportForLevel = sConfigMgr->GetOption<bool>("AiPlayerbot.AutoTeleportForLevel", false);
     autoDoQuests = sConfigMgr->GetOption<bool>("AiPlayerbot.AutoDoQuests", false);
     syncLevelWithPlayers = sConfigMgr->GetOption<bool>("AiPlayerbot.SyncLevelWithPlayers", false);
     freeFood = sConfigMgr->GetOption<bool>("AiPlayerbot.FreeFood", true);
@@ -561,7 +514,7 @@ static std::vector<std::string> split(const std::string &str, const std::string 
     std::vector<std::string> res;
     if(str == "")
         return res;
-    //在字符串末尾也加入分隔符，方便截取最后一段
+    // Also add separators to string connections to facilitate intercepting the last paragraph.
     std::string strs = str + pattern;
     size_t pos = strs.find(pattern);
 
@@ -569,7 +522,7 @@ static std::vector<std::string> split(const std::string &str, const std::string 
     {
         std::string temp = strs.substr(0, pos);
         res.push_back(temp);
-        //去掉已分割的字符串,在剩下的字符串中进行分割
+        // Remove the split string and split the remaining string
         strs = strs.substr(pos+1, strs.size());
         pos = strs.find(pattern);
     }
@@ -579,12 +532,11 @@ static std::vector<std::string> split(const std::string &str, const std::string 
 
 std::vector<std::vector<uint32>> PlayerbotAIConfig::ParseTempTalentsOrder(uint32 cls, std::string tab_link) {
     // check bad link
-    uint32 classMask = 1 << (cls - 1);    
+    uint32 classMask = 1 << (cls - 1);
     std::vector<std::vector<uint32>> res;
     std::vector<std::string> tab_links = split(tab_link, "-");
     std::map<uint32, std::vector<TalentEntry const*>> spells;
     std::vector<std::vector<std::vector<uint32>>> orders(3);
-    // orders.assign(3);
     for (uint32 i = 0; i < sTalentStore.GetNumRows(); ++i)
     {
         TalentEntry const *talentInfo = sTalentStore.LookupEntry(i);
@@ -623,37 +575,5 @@ std::vector<std::vector<uint32>> PlayerbotAIConfig::ParseTempTalentsOrder(uint32
     for (auto &order : orders) {
         res.insert(res.end(), order.begin(), order.end());
     }
-    // for (std::vector<uint32> &p : sPlayerbotAIConfig->defaultTalentsOrder[bot->getClass()][specNo]) {
-    //     uint32 tab = p[0], row = p[1], col = p[2], lvl = p[3];
-    //     uint32 talentID = -1;
-
-    //     std::vector<TalentEntry const*> &spells = spells_row[row];
-    //     assert(spells.size() > 0);
-    //     for (TalentEntry const* talentInfo : spells) {
-    //         if (talentInfo->Col != col) {
-    //             continue;
-    //         }
-    //         TalentTabEntry const *talentTabInfo = sTalentTabStore.LookupEntry( talentInfo->TalentTab );
-    //         if (talentTabInfo->tabpage != tab) {
-    //             continue;
-    //         }
-    //         talentID = talentInfo->TalentID;
-    //     }
-    //     assert(talentID != -1);
-    //     bot->LearnTalent(talentID, std::min(lvl, bot->GetFreeTalentPoints()) - 1);
-    //     if (bot->GetFreeTalentPoints() == 0) {
-    //         break;
-    //     }
-    // }
-    // // for (int tab = 0; tab < 3; tab++) {
-
-    // // }
-    // for (std::string piece : pieces) {
-    //     uint32 tab, row, col, lvl;
-    //     if (sscanf(piece.c_str(), "%u-%u-%u-%u", &tab, &row, &col, &lvl) == -1) {
-    //         break;
-    //     }
-    //     res.push_back({tab, row, col, lvl});
-    // }
     return res;
 }

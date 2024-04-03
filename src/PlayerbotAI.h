@@ -10,6 +10,7 @@
 #include "ChatFilter.h"
 #include "Common.h"
 #include "Event.h"
+#include "Item.h"
 #include "PlayerbotAIBase.h"
 #include "PlayerbotAIConfig.h"
 #include "PlayerbotSecurity.h"
@@ -184,7 +185,7 @@ enum class GuilderType : uint8
     SMALL  = 50,
     MEDIUM = 70,
     LARGE  = 120,
-    HUGE   = 250
+    VERY_LARGE   = 250
 };
 
 enum ActivityType
@@ -332,6 +333,9 @@ class PlayerbotAI : public PlayerbotAIBase
         bool IsHeal(Player* player);
         bool IsDps(Player* player);
         bool IsRanged(Player* player);
+        bool IsMelee(Player* player);
+        bool IsCaster(Player* player);
+        bool IsCombo(Player* player);
         bool IsRangedDps(Player* player);
         bool IsMainTank(Player* player);
         bool IsAssistTank(Player* player);
@@ -350,7 +354,7 @@ class PlayerbotAI : public PlayerbotAIBase
         Player* GetPlayer(ObjectGuid guid);
         static Unit* GetUnit(CreatureData const* creatureData);
         GameObject* GetGameObject(ObjectGuid guid);
-        static GameObject* GetGameObject(GameObjectData const* gameObjectData);
+        // static GameObject* GetGameObject(GameObjectData const* gameObjectData);
         WorldObject* GetWorldObject(ObjectGuid guid);
         bool TellMaster(std::ostringstream& stream, PlayerbotSecurityLevel securityLevel = PLAYERBOT_SECURITY_ALLOW_ALL);
         bool TellMaster(std::string const text, PlayerbotSecurityLevel securityLevel = PLAYERBOT_SECURITY_ALLOW_ALL);
@@ -385,7 +389,7 @@ class PlayerbotAI : public PlayerbotAIBase
 
         virtual bool IsInterruptableSpellCasting(Unit* player, std::string const spell);
         virtual bool HasAuraToDispel(Unit* player, uint32 dispelType);
-        bool CanCastSpell(uint32 spellid, Unit* target, bool checkHasSpell = true, Item* itemTarget = nullptr);
+        bool CanCastSpell(uint32 spellid, Unit* target, bool checkHasSpell = true, Item* itemTarget = nullptr, Item* castItem = nullptr);
         bool CanCastSpell(uint32 spellid, GameObject* goTarget, uint8 effectMask, bool checkHasSpell = true);
         bool CanCastSpell(uint32 spellid, float x, float y, float z, uint8 effectMask, bool checkHasSpell = true, Item* itemTarget = nullptr);
 
@@ -448,6 +452,8 @@ class PlayerbotAI : public PlayerbotAIBase
         bool IsInRealGuild();
         static std::vector<std::string> dispel_whitelist;
         bool EqualLowercaseName(std::string s1, std::string s2);
+        InventoryResult CanEquipItem(uint8 slot, uint16& dest, Item* pItem, bool swap, bool not_loading = true) const;
+        uint8 FindEquipSlot(ItemTemplate const* proto, uint32 slot, bool swap) const;
     private:
         static void _fillGearScoreData(Player* player, Item* item, std::vector<uint32>* gearScore, uint32& twoHandScore, bool mixed = false);
         bool IsTellAllowed(PlayerbotSecurityLevel securityLevel = PLAYERBOT_SECURITY_ALLOW_ALL);

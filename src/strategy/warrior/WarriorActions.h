@@ -5,6 +5,7 @@
 #ifndef _PLAYERBOT_WARRIORACTIONS_H
 #define _PLAYERBOT_WARRIORACTIONS_H
 
+#include "AiObject.h"
 #include "GenericSpellActions.h"
 #include "Player.h"
 #include "PlayerbotAI.h"
@@ -18,7 +19,16 @@ BUFF_ACTION(CastBerserkerStanceAction, "berserker stance");
 // shouts
 BUFF_ACTION(CastBattleShoutAction, "battle shout");
 MELEE_ACTION_U(CastBattleShoutTauntAction, "battle shout", CastSpellAction::isUseful()); // useful to rebuff
-DEBUFF_ACTION_R(CastDemoralizingShoutAction, "demoralizing shout", 8.0f);                // low range debuff
+DEBUFF_ACTION_R(CastDemoralizingShoutAction, "demoralizing shout", 8.0f);          // low range debuff
+class CastDemoralizingShoutWithoutLifeTimeCheckAction : public CastDebuffSpellAction
+{
+    public:
+        CastDemoralizingShoutWithoutLifeTimeCheckAction(PlayerbotAI* botAI) : CastDebuffSpellAction(botAI, "demoralizing shout", false, 0.0f) \
+        {
+            range = 8.0f;
+        }
+};
+
 MELEE_ACTION(CastChallengingShoutAction, "challenging shout");
 DEBUFF_ACTION_R(CastIntimidatingShoutAction, "intimidating shout", 8.0f);
 // shouts 2.4.3
@@ -36,7 +46,7 @@ class CastRendOnAttackerAction : public CastDebuffSpellOnMeleeAttackerAction
         CastRendOnAttackerAction(PlayerbotAI* botAI) : CastDebuffSpellOnMeleeAttackerAction(botAI, "rend") {}
 };
 
-DEBUFF_ACTION_R(CastThunderClapAction, "thunder clap", 8.0f);
+MELEE_ACTION(CastThunderClapAction, "thunder clap");
 SNARE_ACTION(CastThunderClapSnareAction, "thunder clap");
 SNARE_ACTION(CastHamstringAction, "hamstring");
 MELEE_ACTION(CastOverpowerAction, "overpower");
@@ -64,7 +74,6 @@ BUFF_ACTION(CastBerserkerRageAction, "berserker rage");
 MELEE_ACTION(CastWhirlwindAction, "whirlwind");
 MELEE_ACTION(CastPummelAction, "pummel");
 ENEMY_HEALER_ACTION(CastPummelOnEnemyHealerAction, "pummel");
-BUFF_ACTION(CastRecklessnessAction, "recklessness");
 // fury 2.4.3
 MELEE_ACTION(CastVictoryRushAction, "victory rush");
 // fury 3.3.5
@@ -73,6 +82,7 @@ BUFF_ACTION(CastHeroicFuryAction, "heroic fury");
 
 // fury talents
 BUFF_ACTION(CastDeathWishAction, "death wish");
+BUFF_ACTION(CastRecklessnessAction, "recklessness");
 MELEE_ACTION(CastBloodthirstAction, "bloodthirst");
 DEBUFF_ACTION_R(CastPiercingHowlAction, "piercing howl", 8.0f);
 // fury talents 2.4.3

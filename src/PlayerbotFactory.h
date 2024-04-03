@@ -116,7 +116,10 @@ class PlayerbotFactory
 
         static uint32 tradeSkills[];
         static float CalculateItemScore(uint32 item_id, Player* bot);
+        float CalculateEnchantScore(uint32 enchant_id, Player* bot);
         void InitTalentsTree(bool incremental = false, bool use_template = true, bool reset = false);
+        static void InitTalentsBySpecNo(Player* bot, int specNo, bool reset);
+        static void InitTalentsByParsedSpecLink(Player* bot, std::vector<std::vector<uint32>> parsedSpecLink, bool reset);
         void InitAvailableSpells();
         void InitClassSpells();
         void InitEquipment(bool incremental);
@@ -124,6 +127,13 @@ class PlayerbotFactory
         void InitAmmo();
         static uint32 CalcMixedGearScore(uint32 gs, uint32 quality);
         void InitPetTalents();
+        
+        void InitReagents();
+        void InitGlyphs(bool increment = false);
+        void InitFood();
+        void InitMounts();
+        void InitBags(bool destroyOld = true);
+        void ApplyEnchantAndGemsNew(bool destoryOld = true);
     private:
         void Prepare();
         // void InitSecondEquipmentSet();
@@ -144,11 +154,8 @@ class PlayerbotFactory
         void ClearInventory();
         void ClearAllItems();
         void ResetQuests();
-        void InitMounts();
         void InitPotions();
-        void InitFood();
-        void InitReagents();
-        void InitGlyphs();
+        
         bool CanEquipArmor(ItemTemplate const* proto);
         bool CanEquipWeapon(ItemTemplate const* proto);
         void EnchantItem(Item* item);
@@ -156,7 +163,6 @@ class PlayerbotFactory
         bool CheckItemStats(uint8 sp, uint8 ap, uint8 tank);
         void CancelAuras();
         bool IsDesiredReplacement(Item* item);
-        void InitBags();
         void InitInventory();
         void InitInventoryTrade();
         void InitInventoryEquip();
@@ -184,6 +190,8 @@ class PlayerbotFactory
         uint32 gearScoreLimit;
         static std::list<uint32> specialQuestIds;
         std::vector<uint32> trainerIdCache;
+        static std::vector<uint32> enchantSpellIdCache;
+        static std::vector<uint32> enchantGemIdCache;
     protected:
         EnchantContainer m_EnchantContainer;
         Player* bot;

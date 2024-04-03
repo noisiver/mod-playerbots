@@ -29,6 +29,7 @@ class MovementAction : public Action
         bool Follow(Unit* target, float distance = sPlayerbotAIConfig->followDistance);
         bool Follow(Unit* target, float distance, float angle);
         bool ChaseTo(WorldObject* obj, float distance = 0.0f, float angle = 0.0f);
+        bool ReachCombatTo(Unit* target, float distance = 0.0f);
         float MoveDelay(float distance);
         void WaitForReach(float distance);
         bool IsMovingAllowed(Unit* target);
@@ -41,7 +42,7 @@ class MovementAction : public Action
         bool MoveInside(uint32 mapId, float x, float y, float z, float distance = sPlayerbotAIConfig->followDistance);
         void CreateWp(Player* wpOwner, float x, float y, float z, float o, uint32 entry, bool important = false);
     private:
-        float SearchBestGroundZForPath(float x, float y, float z, bool generatePath, float range = 10.0f, bool normal_only = false);
+        float SearchBestGroundZForPath(float x, float y, float z, bool generatePath, float range = 15.0f, bool normal_only = false, float step = 3.0f);
 };
 
 class FleeAction : public MovementAction

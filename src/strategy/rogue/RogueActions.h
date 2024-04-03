@@ -16,6 +16,13 @@ class CastEvasionAction : public CastBuffSpellAction
 		CastEvasionAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "evasion") { }
 };
 
+class CastHungerForBloodAction : public CastBuffSpellAction
+{
+	public:
+		CastHungerForBloodAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "hunger for blood") { }
+		std::string const GetTargetName() override { return "current target"; }
+};
+
 class CastSprintAction : public CastBuffSpellAction
 {
 	public:
@@ -138,6 +145,14 @@ class UseInstantPoisonAction : public UseItemAction
 {
 	public:
 		UseInstantPoisonAction(PlayerbotAI* ai) : UseItemAction(ai, "Instant Poison") {}
+		virtual bool Execute(Event event) override;
+		virtual bool isPossible() override;
+};
+
+class UseInstantPoisonOffHandAction : public UseItemAction
+{
+	public:
+		UseInstantPoisonOffHandAction(PlayerbotAI* ai) : UseItemAction(ai, "Instant Poison Off Hand") {}
 		virtual bool Execute(Event event) override;
 		virtual bool isPossible() override;
 };
