@@ -37,6 +37,11 @@ bool TellLosAction::Execute(Event event)
         ListUnits("--- Friendly players ---", *context->GetValue<GuidVector>("nearest friendly players"));
     }
 
+    if (param.empty() || param == "triggers")
+    {
+        ListUnits("--- Triggers ---", *context->GetValue<GuidVector>("possible triggers"));
+    }
+
     return true;
 }
 
@@ -46,8 +51,9 @@ void TellLosAction::ListUnits(std::string const title, GuidVector units)
 
     for (ObjectGuid const guid : units)
     {
-        if (Unit* unit = botAI->GetUnit(guid))
+        if (Unit* unit = botAI->GetUnit(guid)) {
             botAI->TellMaster(unit->GetName());
+        }
     }
 
 }
@@ -72,7 +78,6 @@ bool TellAuraAction::Execute(Event event)
 		Aura * aura  = i->second->GetBase();
 		if (!aura)
 			continue;
-
 		const std::string auraName = aura->GetSpellInfo()->SpellName[0];
         sLog->outMessage("playerbot", LOG_LEVEL_DEBUG, "Info of Aura - name: " + auraName);
 		AuraObjectType type = aura->GetType();

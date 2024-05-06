@@ -27,4 +27,14 @@ class AllTargetsValue : public PossibleTargetsValue
         AllTargetsValue(PlayerbotAI* botAI, float range = sPlayerbotAIConfig->sightDistance) : PossibleTargetsValue(botAI, "all targets", range, true) { }
 };
 
+class PossibleTriggersValue : public NearestUnitsValue
+{
+	public:
+        PossibleTriggersValue(PlayerbotAI* botAI, std::string const name = "possible triggers", float range = 15.0f, bool ignoreLos = true):
+          NearestUnitsValue(botAI, name, range, ignoreLos, 1 * 1000) { }
+
+    protected:
+        void FindUnits(std::list<Unit*>& targets) override;
+        bool AcceptUnit(Unit* unit) override;
+};
 #endif
