@@ -54,7 +54,8 @@ class PlayerbotAIConfig
 
         bool enabled;
         bool allowGuildBots, allowPlayerBots;
-        uint32 globalCoolDown, reactDelay, maxWaitForMove, expireActionTime, dispelAuraDuration, passiveDelay, repeatDelay,
+        uint32 globalCoolDown, reactDelay, maxWaitForMove, maxMovementSearchTime, expireActionTime, 
+            dispelAuraDuration, passiveDelay, repeatDelay,
             errorDelay, rpgDelay, sitDelay, returnDelay, lootDelay;
         float sightDistance, spellDistance, reactDistance, grindDistance, lootDistance, shootDistance,
             fleeDistance, tooCloseDistance, meleeDistance, followDistance, whisperDistance, contactDistance,
@@ -63,7 +64,9 @@ class PlayerbotAIConfig
         uint32 lowMana, mediumMana;
         bool autoSaveMana;
         uint32 saveManaThreshold;
-
+        bool autoAvoidAoe;
+        bool tellWhenAvoidAoe;
+        
         uint32 openGoSpell;
         bool randomBotAutologin;
         bool botAutologin;
