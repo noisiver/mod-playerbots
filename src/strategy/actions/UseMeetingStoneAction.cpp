@@ -184,6 +184,12 @@ bool SummonAction::Teleport(Player* summoner, Player* player)
                     botAI->TellMasterNoFacing("I live, again!");
                 }
 
+                if (master->IsInCombat() || !master->IsAlive() || (bot->isDead() && !bot->HasPlayerFlag(PLAYER_FLAGS_GHOST)))
+                {
+                    botAI->TellError("Can't summon in combat or while dead");
+                    return false;
+                }
+
                 player->GetMotionMaster()->Clear();
                 player->TeleportTo(mapId, x, y, z, 0);
                 return true;
