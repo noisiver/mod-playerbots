@@ -7,41 +7,41 @@
 
 class GenericWarlockStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
 {
-    public:
-        GenericWarlockStrategyActionNodeFactory()
-        {
-            //creators["summon voidwalker"] = &summon_voidwalker;
-            creators["banish"] = &banish;
-        }
+public:
+    GenericWarlockStrategyActionNodeFactory()
+    {
+        // creators["summon voidwalker"] = &summon_voidwalker;
+        creators["banish"] = &banish;
+    }
 
-    private:
-        //static ActionNode* summon_voidwalker([[maybe_unused]] PlayerbotAI* botAI)
-        //{
-            //return new ActionNode ("summon voidwalker",
-                /*P*/ //nullptr,
-                /*A*/ //NextAction::array(0, new NextAction("drain soul"), nullptr),
-                /*C*/ //nullptr);
-        //}
-        static ActionNode* banish([[maybe_unused]] PlayerbotAI* botAI)
-        {
-            return new ActionNode ("banish",
-                /*P*/ nullptr,
-                /*A*/ NextAction::array(0, new NextAction("fear"), nullptr),
-                /*C*/ nullptr);
-        }
+private:
+    // static ActionNode* summon_voidwalker([[maybe_unused]] PlayerbotAI* botAI)
+    //{
+    // return new ActionNode ("summon voidwalker",
+    /*P*/ // nullptr,
+    /*A*/ // NextAction::array(0, new NextAction("drain soul"), nullptr),
+    /*C*/ // nullptr);
+    //}
+    static ActionNode *banish([[maybe_unused]] PlayerbotAI *botAI)
+    {
+        return new ActionNode("banish",
+                              /*P*/ nullptr,
+                              /*A*/ NextAction::array(0, new NextAction("fear"), nullptr),
+                              /*C*/ nullptr);
+    }
 };
 
-GenericWarlockStrategy::GenericWarlockStrategy(PlayerbotAI* botAI) : RangedCombatStrategy(botAI)
+GenericWarlockStrategy::GenericWarlockStrategy(PlayerbotAI *botAI) : RangedCombatStrategy(botAI)
 {
     actionNodeFactories.Add(new GenericWarlockStrategyActionNodeFactory());
 }
 
-NextAction** GenericWarlockStrategy::getDefaultActions()
+NextAction **GenericWarlockStrategy::getDefaultActions()
 {
     return NextAction::array(0, nullptr);
 }
 
-void GenericWarlockStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
+void GenericWarlockStrategy::InitTriggers(std::vector<TriggerNode *> &triggers)
 {
     RangedCombatStrategy::InitTriggers(triggers);
 
@@ -53,12 +53,12 @@ void GenericWarlockStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     // triggers.push_back(new TriggerNode("enemy too close for spell", NextAction::array(0, new NextAction("flee", 49.0f), NULL)));
 }
 
-void WarlockBoostStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
+void WarlockBoostStrategy::InitTriggers(std::vector<TriggerNode *> &triggers)
 {
     triggers.push_back(new TriggerNode("amplify curse", NextAction::array(0, new NextAction("amplify curse", 41.0f), nullptr)));
 }
 
-void WarlockCcStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
+void WarlockCcStrategy::InitTriggers(std::vector<TriggerNode *> &triggers)
 {
     triggers.push_back(new TriggerNode("banish", NextAction::array(0, new NextAction("banish on cc", 32.0f), nullptr)));
     triggers.push_back(new TriggerNode("fear", NextAction::array(0, new NextAction("fear on cc", 33.0f), nullptr)));

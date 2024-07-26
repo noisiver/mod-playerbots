@@ -7,7 +7,7 @@
 
 bool DemonArmorTrigger::IsActive()
 {
-    Unit* target = GetTarget();
+    Unit *target = GetTarget();
     return !botAI->HasAura("demon skin", target) && !botAI->HasAura("demon armor", target) && !botAI->HasAura("fel armor", target);
 }
 
@@ -23,23 +23,23 @@ bool WarlockConjuredItemTrigger::IsActive()
 
 bool ImmolateOnAttackerTrigger::IsActive()
 {
-    return DebuffOnAttackerTrigger::IsActive() && 
-        // !botAI->HasAura("immolate", GetTarget(), false, true) && 
-        !botAI->HasAura("unstable affliction", GetTarget(), false, true);
+    return DebuffOnAttackerTrigger::IsActive() &&
+           // !botAI->HasAura("immolate", GetTarget(), false, true) &&
+           !botAI->HasAura("unstable affliction", GetTarget(), false, true);
 }
 
 bool UnstableAfflictionTrigger::IsActive()
 {
-    return DebuffTrigger::IsActive() && 
-        !botAI->HasAura("immolate", GetTarget(), false, true);
-        // !botAI->HasAura("unstable affliction", GetTarget(), false, true);
+    return DebuffTrigger::IsActive() &&
+           !botAI->HasAura("immolate", GetTarget(), false, true);
+    // !botAI->HasAura("unstable affliction", GetTarget(), false, true);
 }
 
 bool UnstableAfflictionOnAttackerTrigger::IsActive()
 {
-    return DebuffOnAttackerTrigger::IsActive() && 
-        !botAI->HasAura("immolate", GetTarget(), false, true);
-        // !botAI->HasAura("unstable affliction", GetTarget(), false, true);
+    return DebuffOnAttackerTrigger::IsActive() &&
+           !botAI->HasAura("immolate", GetTarget(), false, true);
+    // !botAI->HasAura("unstable affliction", GetTarget(), false, true);
 }
 
 bool DecimationTrigger::IsActive()

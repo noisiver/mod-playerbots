@@ -10,7 +10,7 @@ bool RTSCAction::Execute(Event event)
 {
     std::string const command = event.getParam();
 
-    Player* master = botAI->GetMaster();
+    Player *master = botAI->GetMaster();
 
     if (!master)
         return false;
@@ -51,7 +51,7 @@ bool RTSCAction::Execute(Event event)
     {
         RESET_AI_VALUE(bool, "RTSC selected");
         RESET_AI_VALUE(std::string, "RTSC next spell action");
-        if(selected)
+        if (selected)
             master->SendPlaySpellVisual(bot->GetGUID(), 6372);
         return true;
     }
@@ -77,7 +77,7 @@ bool RTSCAction::Execute(Event event)
         WorldPosition spellPosition(bot);
         SET_AI_VALUE2(WorldPosition, "RTSC saved location", locationName, spellPosition);
 
-        Creature* wpCreature = bot->SummonCreature(15631, spellPosition.getX(), spellPosition.getY(), spellPosition.getZ(), spellPosition.getO(), TEMPSUMMON_TIMED_DESPAWN, 2000.0f);
+        Creature *wpCreature = bot->SummonCreature(15631, spellPosition.getX(), spellPosition.getY(), spellPosition.getZ(), spellPosition.getO(), TEMPSUMMON_TIMED_DESPAWN, 2000.0f);
         wpCreature->SetObjectScale(0.5f);
 
         return true;
@@ -105,7 +105,7 @@ bool RTSCAction::Execute(Event event)
 
         if (spellPosition)
         {
-            Creature* wpCreature = bot->SummonCreature(15631, spellPosition.getX(), spellPosition.getY(), spellPosition.getZ(), spellPosition.getO(), TEMPSUMMON_TIMED_DESPAWN, 2000.0f);
+            Creature *wpCreature = bot->SummonCreature(15631, spellPosition.getX(), spellPosition.getY(), spellPosition.getZ(), spellPosition.getO(), TEMPSUMMON_TIMED_DESPAWN, 2000.0f);
             wpCreature->SetObjectScale(0.5f);
         }
 
@@ -114,7 +114,8 @@ bool RTSCAction::Execute(Event event)
 
     if (command.find("show") != std::string::npos)
     {
-        std::ostringstream out; out << "saved: ";
+        std::ostringstream out;
+        out << "saved: ";
 
         for (auto value : botAI->GetAiObjectContext()->GetValues())
             if (value.find("RTSC saved location::") != std::string::npos)
@@ -132,7 +133,7 @@ bool RTSCAction::Execute(Event event)
         std::string const locationName = command.substr(3);
         WorldPosition spellPosition = AI_VALUE2(WorldPosition, "RTSC saved location", locationName);
 
-        if(spellPosition)
+        if (spellPosition)
             return MoveToSpell(spellPosition, false);
 
         return true;

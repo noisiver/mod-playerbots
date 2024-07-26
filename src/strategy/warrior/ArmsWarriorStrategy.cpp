@@ -7,37 +7,37 @@
 
 class ArmsWarriorStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
 {
-    public:
-        ArmsWarriorStrategyActionNodeFactory()
-        {
-            creators["charge"] = &charge;
-            creators["death wish"] = &death_wish;
-            creators["piercing howl"] = &piercing_howl;
-            creators["mocking blow"] = &mocking_blow;
-            creators["heroic strike"] = &heroic_strike;
-        }
+public:
+    ArmsWarriorStrategyActionNodeFactory()
+    {
+        creators["charge"] = &charge;
+        creators["death wish"] = &death_wish;
+        creators["piercing howl"] = &piercing_howl;
+        creators["mocking blow"] = &mocking_blow;
+        creators["heroic strike"] = &heroic_strike;
+    }
 
-    private:
-        ACTION_NODE_A(charge, "charge", "reach melee");
-        ACTION_NODE_A(death_wish, "death wish", "bloodrage");
-        ACTION_NODE_A(piercing_howl, "piercing howl", "mocking blow");
-        ACTION_NODE_A(mocking_blow, "mocking blow", "hamstring");
-        ACTION_NODE_A(heroic_strike, "heroic strike", "melee");
+private:
+    ACTION_NODE_A(charge, "charge", "reach melee");
+    ACTION_NODE_A(death_wish, "death wish", "bloodrage");
+    ACTION_NODE_A(piercing_howl, "piercing howl", "mocking blow");
+    ACTION_NODE_A(mocking_blow, "mocking blow", "hamstring");
+    ACTION_NODE_A(heroic_strike, "heroic strike", "melee");
 };
 
-ArmsWarriorStrategy::ArmsWarriorStrategy(PlayerbotAI* botAI) : GenericWarriorStrategy(botAI)
+ArmsWarriorStrategy::ArmsWarriorStrategy(PlayerbotAI *botAI) : GenericWarriorStrategy(botAI)
 {
     actionNodeFactories.Add(new ArmsWarriorStrategyActionNodeFactory());
 }
 
-NextAction** ArmsWarriorStrategy::getDefaultActions()
+NextAction **ArmsWarriorStrategy::getDefaultActions()
 {
-    return NextAction::array(0, 
-        new NextAction("bladestorm", ACTION_DEFAULT + 0.1f),
-        new NextAction("melee", ACTION_DEFAULT), nullptr);
+    return NextAction::array(0,
+                             new NextAction("bladestorm", ACTION_DEFAULT + 0.1f),
+                             new NextAction("melee", ACTION_DEFAULT), nullptr);
 }
 
-void ArmsWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
+void ArmsWarriorStrategy::InitTriggers(std::vector<TriggerNode *> &triggers)
 {
     GenericWarriorStrategy::InitTriggers(triggers);
 

@@ -5,7 +5,7 @@
 #include "RangedCombatStrategy.h"
 #include "Playerbots.h"
 
-void RangedCombatStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
+void RangedCombatStrategy::InitTriggers(std::vector<TriggerNode *> &triggers)
 {
     CombatStrategy::InitTriggers(triggers);
 

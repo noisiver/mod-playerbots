@@ -7,7 +7,7 @@
 #include "PositionValue.h"
 #include "Playerbots.h"
 
-void TellPosition(PlayerbotAI* botAI, std::string const name, PositionInfo pos)
+void TellPosition(PlayerbotAI *botAI, std::string const name, PositionInfo pos)
 {
     std::ostringstream out;
     out << "Position " << name;
@@ -31,11 +31,11 @@ bool PositionAction::Execute(Event event)
     if (param.empty())
         return false;
 
-    Player* master = GetMaster();
+    Player *master = GetMaster();
     if (!master)
         return false;
 
-    PositionMap& posMap = context->GetValue<PositionMap&>("position")->Get();
+    PositionMap &posMap = context->GetValue<PositionMap &>("position")->Get();
     if (param == "?")
     {
         for (PositionMap::iterator i = posMap.begin(); i != posMap.end(); ++i)
@@ -77,7 +77,7 @@ bool PositionAction::Execute(Event event)
 
     if (action == "set")
     {
-        pos.Set( bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), botAI->GetBot()->GetMapId());
+        pos.Set(bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), botAI->GetBot()->GetMapId());
         posMap[name] = pos;
 
         std::ostringstream out;
@@ -102,7 +102,7 @@ bool PositionAction::Execute(Event event)
 
 bool MoveToPositionAction::Execute(Event event)
 {
-    PositionInfo pos = context->GetValue<PositionMap&>("position")->Get()[qualifier];
+    PositionInfo pos = context->GetValue<PositionMap &>("position")->Get()[qualifier];
     if (!pos.isSet())
     {
         std::ostringstream out;
@@ -116,15 +116,14 @@ bool MoveToPositionAction::Execute(Event event)
 
 bool MoveToPositionAction::isUseful()
 {
-    PositionInfo pos = context->GetValue<PositionMap&>("position")->Get()[qualifier];
+    PositionInfo pos = context->GetValue<PositionMap &>("position")->Get()[qualifier];
     float distance = AI_VALUE2(float, "distance", std::string("position_") + qualifier);
     return pos.isSet() && distance > sPlayerbotAIConfig->followDistance && distance < sPlayerbotAIConfig->reactDistance;
 }
 
-
 bool SetReturnPositionAction::Execute(Event event)
 {
-    PositionMap& posMap = context->GetValue<PositionMap&>("position")->Get();
+    PositionMap &posMap = context->GetValue<PositionMap &>("position")->Get();
     PositionInfo returnPos = posMap["return"];
     PositionInfo randomPos = posMap["random"];
     if (returnPos.isSet() && !randomPos.isSet())
@@ -149,12 +148,12 @@ bool SetReturnPositionAction::Execute(Event event)
 
 bool SetReturnPositionAction::isUseful()
 {
-    PositionMap& posMap = context->GetValue<PositionMap&>("position")->Get();
+    PositionMap &posMap = context->GetValue<PositionMap &>("position")->Get();
     return posMap["return"].isSet() && !posMap["random"].isSet();
 }
 
 bool ReturnAction::isUseful()
 {
-    PositionInfo pos = context->GetValue<PositionMap&>("position")->Get()[qualifier];
+    PositionInfo pos = context->GetValue<PositionMap &>("position")->Get()[qualifier];
     return pos.isSet() && AI_VALUE2(float, "distance", "position_random") > sPlayerbotAIConfig->followDistance;
 }

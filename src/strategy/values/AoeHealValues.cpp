@@ -8,7 +8,7 @@
 
 uint8 AoeHealValue::Calculate()
 {
-    Group* group = bot->GetGroup();
+    Group *group = bot->GetGroup();
     if (!group)
         return 0;
 
@@ -23,21 +23,20 @@ uint8 AoeHealValue::Calculate()
         range = sPlayerbotAIConfig->almostFullHealth;
 
     uint8 count = 0;
-    Group::MemberSlotList const& groupSlot = group->GetMemberSlots();
+    Group::MemberSlotList const &groupSlot = group->GetMemberSlots();
     for (Group::member_citerator itr = groupSlot.begin(); itr != groupSlot.end(); itr++)
     {
-        Player* player = ObjectAccessor::FindPlayer(itr->guid);
+        Player *player = ObjectAccessor::FindPlayer(itr->guid);
         if (!player || !player->IsAlive())
             continue;
-        
+
         if (player->GetDistance(bot) >= sPlayerbotAIConfig->sightDistance)
             continue;
-        
-        float percent = (static_cast<float> (player->GetHealth()) / player->GetMaxHealth()) * 100;
+
+        float percent = (static_cast<float>(player->GetHealth()) / player->GetMaxHealth()) * 100;
         if (percent <= range)
             ++count;
     }
 
     return count;
 }
-

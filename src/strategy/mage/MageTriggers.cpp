@@ -18,7 +18,7 @@ bool ArcaneIntellectTrigger::IsActive()
 
 bool MageArmorTrigger::IsActive()
 {
-    Unit* target = GetTarget();
+    Unit *target = GetTarget();
     return !botAI->HasAura("ice armor", target) && !botAI->HasAura("frost armor", target) && !botAI->HasAura("molten armor", target) && !botAI->HasAura("mage armor", target);
 }
 
@@ -32,8 +32,9 @@ bool FingersOfFrostSingleTrigger::IsActive()
 
 bool FrostNovaOnTargetTrigger::IsActive()
 {
-    Unit* target = GetTarget();
-    if (!target || !target->IsAlive() || !target->IsInWorld()) {
+    Unit *target = GetTarget();
+    if (!target || !target->IsAlive() || !target->IsInWorld())
+    {
         return false;
     }
     return botAI->HasAura(spell, target);
@@ -41,8 +42,9 @@ bool FrostNovaOnTargetTrigger::IsActive()
 
 bool FrostbiteOnTargetTrigger::IsActive()
 {
-    Unit* target = GetTarget();
-    if (!target || !target->IsAlive() || !target->IsInWorld()) {
+    Unit *target = GetTarget();
+    if (!target || !target->IsAlive() || !target->IsInWorld())
+    {
         return false;
     }
     return botAI->HasAura(spell, target);

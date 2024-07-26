@@ -5,7 +5,7 @@
 #include "MeleeCombatStrategy.h"
 #include "Playerbots.h"
 
-void MeleeCombatStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
+void MeleeCombatStrategy::InitTriggers(std::vector<TriggerNode *> &triggers)
 {
     CombatStrategy::InitTriggers(triggers);
 
@@ -14,7 +14,7 @@ void MeleeCombatStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
     // triggers.push_back(new TriggerNode("enemy too close for melee", NextAction::array(0, new NextAction("move out of enemy contact", ACTION_NORMAL + 8), nullptr)));
 }
 
-void SetBehindCombatStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
+void SetBehindCombatStrategy::InitTriggers(std::vector<TriggerNode *> &triggers)
 {
     CombatStrategy::InitTriggers(triggers);
 

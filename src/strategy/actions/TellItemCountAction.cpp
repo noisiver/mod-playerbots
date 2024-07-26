@@ -10,13 +10,13 @@
 bool TellItemCountAction::Execute(Event event)
 {
     std::string const text = event.getParam();
-    std::vector<Item*> found = parseItems(text);
+    std::vector<Item *> found = parseItems(text);
     std::map<uint32, uint32> itemMap;
     std::map<uint32, bool> soulbound;
 
-    for (Item* item : found)
+    for (Item *item : found)
     {
-        ItemTemplate const* proto = item->GetTemplate();
+        ItemTemplate const *proto = item->GetTemplate();
         itemMap[proto->ItemId] += item->GetCount();
         soulbound[proto->ItemId] = item->IsSoulBound();
     }
@@ -24,7 +24,7 @@ bool TellItemCountAction::Execute(Event event)
     botAI->TellMaster("=== Inventory ===");
     for (std::map<uint32, uint32>::iterator i = itemMap.begin(); i != itemMap.end(); ++i)
     {
-        ItemTemplate const* proto = sObjectMgr->GetItemTemplate(i->first);
+        ItemTemplate const *proto = sObjectMgr->GetItemTemplate(i->first);
         TellItem(proto, i->second, soulbound[i->first]);
     }
 

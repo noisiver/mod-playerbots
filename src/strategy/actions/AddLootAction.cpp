@@ -17,7 +17,7 @@ bool AddLootAction::Execute(Event event)
     if (!guid)
         return false;
 
-    return AI_VALUE(LootObjectStack*, "available loot")->Add(guid);
+    return AI_VALUE(LootObjectStack *, "available loot")->Add(guid);
 }
 
 bool AddAllLootAction::Execute(Event event)
@@ -47,14 +47,14 @@ bool AddAllLootAction::isUseful()
 
 bool AddAllLootAction::AddLoot(ObjectGuid guid)
 {
-    return AI_VALUE(LootObjectStack*, "available loot")->Add(guid);
+    return AI_VALUE(LootObjectStack *, "available loot")->Add(guid);
 }
 
 bool AddGatheringLootAction::AddLoot(ObjectGuid guid)
 {
     LootObject loot(bot, guid);
 
-    WorldObject* wo = loot.GetWorldObject(bot);
+    WorldObject *wo = loot.GetWorldObject(bot);
     if (loot.IsEmpty() || !wo)
         return false;
 
@@ -69,7 +69,7 @@ bool AddGatheringLootAction::AddLoot(ObjectGuid guid)
 
     if (sServerFacade->IsDistanceGreaterThan(sServerFacade->GetDistance2d(bot, wo), INTERACTION_DISTANCE))
     {
-        std::list<Unit*> targets;
+        std::list<Unit *> targets;
         Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(bot, bot, sPlayerbotAIConfig->lootDistance);
         Acore::UnitListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
         Cell::VisitAllObjects(bot, searcher, sPlayerbotAIConfig->lootDistance * 1.5f);

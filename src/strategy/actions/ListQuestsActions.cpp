@@ -60,10 +60,10 @@ void ListQuestsAction::ListQuests(QuestListFilter filter, QuestTravelDetail trav
 
 uint32 ListQuestsAction::ListQuests(bool completed, bool silent, QuestTravelDetail travelDetail)
 {
-    TravelTarget* target;
+    TravelTarget *target;
     WorldPosition botPos(bot);
     if (travelDetail != QUEST_TRAVEL_DETAIL_NONE)
-        target = context->GetValue<TravelTarget*>("travel target")->Get();
+        target = context->GetValue<TravelTarget *>("travel target")->Get();
 
     uint32 count = 0;
     for (uint16 slot = 0; slot < MAX_QUEST_LOG_SIZE; ++slot)
@@ -72,7 +72,7 @@ uint32 ListQuestsAction::ListQuests(bool completed, bool silent, QuestTravelDeta
         if (!questId)
             continue;
 
-        Quest const* pQuest = sObjectMgr->GetQuestTemplate(questId);
+        Quest const *pQuest = sObjectMgr->GetQuestTemplate(questId);
         bool isCompletedQuest = bot->GetQuestStatus(questId) == QUEST_STATUS_COMPLETE;
         if (completed != isCompletedQuest)
             continue;
@@ -88,7 +88,7 @@ uint32 ListQuestsAction::ListQuests(bool completed, bool silent, QuestTravelDeta
         {
             if (target->getDestination()->getName() == "QuestRelationTravelDestination" || target->getDestination()->getName() == "QuestObjectiveTravelDestination")
             {
-                QuestTravelDestination* QuestDestination = (QuestTravelDestination*)target->getDestination();
+                QuestTravelDestination *QuestDestination = (QuestTravelDestination *)target->getDestination();
 
                 if (QuestDestination->GetQuestTemplate()->GetQuestId() == questId)
                 {
@@ -102,8 +102,8 @@ uint32 ListQuestsAction::ListQuests(bool completed, bool silent, QuestTravelDeta
 
         if (travelDetail == QUEST_TRAVEL_DETAIL_SUMMARY)
         {
-            std::vector<TravelDestination*> allDestinations = sTravelMgr->getQuestTravelDestinations(bot, questId, true, true, -1);
-            std::vector<TravelDestination*> availDestinations = sTravelMgr->getQuestTravelDestinations(bot, questId, botAI->GetMaster(), false, -1);
+            std::vector<TravelDestination *> allDestinations = sTravelMgr->getQuestTravelDestinations(bot, questId, true, true, -1);
+            std::vector<TravelDestination *> availDestinations = sTravelMgr->getQuestTravelDestinations(bot, questId, botAI->GetMaster(), false, -1);
 
             uint32 desTot = allDestinations.size();
             uint32 desAvail = availDestinations.size();
@@ -133,14 +133,13 @@ uint32 ListQuestsAction::ListQuests(bool completed, bool silent, QuestTravelDeta
         else if (travelDetail == QUEST_TRAVEL_DETAIL_FULL)
         {
             uint32 limit = 0;
-            std::vector<TravelDestination*> allDestinations = sTravelMgr->getQuestTravelDestinations(bot, questId, true, true, -1);
+            std::vector<TravelDestination *> allDestinations = sTravelMgr->getQuestTravelDestinations(bot, questId, true, true, -1);
 
-            std::sort(allDestinations.begin(), allDestinations.end(), [botPos](TravelDestination* i, TravelDestination* j)
+            std::sort(allDestinations.begin(), allDestinations.end(), [botPos](TravelDestination *i, TravelDestination *j)
+                      { return i->distanceTo(const_cast<WorldPosition *>(&botPos)) < j->distanceTo(const_cast<WorldPosition *>(&botPos)); });
+
+            for (auto dest : allDestinations)
             {
-                return i->distanceTo(const_cast<WorldPosition*>(&botPos)) < j->distanceTo(const_cast<WorldPosition*>(&botPos));
-            });
-
-            for (auto dest : allDestinations) {
                 if (limit > 5)
                     continue;
 
@@ -149,7 +148,7 @@ uint32 ListQuestsAction::ListQuests(bool completed, bool silent, QuestTravelDeta
                 uint32 tpoints = dest->getPoints(true).size();
                 uint32 apoints = dest->getPoints().size();
 
-                out << round(dest->distanceTo(const_cast<WorldPosition*>(&botPos)));
+                out << round(dest->distanceTo(const_cast<WorldPosition *>(&botPos)));
                 out << " to " << dest->getTitle();
                 out << " " << apoints;
 

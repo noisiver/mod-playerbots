@@ -11,9 +11,9 @@ bool CastDrainSoulAction::isUseful()
     return AI_VALUE2(uint32, "item count", "soul shard") < 10;
 }
 
-Value<Unit*>* CastBanishAction::GetTargetValue()
+Value<Unit *> *CastBanishAction::GetTargetValue()
 {
-    return context->GetValue<Unit*>("cc target", "banish");
+    return context->GetValue<Unit *>("cc target", "banish");
 }
 
 bool CastBanishAction::Execute(Event event)
@@ -21,9 +21,9 @@ bool CastBanishAction::Execute(Event event)
     return botAI->CastSpell("banish", GetTarget());
 }
 
-Value<Unit*>* CastFearOnCcAction::GetTargetValue()
+Value<Unit *> *CastFearOnCcAction::GetTargetValue()
 {
-    return context->GetValue<Unit*>("cc target", "fear");
+    return context->GetValue<Unit *>("cc target", "fear");
 }
 
 bool CastFearOnCcAction::Execute(Event event)

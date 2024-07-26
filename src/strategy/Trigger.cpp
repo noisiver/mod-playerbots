@@ -7,8 +7,7 @@
 #include "Playerbots.h"
 #include "Timer.h"
 
-Trigger::Trigger(PlayerbotAI* botAI, std::string const name, int32 checkInterval) :
-    AiNamedObject(botAI, name), checkInterval(checkInterval == 1 ? 1 : (checkInterval < 100 ? checkInterval * 1000 : checkInterval)), lastCheckTime(0)
+Trigger::Trigger(PlayerbotAI *botAI, std::string const name, int32 checkInterval) : AiNamedObject(botAI, name), checkInterval(checkInterval == 1 ? 1 : (checkInterval < 100 ? checkInterval * 1000 : checkInterval)), lastCheckTime(0)
 {
 }
 
@@ -24,12 +23,12 @@ Event Trigger::Check()
     return event;
 }
 
-Value<Unit*>* Trigger::GetTargetValue()
+Value<Unit *> *Trigger::GetTargetValue()
 {
-    return context->GetValue<Unit*>(GetTargetName());
+    return context->GetValue<Unit *>(GetTargetName());
 }
 
-Unit* Trigger::GetTarget()
+Unit *Trigger::GetTarget()
 {
     return GetTargetValue()->Get();
 }

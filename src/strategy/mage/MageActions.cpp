@@ -6,9 +6,9 @@
 #include "Playerbots.h"
 #include "ServerFacade.h"
 
-Value<Unit*>* CastPolymorphAction::GetTargetValue()
+Value<Unit *> *CastPolymorphAction::GetTargetValue()
 {
-    return context->GetValue<Unit*>("cc target", getName());
+    return context->GetValue<Unit *>("cc target", getName());
 }
 
 bool CastFrostNovaAction::isUseful()

@@ -11,15 +11,15 @@ void Queue::Push(ActionBasket *action)
 {
     if (action)
     {
-        for (std::list<ActionBasket*>::iterator iter = actions.begin(); iter != actions.end(); iter++)
+        for (std::list<ActionBasket *>::iterator iter = actions.begin(); iter != actions.end(); iter++)
         {
-            ActionBasket* basket = *iter;
+            ActionBasket *basket = *iter;
             if (action->getAction()->getName() == basket->getAction()->getName())
             {
                 if (basket->getRelevance() < action->getRelevance())
                     basket->setRelevance(action->getRelevance());
 
-                if (ActionNode* actionNode = action->getAction())
+                if (ActionNode *actionNode = action->getAction())
                     delete actionNode;
 
                 delete action;
@@ -32,14 +32,14 @@ void Queue::Push(ActionBasket *action)
     }
 }
 
-ActionNode* Queue::Pop()
+ActionNode *Queue::Pop()
 {
     float max = -1;
-    ActionBasket* selection = nullptr;
+    ActionBasket *selection = nullptr;
 
-    for (std::list<ActionBasket*>::iterator iter = actions.begin(); iter != actions.end(); iter++)
+    for (std::list<ActionBasket *>::iterator iter = actions.begin(); iter != actions.end(); iter++)
     {
-        ActionBasket* basket = *iter;
+        ActionBasket *basket = *iter;
         if (basket->getRelevance() > max)
         {
             max = basket->getRelevance();
@@ -49,7 +49,7 @@ ActionNode* Queue::Pop()
 
     if (selection != nullptr)
     {
-        ActionNode* action = selection->getAction();
+        ActionNode *action = selection->getAction();
         actions.remove(selection);
         delete selection;
         return action;
@@ -58,13 +58,13 @@ ActionNode* Queue::Pop()
     return nullptr;
 }
 
-ActionBasket* Queue::Peek()
+ActionBasket *Queue::Peek()
 {
     float max = -1;
-    ActionBasket* selection = nullptr;
-    for (std::list<ActionBasket*>::iterator iter = actions.begin(); iter != actions.end(); iter++)
+    ActionBasket *selection = nullptr;
+    for (std::list<ActionBasket *>::iterator iter = actions.begin(); iter != actions.end(); iter++)
     {
-        ActionBasket* basket = *iter;
+        ActionBasket *basket = *iter;
         if (basket->getRelevance() > max)
         {
             max = basket->getRelevance();
@@ -82,20 +82,20 @@ uint32 Queue::Size()
 
 void Queue::RemoveExpired()
 {
-    std::list<ActionBasket*> expired;
-    for (std::list<ActionBasket*>::iterator iter = actions.begin(); iter != actions.end(); iter++)
+    std::list<ActionBasket *> expired;
+    for (std::list<ActionBasket *>::iterator iter = actions.begin(); iter != actions.end(); iter++)
     {
-        ActionBasket* basket = *iter;
+        ActionBasket *basket = *iter;
         if (sPlayerbotAIConfig->expireActionTime && basket->isExpired(sPlayerbotAIConfig->expireActionTime))
             expired.push_back(basket);
     }
 
-    for (std::list<ActionBasket*>::iterator iter = expired.begin(); iter != expired.end(); iter++)
+    for (std::list<ActionBasket *>::iterator iter = expired.begin(); iter != expired.end(); iter++)
     {
-        ActionBasket* basket = *iter;
+        ActionBasket *basket = *iter;
         actions.remove(basket);
 
-        if (ActionNode* action = basket->getAction())
+        if (ActionNode *action = basket->getAction())
         {
             delete action;
         }

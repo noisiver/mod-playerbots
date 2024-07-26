@@ -10,44 +10,45 @@ public:
         creators["mutilate"] = &mutilate;
         creators["envenom"] = &envenom;
     }
-private:  
-    static ActionNode* mutilate(PlayerbotAI* ai)
+
+private:
+    static ActionNode *mutilate(PlayerbotAI *ai)
     {
-        return new ActionNode ("mutilate",
-            /*P*/ NULL,
-            /*A*/ NextAction::array(0, new NextAction("sinister strike"), NULL),
-            /*C*/ NULL);
+        return new ActionNode("mutilate",
+                              /*P*/ NULL,
+                              /*A*/ NextAction::array(0, new NextAction("sinister strike"), NULL),
+                              /*C*/ NULL);
     }
-    static ActionNode* envenom(PlayerbotAI* ai)
+    static ActionNode *envenom(PlayerbotAI *ai)
     {
-        return new ActionNode ("envenom",
-            /*P*/ NULL,
-            /*A*/ NextAction::array(0, new NextAction("eviscerate"), NULL),
-            /*C*/ NULL);
+        return new ActionNode("envenom",
+                              /*P*/ NULL,
+                              /*A*/ NextAction::array(0, new NextAction("eviscerate"), NULL),
+                              /*C*/ NULL);
     }
 };
 
-AssassinationRogueStrategy::AssassinationRogueStrategy(PlayerbotAI* ai) : MeleeCombatStrategy(ai)
+AssassinationRogueStrategy::AssassinationRogueStrategy(PlayerbotAI *ai) : MeleeCombatStrategy(ai)
 {
     actionNodeFactories.Add(new AssassinationRogueStrategyActionNodeFactory());
 }
 
-NextAction** AssassinationRogueStrategy::getDefaultActions()
+NextAction **AssassinationRogueStrategy::getDefaultActions()
 {
     return NextAction::array(0,
-        new NextAction("melee", ACTION_DEFAULT),
-        NULL);
+                             new NextAction("melee", ACTION_DEFAULT),
+                             NULL);
 }
 
-void AssassinationRogueStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
+void AssassinationRogueStrategy::InitTriggers(std::vector<TriggerNode *> &triggers)
 {
     MeleeCombatStrategy::InitTriggers(triggers);
 
     triggers.push_back(new TriggerNode(
         "high energy available",
-        NextAction::array(0, 
-            new NextAction("garrote", ACTION_HIGH + 7),
-            new NextAction("ambush", ACTION_HIGH + 6), nullptr)));
+        NextAction::array(0,
+                          new NextAction("garrote", ACTION_HIGH + 7),
+                          new NextAction("ambush", ACTION_HIGH + 6), nullptr)));
 
     triggers.push_back(new TriggerNode(
         "high energy available",
@@ -95,9 +96,9 @@ void AssassinationRogueStrategy::InitTriggers(std::vector<TriggerNode*> &trigger
 
     triggers.push_back(new TriggerNode(
         "enemy out of melee",
-        NextAction::array(0, 
-            new NextAction("stealth", ACTION_NORMAL + 9), 
-            new NextAction("sprint", ACTION_NORMAL + 8),
-            new NextAction("reach melee", ACTION_NORMAL + 7), 
-            NULL)));
+        NextAction::array(0,
+                          new NextAction("stealth", ACTION_NORMAL + 9),
+                          new NextAction("sprint", ACTION_NORMAL + 8),
+                          new NextAction("reach melee", ACTION_NORMAL + 7),
+                          NULL)));
 }

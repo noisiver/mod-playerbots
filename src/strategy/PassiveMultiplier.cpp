@@ -9,7 +9,7 @@
 std::vector<std::string> PassiveMultiplier::allowedActions;
 std::vector<std::string> PassiveMultiplier::allowedParts;
 
-PassiveMultiplier::PassiveMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "passive")
+PassiveMultiplier::PassiveMultiplier(PlayerbotAI *botAI) : Multiplier(botAI, "passive")
 {
     if (allowedActions.empty())
     {
@@ -27,7 +27,7 @@ PassiveMultiplier::PassiveMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "pa
     }
 }
 
-float PassiveMultiplier::GetValue(Action* action)
+float PassiveMultiplier::GetValue(Action *action)
 {
     if (!action)
         return 1.0f;
