@@ -142,5 +142,5 @@ Aura* AreaDebuffValue::Calculate()
             }
         }
     }
-	return nullptr;
+    return nullptr;
 }

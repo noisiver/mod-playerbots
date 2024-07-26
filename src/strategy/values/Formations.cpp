@@ -12,12 +12,12 @@ WorldLocation Formation::NullLocation = WorldLocation();
 
 bool IsSameLocation(WorldLocation const &a, WorldLocation const &b)
 {
-	return a.GetPositionX() == b.GetPositionX() && a.GetPositionY() == b.GetPositionY() && a.GetPositionZ() == b.GetPositionZ() && a.GetMapId() == b.GetMapId();
+    return a.GetPositionX() == b.GetPositionX() && a.GetPositionY() == b.GetPositionY() && a.GetPositionZ() == b.GetPositionZ() && a.GetMapId() == b.GetMapId();
 }
 
 bool Formation::IsNullLocation(WorldLocation const& loc)
 {
-	return IsSameLocation(loc, Formation::NullLocation);
+    return IsSameLocation(loc, Formation::NullLocation);
 }
 
 WorldLocation MoveAheadFormation::GetLocation()
@@ -113,7 +113,7 @@ class ChaosFormation : public MoveAheadFormation
                 return WorldLocation();
 
             float range = sPlayerbotAIConfig->followDistance;
-			float angle = GetFollowAngle();
+            float angle = GetFollowAngle();
 
             time_t now = time(nullptr);
             if (!lastChangeTime || now - lastChangeTime >= 3)
@@ -160,7 +160,7 @@ class CircleFormation : public MoveFormation
                 target = master;
 
             if (!target)
-				return Formation::NullLocation;
+                return Formation::NullLocation;
 
             switch (bot->getClass())
             {

@@ -49,7 +49,7 @@ NextAction** DpsWarlockStrategy::getDefaultActions()
     return NextAction::array(0, 
         new NextAction("haunt", ACTION_DEFAULT + 0.3f), 
         new NextAction("demonic empowerment", ACTION_DEFAULT + 0.2f),
-		new NextAction("shadow bolt", ACTION_DEFAULT + 0.1f), 
+        new NextAction("shadow bolt", ACTION_DEFAULT + 0.1f), 
         new NextAction("shoot", ACTION_DEFAULT), 
         nullptr);
 }
@@ -58,31 +58,31 @@ void DpsWarlockStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     GenericWarlockStrategy::InitTriggers(triggers);
 
-	triggers.push_back(new TriggerNode("backlash", NextAction::array(0, new NextAction("shadow bolt", 20.0f), nullptr)));
+    triggers.push_back(new TriggerNode("backlash", NextAction::array(0, new NextAction("shadow bolt", 20.0f), nullptr)));
 
     triggers.push_back(new TriggerNode(
-		"haunt",
-		NextAction::array(0, new NextAction("haunt", 26.0f), NULL)));
-
-	triggers.push_back(new TriggerNode(
-		"shadow trance",
-		NextAction::array(0, new NextAction("shadow bolt", 15.0f), NULL)));
-
-	triggers.push_back(new TriggerNode(
-		"backlash",
-		NextAction::array(0, new NextAction("shadow bolt", 15.0f), NULL)));
+        "haunt",
+        NextAction::array(0, new NextAction("haunt", 26.0f), NULL)));
 
     triggers.push_back(new TriggerNode(
-		"molten core",
-		NextAction::array(0, new NextAction("incinerate", 15.0f), NULL)));
+        "shadow trance",
+        NextAction::array(0, new NextAction("shadow bolt", 15.0f), NULL)));
 
     triggers.push_back(new TriggerNode(
-		"decimation",
-		NextAction::array(0, new NextAction("soul fire", 16.0f), NULL)));
+        "backlash",
+        NextAction::array(0, new NextAction("shadow bolt", 15.0f), NULL)));
+
+    triggers.push_back(new TriggerNode(
+        "molten core",
+        NextAction::array(0, new NextAction("incinerate", 15.0f), NULL)));
+
+    triggers.push_back(new TriggerNode(
+        "decimation",
+        NextAction::array(0, new NextAction("soul fire", 16.0f), NULL)));
     
     triggers.push_back(new TriggerNode(
-		"metamorphosis",
-		NextAction::array(0, new NextAction("metamorphosis", 20.0f), NULL)));
+        "metamorphosis",
+        NextAction::array(0, new NextAction("metamorphosis", 20.0f), NULL)));
 }
 
 void DpsAoeWarlockStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)

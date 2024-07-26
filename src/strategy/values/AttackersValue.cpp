@@ -42,8 +42,8 @@ GuidVector AttackersValue::Calculate()
         }
     }
 
-	for (Unit* unit : targets)
-		result.push_back(unit->GetGUID());
+    for (Unit* unit : targets)
+        result.push_back(unit->GetGUID());
 
     if (bot->duel && bot->duel->Opponent)
         result.push_back(bot->duel->Opponent->GetGUID());
@@ -94,7 +94,7 @@ void AttackersValue::AddAttackersOf(Player* player, std::unordered_set<Unit*>& t
     if (!player || !player->IsInWorld() || player->IsBeingTeleported())
         return;
 
-	HostileRefMgr& refManager = player->getHostileRefMgr();
+    HostileRefMgr& refManager = player->getHostileRefMgr();
     HostileReference *ref = refManager.getFirst();
     if (!ref)
         return;

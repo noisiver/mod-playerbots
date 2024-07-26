@@ -43,7 +43,7 @@ void UnequipAction::UnequipItem(FindItemVisitor* visitor)
 {
     IterateItems(visitor, ITERATE_ALL_ITEMS);
     std::vector<Item*> items = visitor->GetResult();
-	if (!items.empty())
+    if (!items.empty())
         UnequipItem(*items.begin());
 }
 

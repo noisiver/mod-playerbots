@@ -90,20 +90,20 @@ class PlayerbotChatHandler: protected ChatHandler
 
 class MinValueCalculator
 {
-	public:
+    public:
         MinValueCalculator(float def = 0.0f) : param(nullptr), minValue(def) { }
 
-		void probe(float value, void* p)
+        void probe(float value, void* p)
         {
-			if (!param || minValue >= value)
+            if (!param || minValue >= value)
             {
-				minValue = value;
-				param = p;
-			}
-		}
+                minValue = value;
+                param = p;
+            }
+        }
 
-		void* param;
-		float minValue;
+        void* param;
+        float minValue;
 };
 
 enum RoguePoisonDisplayId
@@ -303,20 +303,20 @@ class ChatCommandHolder
 class PlayerbotAI : public PlayerbotAIBase
 {
     public:
-	    PlayerbotAI();
-	    PlayerbotAI(Player* bot);
-	    virtual ~PlayerbotAI();
+        PlayerbotAI();
+        PlayerbotAI(Player* bot);
+        virtual ~PlayerbotAI();
 
         void UpdateAI(uint32 elapsed, bool minimal = false) override;
-	    void UpdateAIInternal(uint32 elapsed, bool minimal = false) override;
+        void UpdateAIInternal(uint32 elapsed, bool minimal = false) override;
 
         std::string const HandleRemoteCommand(std::string const command);
         void HandleCommand(uint32 type, std::string const text, Player* fromPlayer);
         void QueueChatResponse(uint8 msgtype, ObjectGuid guid1, ObjectGuid guid2, std::string message, std::string chanName, std::string name);
-	    void HandleBotOutgoingPacket(WorldPacket const& packet);
+        void HandleBotOutgoingPacket(WorldPacket const& packet);
         void HandleMasterIncomingPacket(WorldPacket const& packet);
         void HandleMasterOutgoingPacket(WorldPacket const& packet);
-	    void HandleTeleportAck();
+        void HandleTeleportAck();
         void ChangeEngine(BotState type);
         void DoNextAction(bool minimal = false);
         virtual bool DoSpecificAction(std::string const name, Event event = Event(), bool silent = false, std::string const qualifier = "");
@@ -458,9 +458,9 @@ class PlayerbotAI : public PlayerbotAIBase
         static void _fillGearScoreData(Player* player, Item* item, std::vector<uint32>* gearScore, uint32& twoHandScore, bool mixed = false);
         bool IsTellAllowed(PlayerbotSecurityLevel securityLevel = PLAYERBOT_SECURITY_ALLOW_ALL);
     protected:
-	    Player* bot;
-	    Player* master;
-	    uint32 accountId;
+        Player* bot;
+        Player* master;
+        uint32 accountId;
         AiObjectContext* aiObjectContext;
         Engine* currentEngine;
         Engine* engines[BOT_STATE_MAX];

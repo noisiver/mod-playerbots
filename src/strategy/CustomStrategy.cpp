@@ -33,7 +33,7 @@ NextAction** toNextActionArray(std::string const actions)
             res[index++] = na;
     }
 
-	res[index++] = nullptr;
+    res[index++] = nullptr;
     return res;
 }
 

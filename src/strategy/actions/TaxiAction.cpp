@@ -15,7 +15,7 @@ bool TaxiAction::Execute(Event event)
 
     WorldPacket& p = event.getPacket();
     std::string const param = event.getParam();
-	if ((!p.empty() && (p.GetOpcode() == CMSG_TAXICLEARALLNODES || p.GetOpcode() == CMSG_TAXICLEARNODE)) || param == "clear")
+    if ((!p.empty() && (p.GetOpcode() == CMSG_TAXICLEARALLNODES || p.GetOpcode() == CMSG_TAXICLEARNODE)) || param == "clear")
     {
         movement.taxiNodes.clear();
         movement.Set(nullptr);

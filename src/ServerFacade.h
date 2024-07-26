@@ -22,7 +22,7 @@ class ServerFacade
             return &instance;
         }
 
-	public:
+    public:
         float GetDistance2d(Unit* unit, WorldObject* wo);
         float GetDistance2d(Unit* unit, float x, float y);
         bool IsDistanceLessThan(float dist1, float dist2);

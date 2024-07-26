@@ -84,7 +84,7 @@ void PacketHandlingHelper::AddPacket(WorldPacket const& packet)
     // assert(handlers);
     // assert(packet);
     // assert(packet.GetOpcode());
-	if (handlers.find(packet.GetOpcode()) != handlers.end())
+    if (handlers.find(packet.GetOpcode()) != handlers.end())
         queue.push(WorldPacket(packet));
 }
 
@@ -112,7 +112,7 @@ PlayerbotAI::PlayerbotAI(Player* bot) : PlayerbotAIBase(true), bot(bot), chatHel
         allowActive[i] = false;
     }
 
-	accountId = bot->GetSession()->GetAccountId();
+    accountId = bot->GetSession()->GetAccountId();
 
     aiObjectContext = AiFactory::createAiObjectContext(bot, this);
 
@@ -437,9 +437,9 @@ void PlayerbotAI::UpdateAIInternal([[maybe_unused]] uint32 elapsed, bool minimal
     masterIncomingPacketHandlers.Handle(helper);
     masterOutgoingPacketHandlers.Handle(helper);
 
-	DoNextAction(minimal);
+    DoNextAction(minimal);
 
-	if (pmo)
+    if (pmo)
         pmo->finish();
 }
 
@@ -448,8 +448,8 @@ void PlayerbotAI::HandleTeleportAck()
     if (IsRealPlayer())
         return;
 
-	bot->GetMotionMaster()->Clear(true);
-	bot->StopMoving();
+    bot->GetMotionMaster()->Clear(true);
+    bot->StopMoving();
     if (bot->IsBeingTeleportedNear()) {
         // Temporary fix for instance can not enter
         if (!bot->IsInWorld()) {
@@ -467,8 +467,8 @@ void PlayerbotAI::HandleTeleportAck()
         }
         SetNextCheckDelay(urand(1000, 3000));
     }
-	if (bot->IsBeingTeleportedFar())
-	{
+    if (bot->IsBeingTeleportedFar())
+    {
         while (bot->IsBeingTeleportedFar()) {
             bot->GetSession()->HandleMoveWorldportAck();
         }
@@ -705,13 +705,13 @@ void PlayerbotAI::HandleBotOutgoingPacket(WorldPacket const& packet)
     if (!bot || !bot->IsInWorld() || bot->IsDuringRemoveFromWorld()) {
         return;
     }
-	switch (packet.GetOpcode())
-	{
-	    case SMSG_SPELL_FAILURE:
-	    {
-		    WorldPacket p(packet);
-		    p.rpos(0);
-		    ObjectGuid casterGuid;
+    switch (packet.GetOpcode())
+    {
+        case SMSG_SPELL_FAILURE:
+        {
+            WorldPacket p(packet);
+            p.rpos(0);
+            ObjectGuid casterGuid;
             p >> casterGuid.ReadAsPacked();
             if (casterGuid != bot->GetGUID())
                 return;
@@ -727,15 +727,15 @@ void PlayerbotAI::HandleBotOutgoingPacket(WorldPacket const& packet)
             p.rpos(0);
             ObjectGuid casterGuid;
             p >> casterGuid.ReadAsPacked();
-		    if (casterGuid != bot->GetGUID())
-			    return;
+            if (casterGuid != bot->GetGUID())
+                return;
 
-		    uint32 delaytime;
-		    p >> delaytime;
-		    if (delaytime <= 1000)
-			    IncreaseNextCheckDelay(delaytime);
-		    return;
-	    }
+            uint32 delaytime;
+            p >> delaytime;
+            if (delaytime <= 1000)
+                IncreaseNextCheckDelay(delaytime);
+            return;
+        }
         case SMSG_EMOTE: // do not react to NPC emotes
         {
             WorldPacket p(packet);
@@ -905,9 +905,9 @@ void PlayerbotAI::HandleBotOutgoingPacket(WorldPacket const& packet)
             // */
             return;
         }
-	    default:
-		    botOutgoingPacketHandlers.AddPacket(packet);
-	}
+        default:
+            botOutgoingPacketHandlers.AddPacket(packet);
+    }
 }
 
 void PlayerbotAI::SpellInterrupted(uint32 spellid)
@@ -2011,22 +2011,22 @@ bool PlayerbotAI::HasAura(std::string const name, Unit* unit, bool maxStack, boo
 
     int auraAmount = 0;
 
-	for (uint32 auraType = SPELL_AURA_BIND_SIGHT; auraType < TOTAL_AURAS; auraType++)
-	{
-		Unit::AuraEffectList const& auras = unit->GetAuraEffectsByType((AuraType)auraType);
+    for (uint32 auraType = SPELL_AURA_BIND_SIGHT; auraType < TOTAL_AURAS; auraType++)
+    {
+        Unit::AuraEffectList const& auras = unit->GetAuraEffectsByType((AuraType)auraType);
         if (auras.empty())
             continue;
 
-		for (AuraEffect const* aurEff : auras)
-		{
+        for (AuraEffect const* aurEff : auras)
+        {
             SpellInfo const* spellInfo = aurEff->GetSpellInfo();
 
-			std::string_view const auraName = spellInfo->SpellName[0];
-			if (auraName.empty() || auraName.length() != wnamepart.length() || !Utf8FitTo(auraName, wnamepart))
-				continue;
+            std::string_view const auraName = spellInfo->SpellName[0];
+            if (auraName.empty() || auraName.length() != wnamepart.length() || !Utf8FitTo(auraName, wnamepart))
+                continue;
 
-			if (IsRealAura(bot, aurEff, unit))
-			{
+            if (IsRealAura(bot, aurEff, unit))
+            {
                 if (checkIsOwner && aurEff) {
                     if (aurEff->GetCasterGUID() != bot->GetGUID())
                         continue;
@@ -2037,7 +2037,7 @@ bool PlayerbotAI::HasAura(std::string const name, Unit* unit, bool maxStack, boo
                         continue;
                     }
                 }
-			    uint32 maxStackAmount = spellInfo->StackAmount;
+                uint32 maxStackAmount = spellInfo->StackAmount;
                 uint32 maxProcCharges = spellInfo->ProcCharges;
 
 
@@ -2052,8 +2052,8 @@ bool PlayerbotAI::HasAura(std::string const name, Unit* unit, bool maxStack, boo
                 }
                 if (maxAuraAmount < 0)
                     return auraAmount > 0;
-			}
-		}
+            }
+        }
     }
 
     if (maxAuraAmount >= 0)
@@ -2066,18 +2066,18 @@ bool PlayerbotAI::HasAura(std::string const name, Unit* unit, bool maxStack, boo
 
 bool PlayerbotAI::HasAura(uint32 spellId, Unit const* unit)
 {
-	if (!spellId || !unit)
-		return false;
+    if (!spellId || !unit)
+        return false;
     
     return unit->HasAura(spellId);
-	// for (uint8 effect = EFFECT_0; effect <= EFFECT_2; effect++)
-	// {
-	// 	AuraEffect const* aurEff = unit->GetAuraEffect(spellId, effect);
-	// 	if (IsRealAura(bot, aurEff, unit))
-	// 		return true;
-	// }
+    // for (uint8 effect = EFFECT_0; effect <= EFFECT_2; effect++)
+    // {
+    //     AuraEffect const* aurEff = unit->GetAuraEffect(spellId, effect);
+    //     if (IsRealAura(bot, aurEff, unit))
+    //         return true;
+    // }
 
-	// return false;
+    // return false;
 }
 
 Aura* PlayerbotAI::GetAura(std::string const name, Unit* unit, bool checkIsOwner, bool checkDuration, int checkStack)
@@ -2091,22 +2091,22 @@ Aura* PlayerbotAI::GetAura(std::string const name, Unit* unit, bool checkIsOwner
 
     wstrToLower(wnamepart);
 
-	for (uint32 auraType = SPELL_AURA_BIND_SIGHT; auraType < TOTAL_AURAS; auraType++)
-	{
-		Unit::AuraEffectList const& auras = unit->GetAuraEffectsByType((AuraType)auraType);
+    for (uint32 auraType = SPELL_AURA_BIND_SIGHT; auraType < TOTAL_AURAS; auraType++)
+    {
+        Unit::AuraEffectList const& auras = unit->GetAuraEffectsByType((AuraType)auraType);
         if (auras.empty())
             continue;
 
-		for (AuraEffect const* aurEff : auras)
-		{
+        for (AuraEffect const* aurEff : auras)
+        {
             SpellInfo const* spellInfo = aurEff->GetSpellInfo();
 
-			std::string const auraName = spellInfo->SpellName[0];
-			if (auraName.empty() || auraName.length() != wnamepart.length() || !Utf8FitTo(auraName, wnamepart))
-				continue;
+            std::string const auraName = spellInfo->SpellName[0];
+            if (auraName.empty() || auraName.length() != wnamepart.length() || !Utf8FitTo(auraName, wnamepart))
+                continue;
 
-			if (IsRealAura(bot, aurEff, unit))
-			{
+            if (IsRealAura(bot, aurEff, unit))
+            {
                 if (checkIsOwner && aurEff) {
                     if (aurEff->GetCasterGUID() != bot->GetGUID())
                         continue;
@@ -2123,9 +2123,9 @@ Aura* PlayerbotAI::GetAura(std::string const name, Unit* unit, bool checkIsOwner
                         continue;
                     }
                 }
-			    return aurEff->GetBase();
-			}
-		}
+                return aurEff->GetBase();
+            }
+        }
     }
 
     return nullptr;
@@ -2214,8 +2214,8 @@ bool PlayerbotAI::CanCastSpell(uint32 spellid, Unit* target, bool checkHasSpell,
         return false;
     }
 
-	SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellid);
-	if (!spellInfo) {
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellid);
+    if (!spellInfo) {
         if (!sPlayerbotAIConfig->logInGroupOnly || (bot->GetGroup() && HasRealPlayerMaster())) {
             LOG_DEBUG("playerbots", "Can cast spell failed. No spellInfo. - target name: {}, spellid: {}, bot name: {}", 
                 target->GetName(), spellid, bot->GetName());
@@ -2232,8 +2232,8 @@ bool PlayerbotAI::CanCastSpell(uint32 spellid, Unit* target, bool checkHasSpell,
         return false;
     }
 
-	if (!itemTarget)
-	{
+    if (!itemTarget)
+    {
         bool positiveSpell = spellInfo->IsPositive();
         // if (positiveSpell && bot->IsHostileTo(target))
         //     return false;
@@ -2280,10 +2280,10 @@ bool PlayerbotAI::CanCastSpell(uint32 spellid, Unit* target, bool checkHasSpell,
             }
             return false;
         }
-	}
+    }
 
-	Unit* oldSel = bot->GetSelectedUnit();
-	Spell* spell = new Spell(bot, spellInfo, TRIGGERED_NONE);
+    Unit* oldSel = bot->GetSelectedUnit();
+    Spell* spell = new Spell(bot, spellInfo, TRIGGERED_NONE);
 
     spell->m_targets.SetUnitTarget(target);
     spell->m_CastItem = castItem;
@@ -2302,8 +2302,8 @@ bool PlayerbotAI::CanCastSpell(uint32 spellid, Unit* target, bool checkHasSpell,
     //     }
     // }
 
-	if (oldSel)
-		bot->SetSelection(oldSel->GetGUID());
+    if (oldSel)
+        bot->SetSelection(oldSel->GetGUID());
 
     switch (result)
     {
@@ -2463,23 +2463,23 @@ bool PlayerbotAI::CastSpell(uint32 spellId, Unit* target, Item* itemTarget)
         target = bot;
 
     Pet* pet = bot->GetPet();
-	SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
-	if (pet && pet->HasSpell(spellId))
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+    if (pet && pet->HasSpell(spellId))
     {
-	    bool autocast = false;
-	    for(unsigned int & m_autospell : pet->m_autospells)
-	    {
-	        if (m_autospell == spellId)
-	        {
-	            autocast = true;
-	            break;
-	        }
-	    }
+        bool autocast = false;
+        for(unsigned int & m_autospell : pet->m_autospells)
+        {
+            if (m_autospell == spellId)
+            {
+                autocast = true;
+                break;
+            }
+        }
 
-		pet->ToggleAutocast(spellInfo, !autocast);
-		std::ostringstream out;
-		out << (autocast ? "|cffff0000|Disabling" : "|cFF00ff00|Enabling") << " pet auto-cast for ";
-		out << chatHelper.FormatSpell(spellInfo);
+        pet->ToggleAutocast(spellInfo, !autocast);
+        std::ostringstream out;
+        out << (autocast ? "|cffff0000|Disabling" : "|cFF00ff00|Enabling") << " pet auto-cast for ";
+        out << chatHelper.FormatSpell(spellInfo);
         TellMaster(out);
         return true;
     }
@@ -2495,18 +2495,18 @@ bool PlayerbotAI::CastSpell(uint32 spellId, Unit* target, Item* itemTarget)
         return false;
     }
 
-	// bot->ClearUnitState(UNIT_STATE_CHASE);
-	// bot->ClearUnitState(UNIT_STATE_FOLLOW);
+    // bot->ClearUnitState(UNIT_STATE_CHASE);
+    // bot->ClearUnitState(UNIT_STATE_FOLLOW);
 
-	bool failWithDelay = false;
+    bool failWithDelay = false;
     if (!bot->IsStandState())
     {
         bot->SetStandState(UNIT_STAND_STATE_STAND);
         failWithDelay = true;
     }
 
-	ObjectGuid oldSel = bot->GetSelectedUnit() ? bot->GetSelectedUnit()->GetGUID() : ObjectGuid();
-	bot->SetSelection(target->GetGUID());
+    ObjectGuid oldSel = bot->GetSelectedUnit() ? bot->GetSelectedUnit()->GetGUID() : ObjectGuid();
+    bot->SetSelection(target->GetGUID());
     WorldObject* faceTo = target;
     if (!bot->HasInArc(CAST_ANGLE_IN_FRONT, faceTo) && (spellInfo->FacingCasterFlags & SPELL_FACING_FLAG_INFRONT))
     {
@@ -3037,7 +3037,7 @@ void PlayerbotAI::WaitForSpellCast(Spell* spell)
     SpellInfo const* spellInfo = spell->GetSpellInfo();
     uint32 castTime = spell->GetCastTime();
     // float castTime = spell->GetCastTime();
-	// if (spellInfo->IsChanneled())
+    // if (spellInfo->IsChanneled())
     // {
     //     int32 duration = spellInfo->GetDuration();
     //     bot->ApplySpellMod(spellInfo->Id, SPELLMOD_DURATION, duration);
@@ -3094,27 +3094,27 @@ void PlayerbotAI::RemoveAura(std::string const name)
 
 bool PlayerbotAI::IsInterruptableSpellCasting(Unit* target, std::string const spell)
 {
-	uint32 spellid = aiObjectContext->GetValue<uint32>("spell id", spell)->Get();
-	if (!spellid || !target->IsNonMeleeSpellCast(true))
-		return false;
+    uint32 spellid = aiObjectContext->GetValue<uint32>("spell id", spell)->Get();
+    if (!spellid || !target->IsNonMeleeSpellCast(true))
+        return false;
 
-	SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellid);
-	if (!spellInfo)
-		return false;
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellid);
+    if (!spellInfo)
+        return false;
 
-	for (uint8 i = EFFECT_0; i <= EFFECT_2; i++)
-	{
-		if ((spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_INTERRUPT) && spellInfo->PreventionType == SPELL_PREVENTION_TYPE_SILENCE)
-			return true;
+    for (uint8 i = EFFECT_0; i <= EFFECT_2; i++)
+    {
+        if ((spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_INTERRUPT) && spellInfo->PreventionType == SPELL_PREVENTION_TYPE_SILENCE)
+            return true;
 
-		if (spellInfo->Effects[i].Effect == SPELL_EFFECT_INTERRUPT_CAST && !target->IsImmunedToSpellEffect(spellInfo, i))
-			return true;
+        if (spellInfo->Effects[i].Effect == SPELL_EFFECT_INTERRUPT_CAST && !target->IsImmunedToSpellEffect(spellInfo, i))
+            return true;
 
         if ((spellInfo->Effects[i].Effect == SPELL_EFFECT_APPLY_AURA) && spellInfo->Effects[i].ApplyAuraName == SPELL_AURA_MOD_SILENCE)
             return true;
-	}
+    }
 
-	return false;
+    return false;
 }
 
 bool PlayerbotAI::HasAuraToDispel(Unit* target, uint32 dispelType)

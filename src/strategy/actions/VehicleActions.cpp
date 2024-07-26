@@ -46,7 +46,7 @@ bool EnterVehicleAction::Execute(Event event)
         return true;
     }
 
-	return false;
+    return false;
 }
 
 bool LeaveVehicleAction::Execute(Event event)

@@ -24,15 +24,15 @@ void HealPriestStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     //     "enemy out of spell",
     //     NextAction::array(0, new NextAction("reach spell", ACTION_NORMAL + 9), NULL)));
 
-	// triggers.push_back(new TriggerNode(
-	// 	"medium aoe heal",
-	// 	NextAction::array(0, 
+    // triggers.push_back(new TriggerNode(
+    //     "medium aoe heal",
+    //     NextAction::array(0, 
     //         new NextAction("circle of healing", ACTION_MEDIUM_HEAL + 8), 
     //         // new NextAction("power word: shield on almost full health below", ACTION_MEDIUM_HEAL + 7),
     //         NULL)));
 
     triggers.push_back(new TriggerNode(
-		"group heal occasion",
+        "group heal occasion",
         NextAction::array(0, 
             new NextAction("circle of healing", ACTION_MEDIUM_HEAL + 8), 
             new NextAction("power word: shield on almost full health below", ACTION_MEDIUM_HEAL + 7),
@@ -47,7 +47,7 @@ void HealPriestStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode(
         "party member critical health",
-		NextAction::array(0,
+        NextAction::array(0,
             new NextAction("power word: shield on party", ACTION_CRITICAL_HEAL + 6),
             new NextAction("penance on party", ACTION_CRITICAL_HEAL + 4), 
             new NextAction("flash heal on party", ACTION_CRITICAL_HEAL + 3),
@@ -56,7 +56,7 @@ void HealPriestStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode(
         "party member low health",
-		NextAction::array(0,
+        NextAction::array(0,
             new NextAction("power word: shield on party", ACTION_MEDIUM_HEAL + 4),
             new NextAction("penance on party", ACTION_MEDIUM_HEAL + 2), 
             new NextAction("circle of healing", ACTION_MEDIUM_HEAL + 2),
@@ -64,9 +64,9 @@ void HealPriestStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             new NextAction("flash heal on party", ACTION_MEDIUM_HEAL + 0),
             NULL)));
 
-	triggers.push_back(new TriggerNode(
+    triggers.push_back(new TriggerNode(
         "party member medium health",
-		NextAction::array(0,
+        NextAction::array(0,
             new NextAction("power word: shield on party", ACTION_LIGHT_HEAL + 9),
             new NextAction("penance on party", ACTION_LIGHT_HEAL + 7), 
             new NextAction("circle of healing", ACTION_LIGHT_HEAL + 7),
@@ -77,7 +77,7 @@ void HealPriestStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     
     triggers.push_back(new TriggerNode(
         "party member almost full health",
-		NextAction::array(0, 
+        NextAction::array(0, 
             // new NextAction("penance on party", ACTION_LIGHT_HEAL + 3), 
             new NextAction("renew on party", ACTION_LIGHT_HEAL + 2),
             NULL)));

@@ -14,14 +14,14 @@ Trigger::Trigger(PlayerbotAI* botAI, std::string const name, int32 checkInterval
 
 Event Trigger::Check()
 {
-	if (IsActive())
-	{
-		Event event(getName());
-		return event;
-	}
+    if (IsActive())
+    {
+        Event event(getName());
+        return event;
+    }
 
-	Event event;
-	return event;
+    Event event;
+    return event;
 }
 
 Value<Unit*>* Trigger::GetTargetValue()

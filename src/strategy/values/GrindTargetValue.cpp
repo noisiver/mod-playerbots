@@ -75,11 +75,11 @@ Unit* GrindTargetValue::FindTargetForGrinding(uint32 assistCount)
         if (!bot->InBattleground() && GetTargetingPlayerCount(unit) > assistCount)
             continue;
 
-		//if (!bot->InBattleground() && master && master->GetDistance(unit) >= sPlayerbotAIConfig->grindDistance && !sRandomPlayerbotMgr->IsRandomBot(bot))
+        //if (!bot->InBattleground() && master && master->GetDistance(unit) >= sPlayerbotAIConfig->grindDistance && !sRandomPlayerbotMgr->IsRandomBot(bot))
             //continue;
 
-		if (!bot->InBattleground() && (int)unit->GetLevel() - (int)bot->GetLevel() > 4 && !unit->GetGUID().IsPlayer())
-		    continue;
+        if (!bot->InBattleground() && (int)unit->GetLevel() - (int)bot->GetLevel() > 4 && !unit->GetGUID().IsPlayer())
+            continue;
 
         // if (needForQuestMap.find(unit->GetEntry()) == needForQuestMap.end())
         //     needForQuestMap[unit->GetEntry()] = needForQuest(unit);
@@ -92,10 +92,10 @@ Unit* GrindTargetValue::FindTargetForGrinding(uint32 assistCount)
         //if (bot->InBattleground() && bot->GetDistance(unit) > 40.0f)
             //continue;
 
-		if (Creature* creature = unit->ToCreature())
+        if (Creature* creature = unit->ToCreature())
             if (CreatureTemplate const* CreatureTemplate = creature->GetCreatureTemplate())
-		        if (CreatureTemplate->rank > CREATURE_ELITE_NORMAL && !AI_VALUE(bool, "can fight elite"))
-		            continue;
+                if (CreatureTemplate->rank > CREATURE_ELITE_NORMAL && !AI_VALUE(bool, "can fight elite"))
+                    continue;
         
         if (!bot->IsWithinLOSInMap(unit)) {
             continue;

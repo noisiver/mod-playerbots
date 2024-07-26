@@ -58,8 +58,8 @@ void DpsHunterStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 void DpsAoeHunterStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(new TriggerNode("light aoe", NextAction::array(0, new NextAction("multi-shot", 20.0f), nullptr)));
-	triggers.push_back(new TriggerNode("medium aoe", NextAction::array(0, new NextAction("volley", 21.0f), nullptr)));
-	triggers.push_back(new TriggerNode("serpent sting on attacker", NextAction::array(0, new NextAction("serpent sting on attacker", 17.0f), nullptr)));
+    triggers.push_back(new TriggerNode("medium aoe", NextAction::array(0, new NextAction("volley", 21.0f), nullptr)));
+    triggers.push_back(new TriggerNode("serpent sting on attacker", NextAction::array(0, new NextAction("serpent sting on attacker", 17.0f), nullptr)));
 }
 
 void DpsHunterDebuffStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)

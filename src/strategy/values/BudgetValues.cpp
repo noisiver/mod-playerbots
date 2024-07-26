@@ -136,14 +136,14 @@ uint32 TrainCostValue::Calculate()
 
 uint32 MoneyNeededForValue::Calculate()
 {
-	NeedMoneyFor needMoneyFor = NeedMoneyFor(stoi(getQualifier()));
+    NeedMoneyFor needMoneyFor = NeedMoneyFor(stoi(getQualifier()));
 
-	PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
-	AiObjectContext* context = botAI->GetAiObjectContext();
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
+    AiObjectContext* context = botAI->GetAiObjectContext();
 
-	uint32 moneyWanted = 0;
+    uint32 moneyWanted = 0;
 
-	uint32 level = bot->GetLevel();
+    uint32 level = bot->GetLevel();
 
     switch (needMoneyFor)
     {
@@ -184,7 +184,7 @@ uint32 MoneyNeededForValue::Calculate()
             break;
     }
 
-	return moneyWanted;
+    return moneyWanted;
 };
 
 uint32 TotalMoneyNeededForValue::Calculate()

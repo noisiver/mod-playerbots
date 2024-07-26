@@ -159,12 +159,12 @@ CastHealingSpellAction::CastHealingSpellAction(PlayerbotAI* botAI, std::string c
 
 bool CastHealingSpellAction::isUseful()
 {
-	return CastAuraSpellAction::isUseful();
+    return CastAuraSpellAction::isUseful();
 }
 
 bool CastAoeHealSpellAction::isUseful()
 {
-	return CastSpellAction::isUseful();
+    return CastSpellAction::isUseful();
 }
 
 CastCureSpellAction::CastCureSpellAction(PlayerbotAI* botAI, std::string const spell) : CastSpellAction(botAI, spell)

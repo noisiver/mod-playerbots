@@ -118,7 +118,7 @@ void PlayerbotFactory::Init()
             if (!enchant || (enchant->slot != PERM_ENCHANTMENT_SLOT && enchant->slot != TEMP_ENCHANTMENT_SLOT))
                 continue;
             
-			// SpellInfo const* enchantSpell = sSpellMgr->GetSpellInfo(enchant->spellid[0]);
+            // SpellInfo const* enchantSpell = sSpellMgr->GetSpellInfo(enchant->spellid[0]);
             // if (!enchantSpell)
             //     continue;
             
@@ -641,7 +641,7 @@ void PlayerbotFactory::InitPetTalents()
                 bot->LearnPetTalent(pet->GetGUID(), talentInfo->DependsOn, std::min(talentInfo->DependsOnRank, bot->GetFreeTalentPoints() - 1));            
             }
             bot->LearnPetTalent(pet->GetGUID(), talentInfo->TalentID, maxRank);
-			spells_row.erase(spells_row.begin() + index);
+            spells_row.erase(spells_row.begin() + index);
         }
     }
     bot->SendTalentsInfoData(true);
@@ -659,7 +659,7 @@ void PlayerbotFactory::InitPet()
         if (!map)
             return;
 
-		std::vector<uint32> ids;
+        std::vector<uint32> ids;
 
         CreatureTemplateContainer const* creatures = sObjectMgr->GetCreatureTemplates();
         for (CreatureTemplateContainer::const_iterator itr = creatures->begin(); itr != creatures->end(); ++itr)
@@ -670,8 +670,8 @@ void PlayerbotFactory::InitPet()
             if (itr->second.minlevel > bot->GetLevel())
                 continue;
             
-			ids.push_back(itr->first);
-		}
+            ids.push_back(itr->first);
+        }
 
         if (ids.empty())
         {
@@ -679,9 +679,9 @@ void PlayerbotFactory::InitPet()
             return;
         }
 
-		for (uint32 i = 0; i < 10; i++)
-		{
-			uint32 index = urand(0, ids.size() - 1);
+        for (uint32 i = 0; i < 10; i++)
+        {
+            uint32 index = urand(0, ids.size() - 1);
             CreatureTemplate const* co = sObjectMgr->GetCreatureTemplate(ids[index]);
             if (!co)
                 continue;
@@ -1146,14 +1146,14 @@ bool PlayerbotFactory::CanEquipWeapon(ItemTemplate const* proto)
     case CLASS_WARLOCK:
         if (proto->SubClass != ITEM_SUBCLASS_WEAPON_STAFF &&
                 proto->SubClass != ITEM_SUBCLASS_WEAPON_WAND &&
-				proto->SubClass != ITEM_SUBCLASS_WEAPON_DAGGER &&
+                proto->SubClass != ITEM_SUBCLASS_WEAPON_DAGGER &&
                 proto->SubClass != ITEM_SUBCLASS_WEAPON_SWORD)
             return false;
         break;
     case CLASS_WARRIOR:
         if (proto->SubClass != ITEM_SUBCLASS_WEAPON_MACE2 &&
-			proto->SubClass != ITEM_SUBCLASS_WEAPON_AXE &&
-			proto->SubClass != ITEM_SUBCLASS_WEAPON_POLEARM &&
+            proto->SubClass != ITEM_SUBCLASS_WEAPON_AXE &&
+            proto->SubClass != ITEM_SUBCLASS_WEAPON_POLEARM &&
                 proto->SubClass != ITEM_SUBCLASS_WEAPON_SWORD2 &&
                 proto->SubClass != ITEM_SUBCLASS_WEAPON_MACE &&
                 proto->SubClass != ITEM_SUBCLASS_WEAPON_SWORD &&
@@ -1167,28 +1167,28 @@ bool PlayerbotFactory::CanEquipWeapon(ItemTemplate const* proto)
         if (proto->SubClass != ITEM_SUBCLASS_WEAPON_MACE2 &&
                 proto->SubClass != ITEM_SUBCLASS_WEAPON_SWORD2 &&
                 proto->SubClass != ITEM_SUBCLASS_WEAPON_MACE &&
-				proto->SubClass != ITEM_SUBCLASS_WEAPON_AXE2 &&
+                proto->SubClass != ITEM_SUBCLASS_WEAPON_AXE2 &&
                 proto->SubClass != ITEM_SUBCLASS_WEAPON_SWORD)
             return false;
         break;
-	case CLASS_DEATH_KNIGHT:
-		if (proto->SubClass != ITEM_SUBCLASS_WEAPON_MACE2 &&
-			proto->SubClass != ITEM_SUBCLASS_WEAPON_POLEARM &&
-			proto->SubClass != ITEM_SUBCLASS_WEAPON_SWORD2 &&
-			proto->SubClass != ITEM_SUBCLASS_WEAPON_AXE2 &&
-			proto->SubClass != ITEM_SUBCLASS_WEAPON_AXE &&
+    case CLASS_DEATH_KNIGHT:
+        if (proto->SubClass != ITEM_SUBCLASS_WEAPON_MACE2 &&
+            proto->SubClass != ITEM_SUBCLASS_WEAPON_POLEARM &&
+            proto->SubClass != ITEM_SUBCLASS_WEAPON_SWORD2 &&
+            proto->SubClass != ITEM_SUBCLASS_WEAPON_AXE2 &&
+            proto->SubClass != ITEM_SUBCLASS_WEAPON_AXE &&
             proto->SubClass != ITEM_SUBCLASS_WEAPON_MACE &&
             proto->SubClass != ITEM_SUBCLASS_WEAPON_SWORD)
-			return false;
-		break;
+            return false;
+        break;
     case CLASS_SHAMAN:
         if (proto->SubClass != ITEM_SUBCLASS_WEAPON_MACE &&
-				proto->SubClass != ITEM_SUBCLASS_WEAPON_AXE &&
-				proto->SubClass != ITEM_SUBCLASS_WEAPON_FIST &&
+                proto->SubClass != ITEM_SUBCLASS_WEAPON_AXE &&
+                proto->SubClass != ITEM_SUBCLASS_WEAPON_FIST &&
                 proto->SubClass != ITEM_SUBCLASS_WEAPON_MACE2 &&
-				proto->SubClass != ITEM_SUBCLASS_WEAPON_AXE2 &&
-				proto->SubClass != ITEM_SUBCLASS_WEAPON_DAGGER &&
-				proto->SubClass != ITEM_SUBCLASS_WEAPON_FIST &&
+                proto->SubClass != ITEM_SUBCLASS_WEAPON_AXE2 &&
+                proto->SubClass != ITEM_SUBCLASS_WEAPON_DAGGER &&
+                proto->SubClass != ITEM_SUBCLASS_WEAPON_FIST &&
                 proto->SubClass != ITEM_SUBCLASS_WEAPON_STAFF)
             return false;
         break;
@@ -1201,20 +1201,20 @@ bool PlayerbotFactory::CanEquipWeapon(ItemTemplate const* proto)
         break;
     case CLASS_HUNTER:
         if (proto->SubClass != ITEM_SUBCLASS_WEAPON_AXE2 &&
-				proto->SubClass != ITEM_SUBCLASS_WEAPON_AXE &&
+                proto->SubClass != ITEM_SUBCLASS_WEAPON_AXE &&
                 proto->SubClass != ITEM_SUBCLASS_WEAPON_SWORD2 &&
-				proto->SubClass != ITEM_SUBCLASS_WEAPON_POLEARM &&
-				proto->SubClass != ITEM_SUBCLASS_WEAPON_FIST &&
+                proto->SubClass != ITEM_SUBCLASS_WEAPON_POLEARM &&
+                proto->SubClass != ITEM_SUBCLASS_WEAPON_FIST &&
                 proto->SubClass != ITEM_SUBCLASS_WEAPON_GUN &&
                 proto->SubClass != ITEM_SUBCLASS_WEAPON_CROSSBOW &&
-				proto->SubClass != ITEM_SUBCLASS_WEAPON_STAFF &&
+                proto->SubClass != ITEM_SUBCLASS_WEAPON_STAFF &&
                 proto->SubClass != ITEM_SUBCLASS_WEAPON_BOW)
             return false;
         break;
     case CLASS_ROGUE:
         if (proto->SubClass != ITEM_SUBCLASS_WEAPON_DAGGER &&
                 proto->SubClass != ITEM_SUBCLASS_WEAPON_SWORD &&
-				proto->SubClass != ITEM_SUBCLASS_WEAPON_FIST &&
+                proto->SubClass != ITEM_SUBCLASS_WEAPON_FIST &&
                 proto->SubClass != ITEM_SUBCLASS_WEAPON_MACE &&
                 proto->SubClass != ITEM_SUBCLASS_WEAPON_GUN &&
                 proto->SubClass != ITEM_SUBCLASS_WEAPON_CROSSBOW &&
@@ -1792,7 +1792,7 @@ void PlayerbotFactory::EnchantItem(Item* item)
             if (!enchant || enchant->slot != PERM_ENCHANTMENT_SLOT)
                 continue;
 
-			SpellInfo const* enchantSpell = sSpellMgr->GetSpellInfo(enchant->spellid[0]);
+            SpellInfo const* enchantSpell = sSpellMgr->GetSpellInfo(enchant->spellid[0]);
             if (!enchantSpell || (enchantSpell->SpellLevel && enchantSpell->SpellLevel > level))
                 continue;
 
@@ -2113,7 +2113,7 @@ void PlayerbotFactory::InitAvailableSpells()
         }
     }
     for (uint32 trainerId : trainerIdCache) {
-		TrainerSpellData const* trainer_spells = sObjectMgr->GetNpcTrainerSpells(trainerId);
+        TrainerSpellData const* trainer_spells = sObjectMgr->GetNpcTrainerSpells(trainerId);
         if (!trainer_spells)
             trainer_spells = sObjectMgr->GetNpcTrainerSpells(trainerId);
 
@@ -2268,10 +2268,10 @@ void PlayerbotFactory::InitSpecialSpells()
         bot->learnSpell(spellId);
     }
     // to leave DK starting area 
-	if (bot->getClass() == CLASS_DEATH_KNIGHT)
-	{
-		bot->learnSpell(50977, false);
-	}
+    if (bot->getClass() == CLASS_DEATH_KNIGHT)
+    {
+        bot->learnSpell(50977, false);
+    }
 }
 
 void PlayerbotFactory::InitTalents(uint32 specNo)
@@ -2321,7 +2321,7 @@ void PlayerbotFactory::InitTalents(uint32 specNo)
                 bot->LearnTalent(talentInfo->DependsOn, std::min(talentInfo->DependsOnRank, bot->GetFreeTalentPoints() - 1));            
             }
             bot->LearnTalent(talentInfo->TalentID, maxRank);
-			spells_row.erase(spells_row.begin() + index);
+            spells_row.erase(spells_row.begin() + index);
         }
 
         freePoints = bot->GetFreeTalentPoints();

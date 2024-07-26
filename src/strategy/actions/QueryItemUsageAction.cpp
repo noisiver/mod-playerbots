@@ -127,10 +127,10 @@ std::string const QueryItemUsageAction::QueryItemUsage(ItemTemplate const* item)
             return "Tradeskill";
         case ITEM_USAGE_USE:
             return "Use";
-	    case ITEM_USAGE_GUILD_TASK:
-		    return "Guild task";
-	    case ITEM_USAGE_DISENCHANT:
-		    return "Disenchant";
+        case ITEM_USAGE_GUILD_TASK:
+            return "Guild task";
+        case ITEM_USAGE_DISENCHANT:
+            return "Disenchant";
         case ITEM_USAGE_VENDOR:
             return "Vendor";
         case ITEM_USAGE_AH:
@@ -139,7 +139,7 @@ std::string const QueryItemUsageAction::QueryItemUsage(ItemTemplate const* item)
             return "Ammunition";
         default:
             break;
-	}
+    }
 
     return "";
 }

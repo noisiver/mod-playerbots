@@ -976,7 +976,7 @@ bool MovementAction::Follow(Unit* target, float distance, float angle)
 
         bot->CombatStop(true);
         botAI->TellMasterNoFacing("I will there soon.");
-		bot->TeleportTo(target->GetMapId(), target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), target->GetOrientation());
+        bot->TeleportTo(target->GetMapId(), target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), target->GetOrientation());
         return false;
     }
     */

@@ -30,7 +30,7 @@ PassiveMultiplier::PassiveMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "pa
 float PassiveMultiplier::GetValue(Action* action)
 {
     if (!action)
-		return 1.0f;
+        return 1.0f;
 
     std::string const name = action->getName();
 

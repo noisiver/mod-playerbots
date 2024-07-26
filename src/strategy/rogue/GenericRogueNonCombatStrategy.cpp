@@ -25,7 +25,7 @@ class GenericRogueNonCombatStrategyActionNodeFactory : public NamedObjectFactory
 };
 
 GenericRogueNonCombatStrategy::GenericRogueNonCombatStrategy(PlayerbotAI* botAI) : NonCombatStrategy(botAI) { 
-	actionNodeFactories.Add(new GenericRogueNonCombatStrategyActionNodeFactory());
+    actionNodeFactories.Add(new GenericRogueNonCombatStrategyActionNodeFactory());
 }
 
 void GenericRogueNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
@@ -38,18 +38,18 @@ void GenericRogueNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& trig
     // triggers.push_back(new TriggerNode("often", NextAction::array(0, new NextAction("apply poison", 1.0f), nullptr)));
 
     triggers.push_back(new TriggerNode(
-		"main hand weapon no enchant",
-		NextAction::array(0, new NextAction("use instant poison on main hand", 20.0f), NULL)));
-	
-	triggers.push_back(new TriggerNode(
-		"off hand weapon no enchant",
-		NextAction::array(0, new NextAction("use deadly poison on off hand", 19.0f), NULL)));
+        "main hand weapon no enchant",
+        NextAction::array(0, new NextAction("use instant poison on main hand", 20.0f), NULL)));
+    
+    triggers.push_back(new TriggerNode(
+        "off hand weapon no enchant",
+        NextAction::array(0, new NextAction("use deadly poison on off hand", 19.0f), NULL)));
 
-	// triggers.push_back(new TriggerNode(
-	// 	"off hand weapon no enchant",
-	// 	NextAction::array(0, new NextAction("use instant poison", 18.0f), NULL)));
+    // triggers.push_back(new TriggerNode(
+    //     "off hand weapon no enchant",
+    //     NextAction::array(0, new NextAction("use instant poison", 18.0f), NULL)));
 
-	triggers.push_back(new TriggerNode(
-		"often",
-		NextAction::array(0, new NextAction("unstealth", 30.0f), NULL)));
+    triggers.push_back(new TriggerNode(
+        "often",
+        NextAction::array(0, new NextAction("unstealth", 30.0f), NULL)));
 }

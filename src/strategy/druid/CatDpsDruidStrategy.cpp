@@ -132,7 +132,7 @@ void CatDpsDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("combo points available", NextAction::array(0, new NextAction("ferocious bite", ACTION_NORMAL + 9), nullptr)));
     triggers.push_back(new TriggerNode("medium threat", NextAction::array(0, new NextAction("cower", ACTION_EMERGENCY + 1), nullptr)));
     triggers.push_back(new TriggerNode("faerie fire (feral)", NextAction::array(0, new NextAction("faerie fire (feral)", ACTION_HIGH), nullptr)));
-	triggers.push_back(new TriggerNode("tiger's fury", NextAction::array(0, new NextAction("tiger's fury", ACTION_EMERGENCY + 1), nullptr)));
+    triggers.push_back(new TriggerNode("tiger's fury", NextAction::array(0, new NextAction("tiger's fury", ACTION_EMERGENCY + 1), nullptr)));
     triggers.push_back(new TriggerNode("behind target", NextAction::array(0, new NextAction("pounce", ACTION_HIGH + 1), nullptr)));
     //triggers.push_back(new TriggerNode("player has no flag", NextAction::array(0, new NextAction("prowl", ACTION_HIGH), nullptr)));
     //triggers.push_back(new TriggerNode("enemy out of melee", NextAction::array(0, new NextAction("prowl", ACTION_INTERRUPT + 1), nullptr)));

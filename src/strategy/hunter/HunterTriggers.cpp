@@ -20,7 +20,7 @@ bool HunterAspectOfTheHawkTrigger::IsActive()
 
 bool HunterNoStingsActiveTrigger::IsActive()
 {
-	Unit* target = AI_VALUE(Unit*, "current target");
+    Unit* target = AI_VALUE(Unit*, "current target");
     return DebuffTrigger::IsActive() && target && 
         !botAI->HasAura("serpent sting", target, false, true) &&
         !botAI->HasAura("scorpid sting", target, false, true) && 
@@ -88,6 +88,6 @@ bool SwitchToMeleeTrigger::IsActive()
 
 bool TargetRemoveEnrageTrigger::IsActive()
 {
-	Unit* target = GetTarget();
-	return target && (botAI->HasAuraToDispel(target, DISPEL_ENRAGE) || botAI->HasAuraToDispel(target, DISPEL_MAGIC));
+    Unit* target = GetTarget();
+    return target && (botAI->HasAuraToDispel(target, DISPEL_ENRAGE) || botAI->HasAuraToDispel(target, DISPEL_MAGIC));
 }

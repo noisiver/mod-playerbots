@@ -137,7 +137,7 @@ class RandomItemMgr
             return &instance;
         }
 
-	public:
+    public:
         void Init();
         void InitAfterAhBot();
         static bool HandleConsoleCommand(ChatHandler* handler, char const* args);

@@ -22,7 +22,7 @@ bool TradeStatusAction::Execute(Event event)
     PlayerbotAI* traderBotAI = GET_PLAYERBOT_AI(trader);
     if (trader != master && !traderBotAI)
     {
-		bot->Whisper("I'm kind of busy now", LANG_UNIVERSAL, trader);
+        bot->Whisper("I'm kind of busy now", LANG_UNIVERSAL, trader);
     }
 
     if ((trader != master || !botAI->GetSecurity()->CheckLevelFor(PLAYERBOT_SECURITY_ALLOW_ALL, true, master)) && !traderBotAI)

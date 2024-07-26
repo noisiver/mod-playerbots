@@ -341,9 +341,9 @@ void RandomPlayerbotMgr::UpdateAIInternal(uint32 elapsed, bool /*minimal*/)
 
     if (sPlayerbotAIConfig->enablePrototypePerformanceDiff)
     {
-		LOG_INFO("playerbots", "---------------------------------------");
-		LOG_INFO("playerbots", "PROTOTYPE: Playerbot performance enhancements are active. Issues and instability may occur.");
-		LOG_INFO("playerbots", "---------------------------------------");
+        LOG_INFO("playerbots", "---------------------------------------");
+        LOG_INFO("playerbots", "PROTOTYPE: Playerbot performance enhancements are active. Issues and instability may occur.");
+        LOG_INFO("playerbots", "---------------------------------------");
         ScaleBotActivity();
     }
 
@@ -932,19 +932,19 @@ bool RandomPlayerbotMgr::ProcessBot(uint32 bot)
     uint32 isValid = GetEventValue(bot, "add");
     if (!isValid)
     {
-		if (!player || !player->GetGroup())
-		{
+        if (!player || !player->GetGroup())
+        {
             if (player)
                 LOG_INFO("playerbots", "Bot #{} {}:{} <{}>: log out", bot, IsAlliance(player->getRace()) ? "A" : "H", player->GetLevel(), player->GetName().c_str());
             else
                 LOG_INFO("playerbots", "Bot #{}: log out", bot);
 
-			SetEventValue(bot, "add", 0, 0);
-			currentBots.erase(std::remove(currentBots.begin(), currentBots.end(), bot), currentBots.end());
+            SetEventValue(bot, "add", 0, 0);
+            currentBots.erase(std::remove(currentBots.begin(), currentBots.end(), bot), currentBots.end());
 
-			if (player)
+            if (player)
                 LogoutPlayerBot(botGUID);
-		}
+        }
 
         return false;
     }
@@ -1051,8 +1051,8 @@ bool RandomPlayerbotMgr::ProcessBot(Player* player)
 
         if (!GetEventValue(bot, "revive"))
         {
-			Revive(player);
-			return true;
+            Revive(player);
+            return true;
         }
 
         return false;
@@ -1269,40 +1269,40 @@ void RandomPlayerbotMgr::PrepareTeleportCache()
 
     QueryResult results = WorldDatabase.Query(
     "SELECT "
-		    "g.map, "
-		    "position_x, "
-		    "position_y, "
-		    "position_z, "
-		    "t.minlevel "
+            "g.map, "
+            "position_x, "
+            "position_y, "
+            "position_z, "
+            "t.minlevel "
         "FROM "
-		    "(SELECT "
-		    "map, "
-		    "MIN( c.guid ) guid, "
-		    "t.entry "
-		    "FROM "
-				"creature c "
-				"INNER JOIN creature_template t ON c.id1 = t.entry "
-		    "WHERE "
-				"t.npcflag = 0 "
-				"AND t.lootid != 0 "
-				"AND t.unit_flags != 768 "
-				"AND t.maxlevel - t.minlevel < 3 "
-				"AND map IN ({}) "
-				"AND c.id1 != 32820 "
-				"AND c.spawntimesecs < 1000 "
-				"AND t.faction != 188 "
-		    "GROUP BY "
-				"map, "
-				"ROUND( position_x / 500 ), "
-				"ROUND( position_y / 500 ), "
-				"ROUND( position_z / 50), "
-				"t.entry "
-		    "HAVING "
-				"count(*) > 7) AS g "
-		    "INNER JOIN creature c ON g.guid = c.guid "
-		    "INNER JOIN creature_template t on c.id1 = t.entry "
+            "(SELECT "
+            "map, "
+            "MIN( c.guid ) guid, "
+            "t.entry "
+            "FROM "
+                "creature c "
+                "INNER JOIN creature_template t ON c.id1 = t.entry "
+            "WHERE "
+                "t.npcflag = 0 "
+                "AND t.lootid != 0 "
+                "AND t.unit_flags != 768 "
+                "AND t.maxlevel - t.minlevel < 3 "
+                "AND map IN ({}) "
+                "AND c.id1 != 32820 "
+                "AND c.spawntimesecs < 1000 "
+                "AND t.faction != 188 "
+            "GROUP BY "
+                "map, "
+                "ROUND( position_x / 500 ), "
+                "ROUND( position_y / 500 ), "
+                "ROUND( position_z / 50), "
+                "t.entry "
+            "HAVING "
+                "count(*) > 7) AS g "
+            "INNER JOIN creature c ON g.guid = c.guid "
+            "INNER JOIN creature_template t on c.id1 = t.entry "
         "ORDER BY "
-	        "t.minlevel;", sPlayerbotAIConfig->randomBotMapsAsString.c_str());
+            "t.minlevel;", sPlayerbotAIConfig->randomBotMapsAsString.c_str());
     uint32 collected_locs = 0;
     if (results)
     {
@@ -1328,15 +1328,15 @@ void RandomPlayerbotMgr::PrepareTeleportCache()
     
     results = WorldDatabase.Query(
     "SELECT "
-		    "map, "
-		    "position_x, "
-		    "position_y, "
-		    "position_z, "
+            "map, "
+            "position_x, "
+            "position_y, "
+            "position_z, "
             "orientation, "
-		    "t.minlevel "
+            "t.minlevel "
         "FROM "
-		    "creature c "
-		    "INNER JOIN creature_template t on c.id1 = t.entry "
+            "creature c "
+            "INNER JOIN creature_template t on c.id1 = t.entry "
         "WHERE "
             "t.npcflag & 131072 "
             "AND t.npcflag != 135298 "
@@ -1350,7 +1350,7 @@ void RandomPlayerbotMgr::PrepareTeleportCache()
             "AND t.faction != 69 "
             "AND map IN ({}) "
         "ORDER BY "
-	        "t.minlevel;", sPlayerbotAIConfig->randomBotMapsAsString.c_str());
+            "t.minlevel;", sPlayerbotAIConfig->randomBotMapsAsString.c_str());
     collected_locs = 0;
     if (results)
     {
@@ -1506,21 +1506,21 @@ void RandomPlayerbotMgr::Randomize(Player* bot)
 
 void RandomPlayerbotMgr::IncreaseLevel(Player* bot)
 {
-	uint32 maxLevel = sPlayerbotAIConfig->randomBotMaxLevel;
-	if (maxLevel > sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL))
-		maxLevel = sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL);
+    uint32 maxLevel = sPlayerbotAIConfig->randomBotMaxLevel;
+    if (maxLevel > sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL))
+        maxLevel = sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL);
 
-	PerformanceMonitorOperation* pmo = sPerformanceMonitor->start(PERF_MON_RNDBOT, "IncreaseLevel");
-	uint32 lastLevel = GetValue(bot, "level");
-	uint8 level = bot->GetLevel() + 1;
+    PerformanceMonitorOperation* pmo = sPerformanceMonitor->start(PERF_MON_RNDBOT, "IncreaseLevel");
+    uint32 lastLevel = GetValue(bot, "level");
+    uint8 level = bot->GetLevel() + 1;
     if (level > maxLevel) {
         level = maxLevel;
     }
-	if (lastLevel != level)
-	{
+    if (lastLevel != level)
+    {
         PlayerbotFactory factory(bot, level);
         factory.Randomize(true);
-	}
+    }
 
     if (pmo)
         pmo->finish();
@@ -1528,15 +1528,15 @@ void RandomPlayerbotMgr::IncreaseLevel(Player* bot)
 
 void RandomPlayerbotMgr::RandomizeFirst(Player* bot)
 {
-	uint32 maxLevel = sPlayerbotAIConfig->randomBotMaxLevel;
-	if (maxLevel > sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL))
-		maxLevel = sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL);
+    uint32 maxLevel = sPlayerbotAIConfig->randomBotMaxLevel;
+    if (maxLevel > sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL))
+        maxLevel = sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL);
 
     // if lvl sync is enabled, max level is limited by online players lvl
     if (sPlayerbotAIConfig->syncLevelWithPlayers)
         maxLevel = std::max(sPlayerbotAIConfig->randomBotMinLevel, std::min(playersLevel, sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL)));
 
-	PerformanceMonitorOperation* pmo = sPerformanceMonitor->start(PERF_MON_RNDBOT, "RandomizeFirst");
+    PerformanceMonitorOperation* pmo = sPerformanceMonitor->start(PERF_MON_RNDBOT, "RandomizeFirst");
     
     uint32 level;
 
@@ -1588,13 +1588,13 @@ void RandomPlayerbotMgr::RandomizeFirst(Player* bot)
     if (bot->GetGroup())
         bot->RemoveFromGroup();
 
-	if (pmo)
+    if (pmo)
         pmo->finish();
 }
 
 void RandomPlayerbotMgr::RandomizeMin(Player* bot)
 {
-	PerformanceMonitorOperation* pmo = sPerformanceMonitor->start(PERF_MON_RNDBOT, "RandomizeMin");
+    PerformanceMonitorOperation* pmo = sPerformanceMonitor->start(PERF_MON_RNDBOT, "RandomizeMin");
     
     uint32 level = sPlayerbotAIConfig->randomBotMinLevel;
 
@@ -1625,7 +1625,7 @@ void RandomPlayerbotMgr::RandomizeMin(Player* bot)
     if (bot->GetGroup())
         bot->RemoveFromGroup();
 
-	if (pmo)
+    if (pmo)
         pmo->finish();
 }
 
@@ -1637,7 +1637,7 @@ void RandomPlayerbotMgr::Clear(Player* bot)
 
 uint32 RandomPlayerbotMgr::GetZoneLevel(uint16 mapId, float teleX, float teleY, float teleZ)
 {
-	uint32 maxLevel = sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL);
+    uint32 maxLevel = sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL);
 
     uint32 level = 0;
     QueryResult results = WorldDatabase.Query("SELECT AVG(t.minlevel) minlevel, AVG(t.maxlevel) maxlevel FROM creature c "
@@ -1687,8 +1687,8 @@ void RandomPlayerbotMgr::Refresh(Player* bot)
     botAI->Reset();
 
     bot->DurabilityRepairAll(false, 1.0f, false);
-	bot->SetFullHealth();
-	bot->SetPvP(true);
+    bot->SetFullHealth();
+    bot->SetPvP(true);
 
     PlayerbotFactory factory(bot, bot->GetLevel(), ITEM_QUALITY_RARE);
     factory.Refresh();
@@ -1984,7 +1984,7 @@ bool RandomPlayerbotMgr::HandlePlayerbotConsoleCommand(ChatHandler* handler, cha
 
                     botIds.push_back(botId);
                 } while (results->NextRow());
-			}
+            }
         }
 
         if (botIds.empty())
@@ -2322,8 +2322,8 @@ void RandomPlayerbotMgr::PrintStats()
     }
 
     LOG_INFO("playerbots", "Bots level:");
-	uint32 maxLevel = sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL);
-	for (uint8 i = 0; i < 10; ++i)
+    uint32 maxLevel = sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL);
+    for (uint8 i = 0; i < 10; ++i)
     {
         if (!alliance[i] && !horde[i])
             continue;

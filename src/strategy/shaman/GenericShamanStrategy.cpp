@@ -108,14 +108,14 @@ void GenericShamanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode("wind shear", NextAction::array(0, new NextAction("wind shear", 23.0f), nullptr)));
     triggers.push_back(new TriggerNode("wind shear on enemy healer", NextAction::array(0, new NextAction("wind shear on enemy healer", 23.0f), nullptr)));
-	triggers.push_back(new TriggerNode("purge", NextAction::array(0, new NextAction("purge", ACTION_DISPEL), nullptr)));
-	// triggers.push_back(new TriggerNode("party member medium health", NextAction::array(0, new NextAction("lesser healing wave on party", 25.0f), nullptr)));
-	// triggers.push_back(new TriggerNode("party member low health", NextAction::array(0, new NextAction("riptide on party", 25.0f), nullptr)));
-	// triggers.push_back(new TriggerNode("medium aoe heal", NextAction::array(0, new NextAction("chain heal", 27.0f), nullptr)));
-	// triggers.push_back(new TriggerNode("medium health", NextAction::array(0, new NextAction("lesser healing wave", 26.0f), nullptr)));
-	// triggers.push_back(new TriggerNode("low health", NextAction::array(0, new NextAction("riptide", 26.0f), nullptr)));
-	triggers.push_back(new TriggerNode("heroism", NextAction::array(0, new NextAction("heroism", 31.0f), nullptr)));
-	triggers.push_back(new TriggerNode("bloodlust", NextAction::array(0, new NextAction("bloodlust", 30.0f), nullptr)));
+    triggers.push_back(new TriggerNode("purge", NextAction::array(0, new NextAction("purge", ACTION_DISPEL), nullptr)));
+    // triggers.push_back(new TriggerNode("party member medium health", NextAction::array(0, new NextAction("lesser healing wave on party", 25.0f), nullptr)));
+    // triggers.push_back(new TriggerNode("party member low health", NextAction::array(0, new NextAction("riptide on party", 25.0f), nullptr)));
+    // triggers.push_back(new TriggerNode("medium aoe heal", NextAction::array(0, new NextAction("chain heal", 27.0f), nullptr)));
+    // triggers.push_back(new TriggerNode("medium health", NextAction::array(0, new NextAction("lesser healing wave", 26.0f), nullptr)));
+    // triggers.push_back(new TriggerNode("low health", NextAction::array(0, new NextAction("riptide", 26.0f), nullptr)));
+    triggers.push_back(new TriggerNode("heroism", NextAction::array(0, new NextAction("heroism", 31.0f), nullptr)));
+    triggers.push_back(new TriggerNode("bloodlust", NextAction::array(0, new NextAction("bloodlust", 30.0f), nullptr)));
     
 }
 

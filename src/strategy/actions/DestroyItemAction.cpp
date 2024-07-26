@@ -25,7 +25,7 @@ void DestroyItemAction::DestroyItem(FindItemVisitor* visitor)
 {
     IterateItems(visitor);
     std::vector<Item*> items = visitor->GetResult();
-	for (Item* item : items)
+    for (Item* item : items)
     {
         std::ostringstream out;
         out << chat->FormatItem(item->GetTemplate()) << " destroyed";

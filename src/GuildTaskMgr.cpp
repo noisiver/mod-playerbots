@@ -42,7 +42,7 @@ void GuildTaskMgr::Update(Player* player, Player* guildMaster)
     if (!player->IsFriendlyTo(guildMaster))
         return;
 
-	Guild* guild = sGuildMgr->GetGuildById(guildMaster->GetGuildId());
+    Guild* guild = sGuildMgr->GetGuildById(guildMaster->GetGuildId());
 
     DenyReason reason = PLAYERBOT_DENY_NONE;
     PlayerbotSecurityLevel secLevel = masterBotAI->GetSecurity()->LevelFor(player, &reason);
@@ -542,7 +542,7 @@ std::map<uint32, uint32> GuildTaskMgr::GetTaskValues(uint32 owner, std::string c
         } while (result->NextRow());
     }
 
-	return std::move(results);
+    return std::move(results);
 }
 
 uint32 GuildTaskMgr::GetTaskValue(uint32 owner, uint32 guildId, std::string const type, uint32* validIn /* = nullptr */)
@@ -566,7 +566,7 @@ uint32 GuildTaskMgr::GetTaskValue(uint32 owner, uint32 guildId, std::string cons
             *validIn = secs;
     }
 
-	return value;
+    return value;
 }
 
 uint32 GuildTaskMgr::SetTaskValue(uint32 owner, uint32 guildId, std::string const type, uint32 value, uint32 validIn)
@@ -818,12 +818,12 @@ bool GuildTaskMgr::CheckItemTask(uint32 itemId, uint32 obtained, Player* ownerPl
         return false;
 
     uint32 owner = ownerPlayer->GetGUID().GetCounter();
-	Guild* guild = sGuildMgr->GetGuildById(bot->GetGuildId());
-	if (!guild)
-		return false;
+    Guild* guild = sGuildMgr->GetGuildById(bot->GetGuildId());
+    if (!guild)
+        return false;
 
-	if (!sRandomPlayerbotMgr->IsRandomBot(bot))
-	    return false;
+    if (!sRandomPlayerbotMgr->IsRandomBot(bot))
+        return false;
 
     LOG_DEBUG("playerbots", "{} / {}: checking guild task", guild->GetName().c_str(), ownerPlayer->GetName().c_str());
 

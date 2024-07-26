@@ -56,9 +56,9 @@ void AutoLearnSpellAction::LearnTrainerSpells(std::ostringstream* out)
     //     if (co.trainer_type == TRAINER_TYPE_CLASS && co.trainer_class != bot->getClass())
     //         continue;
 
-	// 	uint32 trainerId = co.Entry;
+    //     uint32 trainerId = co.Entry;
 
-	// 	TrainerSpellData const* trainer_spells = sObjectMgr->GetNpcTrainerSpells(trainerId);
+    //     TrainerSpellData const* trainer_spells = sObjectMgr->GetNpcTrainerSpells(trainerId);
     //     if (!trainer_spells)
     //         trainer_spells = sObjectMgr->GetNpcTrainerSpells(trainerId);
 

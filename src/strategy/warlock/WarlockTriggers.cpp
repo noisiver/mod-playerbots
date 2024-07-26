@@ -7,8 +7,8 @@
 
 bool DemonArmorTrigger::IsActive()
 {
-	Unit* target = GetTarget();
-	return !botAI->HasAura("demon skin", target) && !botAI->HasAura("demon armor", target) && !botAI->HasAura("fel armor", target);
+    Unit* target = GetTarget();
+    return !botAI->HasAura("demon skin", target) && !botAI->HasAura("demon armor", target) && !botAI->HasAura("fel armor", target);
 }
 
 bool SpellstoneTrigger::IsActive()

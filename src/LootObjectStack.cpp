@@ -41,8 +41,8 @@ void LootTargetList::shrink(time_t fromTime)
     {
         if (i->asOfTime <= fromTime)
             erase(i++);
-		else
-			++i;
+        else
+            ++i;
     }
 }
 

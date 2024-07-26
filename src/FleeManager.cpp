@@ -19,18 +19,18 @@ void FleeManager::calculateDistanceToCreatures(FleePoint *point)
     if (!botAI) {
         return;
     }
-	GuidVector units = *botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los");
-	for (GuidVector::iterator i = units.begin(); i != units.end(); ++i)
+    GuidVector units = *botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los");
+    for (GuidVector::iterator i = units.begin(); i != units.end(); ++i)
     {
-		Unit* unit = botAI->GetUnit(*i);
-		if (!unit)
-		    continue;
+        Unit* unit = botAI->GetUnit(*i);
+        if (!unit)
+            continue;
 
-		float d = sServerFacade->GetDistance2d(unit, point->x, point->y);
-		point->sumDistance += d;
-		if (point->minDistance < 0 || point->minDistance > d)
+        float d = sServerFacade->GetDistance2d(unit, point->x, point->y);
+        point->sumDistance += d;
+        if (point->minDistance < 0 || point->minDistance > d)
             point->minDistance = d;
-	}
+    }
 }
 
 bool intersectsOri(float angle, std::vector<float>& angles, float angleIncrement)
@@ -53,12 +53,12 @@ void FleeManager::calculatePossibleDestinations(std::vector<FleePoint*> &points)
     }
     Unit* target = *botAI->GetAiObjectContext()->GetValue<Unit*>("current target");
 
-	float botPosX = startPosition.getX();
+    float botPosX = startPosition.getX();
     float botPosY = startPosition.getY();
     float botPosZ = startPosition.getZ();
 
-	FleePoint start(botAI, botPosX, botPosY, botPosZ);
-	calculateDistanceToCreatures(&start);
+    FleePoint start(botAI, botPosX, botPosY, botPosZ);
+    calculateDistanceToCreatures(&start);
 
     std::vector<float> enemyOri;
     GuidVector units = *botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los");
@@ -110,12 +110,12 @@ void FleeManager::calculatePossibleDestinations(std::vector<FleePoint*> &points)
 
 void FleeManager::cleanup(std::vector<FleePoint*> &points)
 {
-	for (std::vector<FleePoint*>::iterator i = points.begin(); i != points.end(); i++)
+    for (std::vector<FleePoint*>::iterator i = points.begin(); i != points.end(); i++)
     {
-		delete *i;
-	}
+        delete *i;
+    }
 
-	points.clear();
+    points.clear();
 }
 
 bool FleeManager::isBetterThan(FleePoint* point, FleePoint* other)
@@ -125,21 +125,21 @@ bool FleeManager::isBetterThan(FleePoint* point, FleePoint* other)
 
 FleePoint* FleeManager::selectOptimalDestination(std::vector<FleePoint*> &points)
 {
-	FleePoint* best = nullptr;
-	for (std::vector<FleePoint*>::iterator i = points.begin(); i != points.end(); i++)
+    FleePoint* best = nullptr;
+    for (std::vector<FleePoint*>::iterator i = points.begin(); i != points.end(); i++)
     {
-		FleePoint* point = *i;
-		if (!best || isBetterThan(point, best))
+        FleePoint* point = *i;
+        if (!best || isBetterThan(point, best))
             best = point;
-	}
+    }
 
-	return best;
+    return best;
 }
 
 bool FleeManager::CalculateDestination(float* rx, float* ry, float* rz)
 {
     std::vector<FleePoint*> points;
-	calculatePossibleDestinations(points);
+    calculatePossibleDestinations(points);
 
     FleePoint* point = selectOptimalDestination(points);
     if (!point)
@@ -148,12 +148,12 @@ bool FleeManager::CalculateDestination(float* rx, float* ry, float* rz)
         return false;
     }
 
-	*rx = point->x;
-	*ry = point->y;
-	*rz = point->z;
+    *rx = point->x;
+    *ry = point->y;
+    *rz = point->z;
 
     cleanup(points);
-	return true;
+    return true;
 }
 
 bool FleeManager::isUseful()

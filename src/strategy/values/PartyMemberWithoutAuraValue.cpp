@@ -33,7 +33,7 @@ class PlayerWithoutAuraPredicate : public FindPlayerPredicate, public PlayerbotA
 
 Unit* PartyMemberWithoutAuraValue::Calculate()
 {
-	PlayerWithoutAuraPredicate predicate(botAI, qualifier);
+    PlayerWithoutAuraPredicate predicate(botAI, qualifier);
     return FindPartyMember(predicate);
 }
 

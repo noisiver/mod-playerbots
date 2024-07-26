@@ -66,8 +66,8 @@ AvoidAoeStrategy::AvoidAoeStrategy(PlayerbotAI* botAI) : Strategy(botAI)
 NextAction** AvoidAoeStrategy::getDefaultActions()
 {
     return NextAction::array(0, 
-		new NextAction("avoid aoe", ACTION_EMERGENCY),
-		nullptr);
+        new NextAction("avoid aoe", ACTION_EMERGENCY),
+        nullptr);
 }
 
 
@@ -86,6 +86,6 @@ void AvoidAoeStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 NextAction** CombatFormationStrategy::getDefaultActions()
 {
     return NextAction::array(0, 
-		new NextAction("combat formation move", ACTION_NORMAL),
-		nullptr);
+        new NextAction("combat formation move", ACTION_NORMAL),
+        nullptr);
 }

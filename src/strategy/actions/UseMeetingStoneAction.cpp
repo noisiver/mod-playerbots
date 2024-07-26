@@ -21,11 +21,11 @@ bool UseMeetingStoneAction::Execute(Event event)
     ObjectGuid guid;
     p >> guid;
 
-	if (master->GetTarget() && master->GetTarget() != bot->GetGUID())
-		return false;
+    if (master->GetTarget() && master->GetTarget() != bot->GetGUID())
+        return false;
 
-	if (!master->GetTarget() && master->GetGroup() != bot->GetGroup())
-		return false;
+    if (!master->GetTarget() && master->GetGroup() != bot->GetGroup())
+        return false;
 
     if (master->IsBeingTeleported())
         return false;
@@ -44,8 +44,8 @@ bool UseMeetingStoneAction::Execute(Event event)
     if (!gameObject)
         return false;
 
-	GameObjectTemplate const* goInfo = gameObject->GetGOInfo();
-	if (!goInfo || goInfo->type != GAMEOBJECT_TYPE_SUMMONING_RITUAL)
+    GameObjectTemplate const* goInfo = gameObject->GetGOInfo();
+    if (!goInfo || goInfo->type != GAMEOBJECT_TYPE_SUMMONING_RITUAL)
         return false;
 
     return Teleport(master, bot);

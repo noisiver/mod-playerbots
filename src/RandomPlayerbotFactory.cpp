@@ -187,14 +187,14 @@ Player* RandomPlayerbotFactory::CreateRandomBot(WorldSession* session, uint8 cls
     std::pair<uint8, uint8> face = faces[urand(0, faces.size() - 1)];
     std::pair<uint8, uint8> hair = hairs[urand(0, hairs.size() - 1)];
 
-	bool excludeCheck = (race == RACE_TAUREN) || (race == RACE_DRAENEI) || (gender == GENDER_FEMALE && race != RACE_NIGHTELF && race != RACE_UNDEAD_PLAYER);
-	uint8 facialHair = excludeCheck ? 0 : facialHairTypes[urand(0, facialHairTypes.size() - 1)];
+    bool excludeCheck = (race == RACE_TAUREN) || (race == RACE_DRAENEI) || (gender == GENDER_FEMALE && race != RACE_NIGHTELF && race != RACE_UNDEAD_PLAYER);
+    uint8 facialHair = excludeCheck ? 0 : facialHairTypes[urand(0, facialHairTypes.size() - 1)];
 
     std::unique_ptr<CharacterCreateInfo> characterInfo = std::make_unique<CharacterCreateInfo>(name, race, cls, gender, face.second, face.first, hair.first, hair.second, facialHair);
 
     Player* player = new Player(session);
     player->GetMotionMaster()->Initialize();
-	if (!player->Create(sObjectMgr->GetGenerator<HighGuid::Player>().Generate(), characterInfo.get()))
+    if (!player->Create(sObjectMgr->GetGenerator<HighGuid::Player>().Generate(), characterInfo.get()))
     {
         player->CleanupsBeforeDelete();
         delete player;
@@ -207,9 +207,9 @@ Player* RandomPlayerbotFactory::CreateRandomBot(WorldSession* session, uint8 cls
     player->SetAtLoginFlag(AT_LOGIN_NONE);
 
     if (player->getClass() == CLASS_DEATH_KNIGHT)
-	{
-		player->learnSpell(50977, false);
-	}
+    {
+        player->learnSpell(50977, false);
+    }
     // player->SaveToDB(true, false);
     // player->RewardQuest(const Quest *quest, uint32 reward, Object *questGiver)
     LOG_DEBUG("playerbots", "Random bot created for account {} - name: \"{}\"; race: {}; class: {}", accountId, name.c_str(), race, cls);
@@ -240,25 +240,25 @@ std::string const RandomPlayerbotFactory::CreateRandomBotName(uint8 gender)
     LOG_ERROR("playerbots", "No more names left for random bots. Attempting conlang name generation.");
     const std::string groupCategory = "SCVKRU";
     const std::string groupFormStart[2][4] = {
-  	    {"SV","SV","VK","RV"},
+          {"SV","SV","VK","RV"},
         {"V" ,"SU","VS","RV"}
     };
     const std::string groupFormMid[2][6] = {
-  	    {"CV","CVC","CVC","CVK","VC","VK"},
+          {"CV","CVC","CVC","CVK","VC","VK"},
         {"CV","CVC","CVK","KVC","VC","KV"}
     };
     const std::string groupFormEnd[2][4] = {
-  	    {"CV","VC","VK","CV"},
+          {"CV","VC","VK","CV"},
         {"RU","UR","VR","V" }
     };
     const std::string groupLetter[2][6] = {
-    	//S           C                            V               K           R         U
-  	    {"dtspkThfS","bcCdfghjkmnNqqrrlsStTvwxyz","aaeeiouA"     ,"ppttkkbdg","lmmnrr" ,"AEO" },
-  	    {"dtskThfS" ,"bcCdfghjkmmnNqrrlssStTvwyz","aaaeeiiuAAEIO","ppttkbbdg","lmmnrrr","AEOy"}
+        //S           C                            V               K           R         U
+          {"dtspkThfS","bcCdfghjkmnNqqrrlsStTvwxyz","aaeeiouA"     ,"ppttkkbdg","lmmnrr" ,"AEO" },
+          {"dtskThfS" ,"bcCdfghjkmmnNqrrlssStTvwyz","aaaeeiiuAAEIO","ppttkbbdg","lmmnrrr","AEOy"}
     };
     const std::string replaceRule[2][17] = {
-  	    {"ST" ,"ka","ko","ku","kr","S" ,"T" ,"C" ,"N" ,"jj","AA","AI" ,"A" ,"E" ,"O" ,"I" ,"aa"},
-	    {"sth","ca","co","cu","cr","sh","th","ch","ng","dg","A" ,"ayu","ai","ei","ou","iu","ae"}
+          {"ST" ,"ka","ko","ku","kr","S" ,"T" ,"C" ,"N" ,"jj","AA","AI" ,"A" ,"E" ,"O" ,"I" ,"aa"},
+        {"sth","ca","co","cu","cr","sh","th","ch","ng","dg","A" ,"ayu","ai","ei","ou","iu","ae"}
     };
     
     tries = 10;
@@ -267,22 +267,22 @@ std::string const RandomPlayerbotFactory::CreateRandomBotName(uint8 gender)
         botName.clear();
         //Build name from groupForms
         //Pick random start group
-    	botName = groupFormStart[gender][rand()%4];
+        botName = groupFormStart[gender][rand()%4];
         //Pick up to 2 and then up to 1 additional middle group
-    	for (int i = 0; i < rand()%3 + rand()%2; i++)
+        for (int i = 0; i < rand()%3 + rand()%2; i++)
         {
-      	    botName += groupFormMid[gender][rand()%6];
-      	}
+              botName += groupFormMid[gender][rand()%6];
+          }
         //Pick up to 1 end group
-      	botName += rand()%2 ? groupFormEnd[gender][rand()%4] : "";
+          botName += rand()%2 ? groupFormEnd[gender][rand()%4] : "";
         //If name is single letter add random end group
         botName += (botName.size() < 2) ? groupFormEnd[gender][rand()%4] : "";
         
         //Replace Catagory value with random Letter from that Catagory's Letter string for a given bot gender
         for (int i=0; i < botName.size(); i++)
         {
-			botName[i] = groupLetter[gender][groupCategory.find(botName[i])][rand()%groupLetter[gender][groupCategory.find(botName[i])].size()];
-  	    }
+            botName[i] = groupLetter[gender][groupCategory.find(botName[i])][rand()%groupLetter[gender][groupCategory.find(botName[i])].size()];
+          }
   
         //Itterate over replace rules
         for (int i = 0; i < 17; i++)

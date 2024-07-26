@@ -24,7 +24,7 @@ static bool substrContainsInMap(std::string const searchTerm, std::map<std::stri
     for (typename std::map<std::string, T>::iterator i = searchIn.begin(); i != searchIn.end(); ++i)
     {
         std::string const term = i->first;
-		if (term.size() > 1 && searchTerm.find(term) != std::string::npos)
+        if (term.size() > 1 && searchTerm.find(term) != std::string::npos)
             return true;
     }
 
@@ -179,11 +179,11 @@ ChatHelper::ChatHelper(PlayerbotAI* botAI) : PlayerbotAIAware(botAI)
 std::string const ChatHelper::formatMoney(uint32 copper)
 {
     std::ostringstream out;
-	if (!copper)
-	{
-		out << "0";
-		return out.str();
-	}
+    if (!copper)
+    {
+        out << "0";
+        return out.str();
+    }
 
     uint32 gold = uint32(copper / 10000);
     copper -= (gold * 10000);
@@ -206,13 +206,13 @@ std::string const ChatHelper::formatMoney(uint32 copper)
         space = true;
     }
 
-	if (copper > 0 && gold < 10)
-	{
+    if (copper > 0 && gold < 10)
+    {
         if (space)
             out << " ";
 
-		out << copper <<  "c";
-	}
+        out << copper <<  "c";
+    }
 
     return out.str();
 }

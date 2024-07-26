@@ -57,12 +57,12 @@ class PerformanceMonitor
             return &instance;
         }
 
-	public:
+    public:
         PerformanceMonitorOperation* start(PerformanceMetric metric, std::string const name, PerformanceStack* stack = nullptr);
         void PrintStats(bool perTick = false,  bool fullStack = false);
         void Reset();
 
-	private:
+    private:
         std::map<PerformanceMetric, std::map<std::string, PerformanceData*> > data;
         std::mutex lock;
 };

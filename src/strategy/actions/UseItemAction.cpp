@@ -143,21 +143,21 @@ bool UseItemAction::UseItem(Item* item, ObjectGuid goGuid, Item* itemTarget, Uni
         }
     }
 
-	Player* master = GetMaster();
+    Player* master = GetMaster();
     if (!targetSelected && item->GetTemplate()->Class != ITEM_CLASS_CONSUMABLE && master && botAI->HasActivePlayerMaster() && !selfOnly)
-	{
-		if (ObjectGuid masterSelection = master->GetTarget())
-		{
+    {
+        if (ObjectGuid masterSelection = master->GetTarget())
+        {
             Unit* unit = botAI->GetUnit(masterSelection);
             if (unit)
             {
-			    targetFlag = TARGET_FLAG_UNIT;
-				packet << targetFlag << masterSelection.WriteAsPacked();
-				out << " on " << unit->GetName();
-				targetSelected = true;
-			}
-		}
-	}
+                targetFlag = TARGET_FLAG_UNIT;
+                packet << targetFlag << masterSelection.WriteAsPacked();
+                out << " on " << unit->GetName();
+                targetSelected = true;
+            }
+        }
+    }
 
     if (!targetSelected && item->GetTemplate()->Class != ITEM_CLASS_CONSUMABLE && unitTarget)
     {
@@ -204,8 +204,8 @@ bool UseItemAction::UseItem(Item* item, ObjectGuid goGuid, Item* itemTarget, Uni
         if (!botAI->CanCastSpell(spellId, bot, false))
             continue;
 
-		SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
-		if (spellInfo->Targets & TARGET_FLAG_ITEM)
+        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+        if (spellInfo->Targets & TARGET_FLAG_ITEM)
         {
             Item* itemForSpell = AI_VALUE2(Item*, "item for spell", spellId);
             if (!itemForSpell)

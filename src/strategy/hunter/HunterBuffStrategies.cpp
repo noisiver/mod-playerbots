@@ -37,7 +37,7 @@ void HunterBuffDpsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
 void HunterNatureResistanceStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-	triggers.push_back(new TriggerNode("aspect of the wild", NextAction::array(0, new NextAction("aspect of the wild", 20.0f), nullptr)));
+    triggers.push_back(new TriggerNode("aspect of the wild", NextAction::array(0, new NextAction("aspect of the wild", 20.0f), nullptr)));
 }
 
 void HunterBuffSpeedStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)

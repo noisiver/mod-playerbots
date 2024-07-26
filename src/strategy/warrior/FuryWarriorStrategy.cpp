@@ -53,7 +53,7 @@ void FuryWarriorStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
     triggers.push_back(new TriggerNode("battle shout", NextAction::array(0, new NextAction("battle shout", ACTION_HIGH + 8), nullptr)));
     // triggers.push_back(new TriggerNode("target critical health", NextAction::array(0, new NextAction("execute", ACTION_HIGH + 4), nullptr)));
     // triggers.push_back(new TriggerNode("sudden death", NextAction::array(0, new NextAction("execute", ACTION_HIGH + 4), nullptr)));
-	// triggers.push_back(new TriggerNode("hamstring", NextAction::array(0, new NextAction("piercing howl", ACTION_HIGH + 1), nullptr)));
+    // triggers.push_back(new TriggerNode("hamstring", NextAction::array(0, new NextAction("piercing howl", ACTION_HIGH + 1), nullptr)));
     triggers.push_back(new TriggerNode("pummel on enemy healer", NextAction::array(0, new NextAction("pummel on enemy healer", ACTION_INTERRUPT), nullptr)));
     triggers.push_back(new TriggerNode("pummel", NextAction::array(0, new NextAction("pummel", ACTION_INTERRUPT), nullptr)));
     triggers.push_back(new TriggerNode("victory rush", NextAction::array(0, new NextAction("victory rush", ACTION_INTERRUPT), nullptr)));

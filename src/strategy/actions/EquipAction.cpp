@@ -52,7 +52,7 @@ void EquipAction::EquipItem(FindItemVisitor* visitor)
 {
     IterateItems(visitor);
     std::vector<Item*> items = visitor->GetResult();
-	if (!items.empty())
+    if (!items.empty())
         EquipItem(*items.begin());
 }
 

@@ -9,18 +9,18 @@
 
 void Queue::Push(ActionBasket *action)
 {
-	if (action)
+    if (action)
     {
         for (std::list<ActionBasket*>::iterator iter = actions.begin(); iter != actions.end(); iter++)
         {
             ActionBasket* basket = *iter;
             if (action->getAction()->getName() == basket->getAction()->getName())
             {
-				if (basket->getRelevance() < action->getRelevance())
-					basket->setRelevance(action->getRelevance());
+                if (basket->getRelevance() < action->getRelevance())
+                    basket->setRelevance(action->getRelevance());
 
-				if (ActionNode* actionNode = action->getAction())
-				    delete actionNode;
+                if (ActionNode* actionNode = action->getAction())
+                    delete actionNode;
 
                 delete action;
 
@@ -28,34 +28,34 @@ void Queue::Push(ActionBasket *action)
             }
         }
 
-		actions.push_back(action);
+        actions.push_back(action);
     }
 }
 
 ActionNode* Queue::Pop()
 {
-	float max = -1;
-	ActionBasket* selection = nullptr;
+    float max = -1;
+    ActionBasket* selection = nullptr;
 
-	for (std::list<ActionBasket*>::iterator iter = actions.begin(); iter != actions.end(); iter++)
-	{
-		ActionBasket* basket = *iter;
-		if (basket->getRelevance() > max)
-		{
-			max = basket->getRelevance();
-			selection = basket;
-		}
-	}
+    for (std::list<ActionBasket*>::iterator iter = actions.begin(); iter != actions.end(); iter++)
+    {
+        ActionBasket* basket = *iter;
+        if (basket->getRelevance() > max)
+        {
+            max = basket->getRelevance();
+            selection = basket;
+        }
+    }
 
-	if (selection != nullptr)
-	{
-		ActionNode* action = selection->getAction();
-		actions.remove(selection);
-		delete selection;
-		return action;
-	}
+    if (selection != nullptr)
+    {
+        ActionNode* action = selection->getAction();
+        actions.remove(selection);
+        delete selection;
+        return action;
+    }
 
-	return nullptr;
+    return nullptr;
 }
 
 ActionBasket* Queue::Peek()
@@ -77,7 +77,7 @@ ActionBasket* Queue::Peek()
 
 uint32 Queue::Size()
 {
-	return actions.size();
+    return actions.size();
 }
 
 void Queue::RemoveExpired()

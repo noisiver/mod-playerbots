@@ -28,8 +28,8 @@ void TellPosition(PlayerbotAI* botAI, std::string const name, PositionInfo pos)
 bool PositionAction::Execute(Event event)
 {
     std::string const param = event.getParam();
-	if (param.empty())
-		return false;
+    if (param.empty())
+        return false;
 
     Player* master = GetMaster();
     if (!master)
@@ -56,12 +56,12 @@ bool PositionAction::Execute(Event event)
 
     std::string const name = params[0];
     std::string const action = params[1];
-	PositionInfo pos = posMap[name];
-	if (action == "?")
-	{
-	    TellPosition(botAI, name, pos);
-	    return true;
-	}
+    PositionInfo pos = posMap[name];
+    if (action == "?")
+    {
+        TellPosition(botAI, name, pos);
+        return true;
+    }
 
     std::vector<std::string> coords = split(action, ',');
     if (coords.size() == 3)
@@ -75,34 +75,34 @@ bool PositionAction::Execute(Event event)
         return true;
     }
 
-	if (action == "set")
-	{
-	    pos.Set( bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), botAI->GetBot()->GetMapId());
-	    posMap[name] = pos;
+    if (action == "set")
+    {
+        pos.Set( bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), botAI->GetBot()->GetMapId());
+        posMap[name] = pos;
 
         std::ostringstream out;
         out << "Position " << name << " is set";
-	    botAI->TellMaster(out);
-	    return true;
-	}
+        botAI->TellMaster(out);
+        return true;
+    }
 
-	if (action == "reset")
-	{
-	    pos.Reset();
-	    posMap[name] = pos;
+    if (action == "reset")
+    {
+        pos.Reset();
+        posMap[name] = pos;
 
         std::ostringstream out;
         out << "Position " << name << " is reset";
-	    botAI->TellMaster(out);
-	    return true;
-	}
+        botAI->TellMaster(out);
+        return true;
+    }
 
     return false;
 }
 
 bool MoveToPositionAction::Execute(Event event)
 {
-	PositionInfo pos = context->GetValue<PositionMap&>("position")->Get()[qualifier];
+    PositionInfo pos = context->GetValue<PositionMap&>("position")->Get()[qualifier];
     if (!pos.isSet())
     {
         std::ostringstream out;

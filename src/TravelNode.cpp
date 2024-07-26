@@ -2236,7 +2236,7 @@ void TravelNodeMap::printNodeStore()
         }
     }
 
-    sPlayerbotAIConfig->log(nodeStore, "	}");
+    sPlayerbotAIConfig->log(nodeStore, "    }");
     sPlayerbotAIConfig->log(nodeStore, "};");
 
     printf("\r [Done] \r\x3D");

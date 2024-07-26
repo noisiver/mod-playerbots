@@ -27,7 +27,7 @@ bool FingersOfFrostSingleTrigger::IsActive()
     // Fingers of Frost "stack" count is always 1.
     // The value is instead stored in the charges.
     Aura *aura = botAI->GetAura(getName(), GetTarget(), false, true, -1);
-	return (aura && aura->GetCharges() == 1);
+    return (aura && aura->GetCharges() == 1);
 }
 
 bool FrostNovaOnTargetTrigger::IsActive()
@@ -36,7 +36,7 @@ bool FrostNovaOnTargetTrigger::IsActive()
     if (!target || !target->IsAlive() || !target->IsInWorld()) {
         return false;
     }
-	return botAI->HasAura(spell, target);
+    return botAI->HasAura(spell, target);
 }
 
 bool FrostbiteOnTargetTrigger::IsActive()
@@ -45,5 +45,5 @@ bool FrostbiteOnTargetTrigger::IsActive()
     if (!target || !target->IsAlive() || !target->IsInWorld()) {
         return false;
     }
-	return botAI->HasAura(spell, target);
+    return botAI->HasAura(spell, target);
 }

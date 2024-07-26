@@ -40,13 +40,13 @@ bool TogglePetSpellAutoCastAction::Execute(Event event) {
         }
         bool isAutoCast = false;
         for (unsigned int &m_autospell : pet->m_autospells)
-	    {
-	        if (m_autospell == spellId)
-	        {
-	            isAutoCast = true;
-	            break;
-	        }
-	    }
+        {
+            if (m_autospell == spellId)
+            {
+                isAutoCast = true;
+                break;
+            }
+        }
         if (shouldApply != isAutoCast) {
             pet->ToggleAutocast(spellInfo, shouldApply);
             toggled = true;

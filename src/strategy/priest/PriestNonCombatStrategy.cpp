@@ -28,7 +28,7 @@ void PriestNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("often", NextAction::array(0, new NextAction("apply oil", 1.0f), nullptr)));
     triggers.push_back(new TriggerNode(
         "party member critical health",
-		NextAction::array(0,
+        NextAction::array(0,
             new NextAction("renew on party", ACTION_CRITICAL_HEAL + 3),
             new NextAction("penance on party", ACTION_CRITICAL_HEAL + 2), 
             new NextAction("greater heal on party", ACTION_CRITICAL_HEAL + 1),
@@ -36,22 +36,22 @@ void PriestNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode(
         "party member low health",
-		NextAction::array(0,
+        NextAction::array(0,
             new NextAction("renew on party", ACTION_MEDIUM_HEAL + 3),
             new NextAction("penance on party", ACTION_MEDIUM_HEAL + 2), 
             new NextAction("greater heal on party", ACTION_MEDIUM_HEAL + 1),
             NULL)));
 
-	triggers.push_back(new TriggerNode(
+    triggers.push_back(new TriggerNode(
         "party member medium health",
-		NextAction::array(0,
+        NextAction::array(0,
             new NextAction("renew on party", ACTION_LIGHT_HEAL + 9),
             new NextAction("penance on party", ACTION_LIGHT_HEAL + 8),
             NULL)));
     
     triggers.push_back(new TriggerNode(
         "party member almost full health",
-		NextAction::array(0, 
+        NextAction::array(0, 
             new NextAction("renew on party", ACTION_LIGHT_HEAL + 3),
             NULL)));
 

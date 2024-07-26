@@ -143,15 +143,15 @@ uint32 OpenLootAction::GetOpeningSpell(LootObject& lootObject, GameObject* go)
     {
         uint32 spellId = itr->first;
 
-		if (itr->second->State == PLAYERSPELL_REMOVED || !itr->second->Active)
-			continue;
+        if (itr->second->State == PLAYERSPELL_REMOVED || !itr->second->Active)
+            continue;
 
-		if (spellId == MINING || spellId == HERB_GATHERING)
-			continue;
+        if (spellId == MINING || spellId == HERB_GATHERING)
+            continue;
 
-		SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
-		if (!spellInfo)
-			continue;
+        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+        if (!spellInfo)
+            continue;
 
         if (CanOpenLock(lootObject, spellInfo, go))
             return spellId;
@@ -360,8 +360,8 @@ bool StoreLootAction::Execute(Event event)
         p.read_skip<uint32>();  // randomPropertyId
         p >> lootslot_type;     // 0 = can get, 1 = look only, 2 = master get
 
-		if (lootslot_type != LOOT_SLOT_TYPE_ALLOW_LOOT && lootslot_type != LOOT_SLOT_TYPE_OWNER)
-			continue;
+        if (lootslot_type != LOOT_SLOT_TYPE_ALLOW_LOOT && lootslot_type != LOOT_SLOT_TYPE_OWNER)
+            continue;
 
         if (loot_type != LOOT_SKINNING && !IsLootAllowed(itemid, botAI))
             continue;

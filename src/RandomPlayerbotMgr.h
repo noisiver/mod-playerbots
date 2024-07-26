@@ -67,7 +67,7 @@ class RandomPlayerbotMgr : public PlayerbotHolder
     private:
         void ScaleBotActivity();   
 
-	public:
+    public:
         uint32 activeBots = 0;
         static bool HandlePlayerbotConsoleCommand(ChatHandler* handler, char const* args);
         bool IsRandomBot(Player* bot);
@@ -129,8 +129,8 @@ class RandomPlayerbotMgr : public PlayerbotHolder
         float getActivityPercentage() { return activityMod * 100.0f; }
         void setActivityPercentage(float percentage) { activityMod = percentage / 100.0f; }
 
-	protected:
-	    void OnBotLoginInternal(Player* const bot) override;
+    protected:
+        void OnBotLoginInternal(Player* const bot) override;
 
     private:
         //pid values are set in constructor
