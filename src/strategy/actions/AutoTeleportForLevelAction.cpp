@@ -12,6 +12,6 @@ bool AutoTeleportForLevelAction::Execute(Event event) {
     if (botAI->HasRealPlayerMaster()) {
         return false;
     }
-    sRandomPlayerbotMgr->RandomTeleportForLevel(bot);
+    //sRandomPlayerbotMgr->RandomTeleportForLevel(bot);
     return true;
 }
