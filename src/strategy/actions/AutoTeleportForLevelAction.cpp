@@ -16,6 +16,6 @@ bool AutoTeleportForLevelAction::Execute(Event event)
     {
         return false;
     }
-    sRandomPlayerbotMgr->RandomTeleportForLevel(bot);
+    //sRandomPlayerbotMgr->RandomTeleportForLevel(bot);
     return true;
 }

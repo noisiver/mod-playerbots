@@ -1029,7 +1029,7 @@ bool RandomPlayerbotMgr::ProcessBot(uint32 bot)
         SetEventValue(bot, "update", 1, randomTime);
 
         // do not randomize or teleport immediately after server start (prevent lagging)
-        if (!GetEventValue(bot, "randomize"))
+        /*if (!GetEventValue(bot, "randomize"))
         {
             randomTime = urand(sPlayerbotAIConfig->randomBotUpdateInterval * 5,
                                sPlayerbotAIConfig->randomBotUpdateInterval * 20);
@@ -1040,7 +1040,7 @@ bool RandomPlayerbotMgr::ProcessBot(uint32 bot)
             randomTime = urand(sPlayerbotAIConfig->randomBotUpdateInterval * 5,
                                sPlayerbotAIConfig->randomBotUpdateInterval * 20);
             ScheduleTeleport(bot, randomTime);
-        }
+        }*/
         return true;
     }
 
@@ -1162,7 +1162,7 @@ bool RandomPlayerbotMgr::ProcessBot(Player* player)
     //     }
     // }
 
-    uint32 randomize = GetEventValue(bot, "randomize");
+    /*uint32 randomize = GetEventValue(bot, "randomize");
     if (!randomize)
     {
         Randomize(player);
@@ -1172,12 +1172,12 @@ bool RandomPlayerbotMgr::ProcessBot(Player* player)
             urand(sPlayerbotAIConfig->minRandomBotRandomizeTime, sPlayerbotAIConfig->maxRandomBotRandomizeTime);
         ScheduleRandomize(bot, randomTime);
         return true;
-    }
+    }*/
 
     // enable random teleport logic if no auto traveling enabled
     // if (!sPlayerbotAIConfig->autoDoQuests)
     // {
-    uint32 teleport = GetEventValue(bot, "teleport");
+    /*uint32 teleport = GetEventValue(bot, "teleport");
     if (!teleport)
     {
         LOG_INFO("playerbots", "Bot #{} <{}>: teleport for level and refresh", bot, player->GetName());
@@ -1187,7 +1187,7 @@ bool RandomPlayerbotMgr::ProcessBot(Player* player)
             urand(sPlayerbotAIConfig->minRandomBotTeleportInterval, sPlayerbotAIConfig->maxRandomBotTeleportInterval);
         ScheduleTeleport(bot, time);
         return true;
-    }
+    }*/
     // }
 
     // uint32 changeStrategy = GetEventValue(bot, "change_strategy");
@@ -1210,7 +1210,7 @@ void RandomPlayerbotMgr::Revive(Player* player)
     SetEventValue(bot, "revive", 0, 0);
 
     Refresh(player);
-    RandomTeleportGrindForLevel(player);
+    //RandomTeleportGrindForLevel(player);
 }
 
 void RandomPlayerbotMgr::RandomTeleport(Player* bot, std::vector<WorldLocation>& locs, bool hearth)
@@ -1579,7 +1579,7 @@ void RandomPlayerbotMgr::RandomTeleport(Player* bot)
     }
     else
     {
-        RandomTeleportForLevel(bot);
+        //RandomTeleportForLevel(bot);
     }
 
     if (pmo)
@@ -1710,7 +1710,7 @@ void RandomPlayerbotMgr::RandomizeFirst(Player* bot)
     if (pmo)
         pmo->finish();
 
-    RandomTeleportForLevel(bot);
+    //RandomTeleportForLevel(bot);
 }
 
 void RandomPlayerbotMgr::RandomizeMin(Player* bot)
@@ -2616,15 +2616,15 @@ void RandomPlayerbotMgr::ChangeStrategy(Player* player)
 
     if (frand(0.f, 100.f) > sPlayerbotAIConfig->randomBotRpgChance)
     {
-        LOG_INFO("playerbots", "Bot #{} <{}>: sent to grind spot", bot, player->GetName().c_str());
-        ScheduleTeleport(bot, 30);
+        /*LOG_INFO("playerbots", "Bot #{} <{}>: sent to grind spot", bot, player->GetName().c_str());
+        ScheduleTeleport(bot, 30);*/
     }
     else
     {
         LOG_INFO("playerbots", "Changing strategy for bot #{} <{}> to RPG", bot, player->GetName().c_str());
-        LOG_INFO("playerbots", "Bot #{} <{}>: sent to inn", bot, player->GetName().c_str());
+        /*LOG_INFO("playerbots", "Bot #{} <{}>: sent to inn", bot, player->GetName().c_str());
         RandomTeleportForLevel(player);
-        SetEventValue(bot, "teleport", 1, sPlayerbotAIConfig->maxRandomBotInWorldTime);
+        SetEventValue(bot, "teleport", 1, sPlayerbotAIConfig->maxRandomBotInWorldTime);*/
     }
 
     ScheduleChangeStrategy(bot);
@@ -2636,14 +2636,14 @@ void RandomPlayerbotMgr::ChangeStrategyOnce(Player* player)
 
     if (frand(0.f, 100.f) > sPlayerbotAIConfig->randomBotRpgChance)  // select grind / pvp
     {
-        LOG_INFO("playerbots", "Bot #{} <{}>: sent to grind spot", bot, player->GetName().c_str());
-        RandomTeleportForLevel(player);
+        /*LOG_INFO("playerbots", "Bot #{} <{}>: sent to grind spot", bot, player->GetName().c_str());
+        RandomTeleportForLevel(player);*/
         Refresh(player);
     }
     else
     {
-        LOG_INFO("playerbots", "Bot #{} <{}>: sent to inn", bot, player->GetName().c_str());
-        RandomTeleportForLevel(player);
+        /*LOG_INFO("playerbots", "Bot #{} <{}>: sent to inn", bot, player->GetName().c_str());
+        RandomTeleportForLevel(player);*/
     }
 }
 
