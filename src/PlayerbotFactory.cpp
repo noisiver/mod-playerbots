@@ -1470,31 +1470,34 @@ void PlayerbotFactory::InitEquipment(bool incremental)
                             continue;
 
                         uint32 progressionPatchId = sConfigMgr->GetOption<uint32>("Progression.Patch", 21, false);
-                        if (progressionPatchId < 6 && proto->ItemLevel > 66)
+                        if (progressionPatchId < 6 && proto->ItemLevel > 63)
                             continue;
 
-                        if (progressionPatchId < 7 && proto->ItemLevel > 76)
+                        if (progressionPatchId < 7 && proto->ItemLevel > 66)
                             continue;
 
-                        if (progressionPatchId < 12 && proto->ItemLevel > 92)
+                        if (progressionPatchId < 12 && proto->ItemLevel > 76)
                             continue;
 
-                        if (progressionPatchId < 13 && proto->ItemLevel > 120)
+                        if (progressionPatchId < 13 && proto->ItemLevel > 110)
                             continue;
 
-                        if (progressionPatchId < 14 && proto->ItemLevel > 133)
+                        if (progressionPatchId < 14 && proto->ItemLevel > 120)
                             continue;
 
-                        if (progressionPatchId < 17 && proto->ItemLevel > 154)
+                        if (progressionPatchId < 17 && proto->ItemLevel > 133)
                             continue;
 
-                        if (progressionPatchId < 18 && proto->ItemLevel > 213)
+                        if (progressionPatchId < 18 && proto->ItemLevel > 200)
                             continue;
 
-                        if (progressionPatchId < 19 && proto->ItemLevel > 226)
+                        if (progressionPatchId < 19 && proto->ItemLevel > 213)
                             continue;
 
-                        if (progressionPatchId < 20 && proto->ItemLevel > 245)
+                        if (progressionPatchId < 20 && proto->ItemLevel > 226)
+                            continue;
+
+                        if (progressionPatchId < 21 && proto->ItemLevel > 245)
                             continue;
                         
                         if (gearScoreLimit != 0 && CalcMixedGearScore(proto->ItemLevel, proto->Quality) > gearScoreLimit) {
