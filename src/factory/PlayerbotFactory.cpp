@@ -1550,7 +1550,10 @@ void PlayerbotFactory::InitEquipment(bool incremental)
 
                         if (progressionPatchId < 21 && proto->ItemLevel > 245)
                             continue;
-                        
+
+                        if (!sRandomPlayerbotMgr->IsRandomBot(bot) && proto->ItemLevel > 187)
+                            continue;
+
                         if (gearScoreLimit != 0 &&
                             CalcMixedGearScore(proto->ItemLevel, proto->Quality) > gearScoreLimit)
                         {
