@@ -1,14 +1,19 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
+ * and/or modify it under version 2 of the License, or (at your option), any later version.
  */
 
 #include "FollowActions.h"
+
+#include <cstddef>
+
 #include "Event.h"
 #include "Formations.h"
+#include "LastMovementValue.h"
+#include "PlayerbotAI.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"
 #include "SharedDefines.h"
-#include <cstddef>
 
 bool FollowAction::Execute(Event event)
 {
@@ -25,38 +30,31 @@ bool FollowAction::Execute(Event event)
         WorldLocation loc = formation->GetLocation();
         if (Formation::IsNullLocation(loc) || loc.GetMapId() == -1)
             return false;
-
-        moved = MoveTo(loc.GetMapId(), loc.GetPositionX(), loc.GetPositionY(), loc.GetPositionZ());
+        
+        MovementPriority priority = botAI->GetState() == BOT_STATE_COMBAT ? MovementPriority::MOVEMENT_COMBAT : MovementPriority::MOVEMENT_NORMAL;
+        moved = MoveTo(loc.GetMapId(), loc.GetPositionX(), loc.GetPositionY(), loc.GetPositionZ(), false, false, false,
+                       true, priority);
     }
 
     if (Pet* pet = bot->GetPet())
     {
-        if (CreatureAI* creatureAI = ((Creature*)pet)->AI())
-        {
-            pet->SetReactState(REACT_PASSIVE);
-            pet->GetCharmInfo()->SetIsCommandFollow(true);
-            pet->GetCharmInfo()->IsReturning();
-            pet->GetMotionMaster()->MoveFollow(bot, PET_FOLLOW_DIST, pet->GetFollowAngle());
-            // pet->GetCharmInfo()->SetCommandState(COMMAND_FOLLOW);
-            // pet->GetCharmInfo()->SetIsFollowing(true);
-            // pet->AttackStop();
-            // pet->GetCharmInfo()->IsReturning();
-            // pet->GetMotionMaster()->MoveFollow(bot, PET_FOLLOW_DIST, pet->GetFollowAngle());
-        }
+        botAI->PetFollow();
     }
-    //if (moved)
-        //botAI->SetNextCheckDelay(sPlayerbotAIConfig->reactDelay);
+    // if (moved)
+    // botAI->SetNextCheckDelay(sPlayerbotAIConfig->reactDelay);
 
     return moved;
 }
 
 bool FollowAction::isUseful()
 {
-    if (bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL) != nullptr) {
+    if (bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL) != nullptr)
+    {
         return false;
     }
     Formation* formation = AI_VALUE(Formation*, "formation");
-    if (!formation) {
+    if (!formation)
+    {
         return false;
     }
     std::string const target = formation->GetTargetName();
@@ -111,7 +109,7 @@ bool FleeToMasterAction::Execute(Event event)
     bool canFollow = Follow(fTarget);
     if (!canFollow)
     {
-        //botAI->SetNextCheckDelay(5000);
+        // botAI->SetNextCheckDelay(5000);
         return false;
     }
 
@@ -129,9 +127,8 @@ bool FleeToMasterAction::Execute(Event event)
         if (!urand(0, 10))
             botAI->TellMaster("I heading to your position.");
     }
-    else
-        if (!urand(0,20))
-            botAI->TellMaster("I am traveling to your position.");
+    else if (!urand(0, 20))
+        botAI->TellMaster("I am traveling to your position.");
 
     botAI->SetNextCheckDelay(3000);
 

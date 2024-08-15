@@ -1,73 +1,17 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
+ * and/or modify it under version 2 of the License, or (at your option), any later version.
  */
 
 #include "QueryItemUsageAction.h"
+
+#include "ChatHelper.h"
 #include "Event.h"
 #include "ItemUsageValue.h"
-#include "ChatHelper.h"
 #include "Playerbots.h"
 
 bool QueryItemUsageAction::Execute(Event event)
 {
-    if (!GetMaster() && !sPlayerbotAIConfig->randomBotSayWithoutMaster)
-        return false;
-
-    if (!sPlayerbotAIConfig->sayWhenCollectingItems)
-        return false;
-
-    WorldPacket& data = event.getPacket();
-    if (!data.empty())
-    {
-        data.rpos(0);
-
-        ObjectGuid guid;
-        data >> guid;
-        if (guid != bot->GetGUID())
-            return false;
-
-        uint32 received;
-        uint32 created;
-        uint32 isShowChatMessage;
-        uint32 notUsed;
-        uint32 itemId;
-        uint32 suffixFactor;
-        uint32 itemRandomPropertyId;
-        uint32 count;
-        uint32 invCount;
-        uint8 bagSlot;
-
-        data >> received;                               // 0=looted, 1=from npc
-        data >> created;                                // 0=received, 1=created
-        data >> isShowChatMessage;                      // IsShowChatMessage
-        data >> bagSlot;                                // item slot, but when added to stack: 0xFFFFFFFF
-
-        data >> notUsed;
-        data >> itemId;
-        data >> suffixFactor;
-        data >> itemRandomPropertyId;
-        data >> count;
-        // data >> invCount; // [-ZERO] count of items in inventory
-
-        ItemTemplate const* item = sObjectMgr->GetItemTemplate(itemId);
-        if (!item)
-            return false;
-
-        bot->Say(QueryItem(item, count, GetCount(item)), LANG_UNIVERSAL);
-        return true;
-    }
-
-    std::string const text = event.getParam();
-    ItemIds items = chat->parseItems(text);
-    for (uint32 itemId : items)
-    {
-        ItemTemplate const* item = sObjectMgr->GetItemTemplate(itemId);
-        if (!item)
-            continue;
-
-        botAI->TellMaster(QueryItem(item, 0, GetCount(item)));
-    }
-
     return true;
 }
 
@@ -127,10 +71,10 @@ std::string const QueryItemUsageAction::QueryItemUsage(ItemTemplate const* item)
             return "Tradeskill";
         case ITEM_USAGE_USE:
             return "Use";
-	    case ITEM_USAGE_GUILD_TASK:
-		    return "Guild task";
-	    case ITEM_USAGE_DISENCHANT:
-		    return "Disenchant";
+        case ITEM_USAGE_GUILD_TASK:
+            return "Guild task";
+        case ITEM_USAGE_DISENCHANT:
+            return "Disenchant";
         case ITEM_USAGE_VENDOR:
             return "Vendor";
         case ITEM_USAGE_AH:
@@ -139,7 +83,7 @@ std::string const QueryItemUsageAction::QueryItemUsage(ItemTemplate const* item)
             return "Ammunition";
         default:
             break;
-	}
+    }
 
     return "";
 }
@@ -160,7 +104,8 @@ std::string const QueryItemUsageAction::QueryItemPrice(ItemTemplate const* item)
         for (std::vector<Item*>::iterator i = items.begin(); i != items.end(); ++i)
         {
             Item* sell = *i;
-            int32 price = sell->GetCount() * sell->GetTemplate()->SellPrice * sRandomPlayerbotMgr->GetSellMultiplier(bot);
+            int32 price =
+                sell->GetCount() * sell->GetTemplate()->SellPrice * sRandomPlayerbotMgr->GetSellMultiplier(bot);
             if (!sellPrice || sellPrice > price)
                 sellPrice = price;
         }
@@ -193,12 +138,13 @@ std::string const QueryItemUsageAction::QueryQuestItem(uint32 itemId)
     for (QuestStatusMap::const_iterator i = questMap.begin(); i != questMap.end(); i++)
     {
         Quest const* questTemplate = sObjectMgr->GetQuestTemplate(i->first);
-        if (!questTemplate )
+        if (!questTemplate)
             continue;
 
         uint32 questId = questTemplate->GetQuestId();
         QuestStatus status = bot->GetQuestStatus(questId);
-        if (status == QUEST_STATUS_INCOMPLETE || (status == QUEST_STATUS_COMPLETE && !bot->GetQuestRewardStatus(questId)))
+        if (status == QUEST_STATUS_INCOMPLETE ||
+            (status == QUEST_STATUS_COMPLETE && !bot->GetQuestRewardStatus(questId)))
         {
             QuestStatusData const& questStatus = i->second;
             std::string const usage = QueryQuestItem(itemId, questTemplate, &questStatus);
@@ -210,7 +156,8 @@ std::string const QueryItemUsageAction::QueryQuestItem(uint32 itemId)
     return "";
 }
 
-std::string const QueryItemUsageAction::QueryQuestItem(uint32 itemId, Quest const* questTemplate, QuestStatusData const* questStatus)
+std::string const QueryItemUsageAction::QueryQuestItem(uint32 itemId, Quest const* questTemplate,
+                                                       QuestStatusData const* questStatus)
 {
     for (uint32 i = 0; i < QUEST_OBJECTIVES_COUNT; i++)
     {

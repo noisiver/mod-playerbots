@@ -1,13 +1,18 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
+ * and/or modify it under version 2 of the License, or (at your option), any later version.
  */
 
 #include "AttackAction.h"
+
+#include "CreatureAI.h"
 #include "Event.h"
+#include "LastMovementValue.h"
 #include "LootObjectStack.h"
+#include "PlayerbotAI.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"
-#include "CreatureAI.h"
+#include "SharedDefines.h"
 #include "Unit.h"
 
 bool AttackAction::Execute(Event event)
@@ -15,8 +20,9 @@ bool AttackAction::Execute(Event event)
     Unit* target = GetTarget();
     if (!target)
         return false;
-    
-    if (!target->IsInWorld()) {
+
+    if (!target->IsInWorld())
+    {
         return false;
     }
     return Attack(target);
@@ -36,7 +42,7 @@ bool AttackMyTargetAction::Execute(Event event)
 
         return false;
     }
-    
+
     botAI->GetAiObjectContext()->GetValue<GuidVector>("prioritized targets")->Set({guid});
     bool result = Attack(botAI->GetUnit(guid));
     if (result)
@@ -47,7 +53,8 @@ bool AttackMyTargetAction::Execute(Event event)
 
 bool AttackAction::Attack(Unit* target, bool with_pet /*true*/)
 {
-    if (bot->GetMotionMaster()->GetCurrentMovementGeneratorType() == FLIGHT_MOTION_TYPE || bot->HasUnitState(UNIT_STATE_IN_FLIGHT))
+    if (bot->GetMotionMaster()->GetCurrentMovementGeneratorType() == FLIGHT_MOTION_TYPE ||
+        bot->HasUnitState(UNIT_STATE_IN_FLIGHT))
     {
         if (verbose)
             botAI->TellError("I cannot attack in flight");
@@ -95,42 +102,42 @@ bool AttackAction::Attack(Unit* target, bool with_pet /*true*/)
         return false;
     }
 
-    if (target->IsPlayer() && !target->IsPvP() && !target->IsFFAPvP() && (!bot->duel || bot->duel->Opponent != target || bot->duel->StartTime))
-    {
-        if (verbose)
-        {
-            botAI->TellError(Acore::StringFormat("%s is not flagged for pvp", target->GetName()));
-        }
-
-        return false;
-    }
-
-    if (bot->IsMounted() && bot->IsWithinLOSInMap(target))
-    {
-        WorldPacket emptyPacket;
-        bot->GetSession()->HandleCancelMountAuraOpcode(emptyPacket);
-    }
+    // if (bot->IsMounted() && bot->IsWithinLOSInMap(target))
+    // {
+    //     WorldPacket emptyPacket;
+    //     bot->GetSession()->HandleCancelMountAuraOpcode(emptyPacket);
+    // }
 
     ObjectGuid guid = target->GetGUID();
     bot->SetSelection(target->GetGUID());
 
     Unit* oldTarget = context->GetValue<Unit*>("current target")->Get();
+
+    if (oldTarget == target && botAI->GetState() == BOT_STATE_COMBAT && bot->GetVictim() == target)
+        return false;
+
     context->GetValue<Unit*>("old target")->Set(oldTarget);
 
     context->GetValue<Unit*>("current target")->Set(target);
     context->GetValue<LootObjectStack*>("available loot")->Get()->Add(guid);
-    
-    bool melee = bot->IsWithinMeleeRange(target) || botAI->IsMelee(bot);
-    bot->Attack(target, melee);
 
-    if (IsMovingAllowed() && !bot->HasInArc(CAST_ANGLE_IN_FRONT, target)) {
+    LastMovement& lastMovement = AI_VALUE(LastMovement&, "last movement");
+    if (lastMovement.priority < MovementPriority::MOVEMENT_COMBAT && bot->isMoving())
+    {
+        AI_VALUE(LastMovement&, "last movement").clear();
+        bot->GetMotionMaster()->Clear(false);
+        bot->StopMoving();
+    }
+
+    bool melee = bot->IsWithinMeleeRange(target) || botAI->IsMelee(bot);
+
+    if (IsMovingAllowed() && !bot->HasInArc(CAST_ANGLE_IN_FRONT, target))
+    {
         sServerFacade->SetFacingTo(bot, target);
     }
     botAI->ChangeEngine(BOT_STATE_COMBAT);
-
-    if (!bot->GetVictim()) {
-        return false;
-    }
+    
+    bot->Attack(target, melee);
     /* prevent pet dead immediately in group */
     // if (bot->GetMap()->IsDungeon() && bot->GetGroup() && !target->IsInCombat()) {
     //     with_pet = false;
@@ -151,12 +158,6 @@ bool AttackAction::Attack(Unit* target, bool with_pet /*true*/)
     return true;
 }
 
-bool AttackDuelOpponentAction::isUseful()
-{
-    return AI_VALUE(Unit*, "duel target");
-}
+bool AttackDuelOpponentAction::isUseful() { return AI_VALUE(Unit*, "duel target"); }
 
-bool AttackDuelOpponentAction::Execute(Event event)
-{
-    return Attack(AI_VALUE(Unit*, "duel target"));
-}
+bool AttackDuelOpponentAction::Execute(Event event) { return Attack(AI_VALUE(Unit*, "duel target")); }

@@ -1,8 +1,10 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
+ * and/or modify it under version 2 of the License, or (at your option), any later version.
  */
 
 #include "LfgActions.h"
+
 #include "AiFactory.h"
 #include "ItemVisitors.h"
 #include "LFGMgr.h"
@@ -10,10 +12,7 @@
 
 using namespace lfg;
 
-bool LfgJoinAction::Execute(Event event)
-{
-    return JoinLFG();
-}
+bool LfgJoinAction::Execute(Event event) { return JoinLFG(); }
 
 uint32 LfgJoinAction::GetRoles()
 {
@@ -87,8 +86,11 @@ bool LfgJoinAction::JoinLFG()
     ItemCountByQuality visitor;
     IterateItems(&visitor, ITERATE_ITEMS_IN_EQUIP);
     bool random = urand(0, 100) < 20;
-    bool heroic = urand(0, 100) < 50 && (visitor.count[ITEM_QUALITY_EPIC] >= 3 || visitor.count[ITEM_QUALITY_RARE] >= 10) && bot->GetLevel() >= 70;
-    bool rbotAId = !heroic && (urand(0, 100) < 50 && visitor.count[ITEM_QUALITY_EPIC] >= 5 && (bot->GetLevel() == 60 || bot->GetLevel() == 70 || bot->GetLevel() == 80));
+    bool heroic = urand(0, 100) < 50 &&
+                  (visitor.count[ITEM_QUALITY_EPIC] >= 3 || visitor.count[ITEM_QUALITY_RARE] >= 10) &&
+                  bot->GetLevel() >= 70;
+    bool rbotAId = !heroic && (urand(0, 100) < 50 && visitor.count[ITEM_QUALITY_EPIC] >= 5 &&
+                               (bot->GetLevel() == 60 || bot->GetLevel() == 70 || bot->GetLevel() == 80));
 
     LfgDungeonSet list;
     std::vector<uint32> selected;
@@ -100,17 +102,15 @@ bool LfgJoinAction::JoinLFG()
     for (std::vector<uint32>::iterator i = dungeons.begin(); i != dungeons.end(); ++i)
     {
         LFGDungeonEntry const* dungeon = sLFGDungeonStore.LookupEntry(*i);
-        if (!dungeon || (dungeon->TypeID != LFG_TYPE_RANDOM && dungeon->TypeID != LFG_TYPE_DUNGEON && dungeon->TypeID != LFG_TYPE_HEROIC && dungeon->TypeID != LFG_TYPE_RAID))
+        if (!dungeon || (dungeon->TypeID != LFG_TYPE_RANDOM && dungeon->TypeID != LFG_TYPE_DUNGEON &&
+                         dungeon->TypeID != LFG_TYPE_HEROIC && dungeon->TypeID != LFG_TYPE_RAID))
             continue;
 
-        uint32 botLevel = bot->GetLevel();
-        if (dungeon->MinLevel && botLevel < dungeon->MinLevel)
-            continue;
+        const auto& botLevel = bot->GetLevel();
 
-        if (dungeon->MinLevel && botLevel > dungeon->MinLevel + 10)
-            continue;
-
-        if (dungeon->MaxLevel && botLevel > dungeon->MaxLevel)
+        /*LFG_TYPE_RANDOM on classic is 15-58 so bot over level 25 will never queue*/
+        if (dungeon->MinLevel && (botLevel < dungeon->MinLevel || botLevel > dungeon->MaxLevel) ||
+            (botLevel > dungeon->MinLevel + 10 && dungeon->TypeID == LFG_TYPE_DUNGEON))
             continue;
 
         selected.push_back(dungeon->ID);
@@ -126,41 +126,8 @@ bool LfgJoinAction::JoinLFG()
     bool many = list.size() > 1;
     LFGDungeonEntry const* dungeon = sLFGDungeonStore.LookupEntry(*list.begin());
 
-    /*for (uint32 i = 0; i < sLFGDungeonStore.GetNumRows(); ++i)
-    {
-        LFGDungeonEntry const* dungeon = sLFGDungeonStore.LookupEntry(i);
-        if (!dungeon || (dungeon->type != LFG_TYPE_RANDOM_DUNGEON && dungeon->type != LFG_TYPE_DUNGEON && dungeon->type != LFG_TYPE_HEROIC_DUNGEON &&
-            dungeon->type != LFG_TYPE_RAID))
-            continue;
-
-        uint32 botLevel = bot->GetLevel();
-        if (dungeon->MinLevel && botLevel < dungeon->MinLevel)
-            continue;
-
-        if (dungeon->MinLevel && botLevel > dungeon->MinLevel + 10)
-            continue;
-
-        if (dungeon->MaxLevel && botLevel > dungeon->MaxLevel)
-            continue;
-
-        if (heroic && !dungeon->difficulty)
-            continue;
-
-        if (rbotAId && dungeon->type != LFG_TYPE_RAID)
-            continue;
-
-        if (!random && !rbotAId && !heroic && dungeon->type != LFG_TYPE_DUNGEON)
-            continue;
-
-        list.insert(dungeon);
-    }
-
-    if (list.empty() && !random)
-        return false;*/
-
     // check role for console msg
     std::string _roles = "multiple roles";
-
     uint32 roleMask = GetRoles();
     if (roleMask & PLAYER_ROLE_TANK)
         _roles = "TANK";
@@ -171,74 +138,12 @@ bool LfgJoinAction::JoinLFG()
     if (roleMask & PLAYER_ROLE_DAMAGE)
         _roles = "DPS";
 
-    LOG_INFO("playerbots", "Bot {} {}:{} <{}>: queues LFG, Dungeon as {} ({})",
-        bot->GetGUID().ToString().c_str(), bot->GetTeamId() == TEAM_ALLIANCE ? "A" : "H",
-        bot->GetLevel(), bot->GetName().c_str(), _roles, many ? "several dungeons" : dungeon->Name[0]);
-
-    /*if (lfgState->IsSingleRole())
-    {
-        if (lfgState->HasRole(ROLE_TANK))
-            _roles = "TANK";
-        if (lfgState->HasRole(ROLE_HEALER))
-            _roles = "HEAL";
-        if (lfgState->HasRole(ROLE_DAMAGE))
-            _roles = "DPS";
-    }*/
-
-    /*LFGDungeonEntry const* dungeon;
-
-    if(!random)
-        dungeon = *list.begin();
-
-    bool many = list.size() > 1;
-
-    if (random)
-    {
-        LFGDungeonSet randList = sLFGMgr->GetRandomDungeonsForPlayer(bot);
-        for (LFGDungeonSet::const_iterator itr = randList.begin(); itr != randList.end(); ++itr)
-        {
-            LFGDungeonEntry const* dungeon = *itr;
-
-            if (!dungeon)
-                continue;
-
-            idx.push_back(dungeon->ID);
-        }
-        if (idx.empty())
-            return false;
-
-        // choose random dungeon
-        dungeon = sLFGDungeonStore.LookupEntry(idx[urand(0, idx.size() - 1)]);
-        list.insert(dungeon);
-
-        pState->SetType(LFG_TYPE_RANDOM_DUNGEON);
-        LOG_INFO("playerbots", "Bot {} {}:{} <{}>: queues LFG, Random Dungeon as {} ({})",
-        bot->GetGUID().ToString().c_str(), bot->GetTeamId() == TEAM_ALLIANCE ? "A" : "H", bot->GetLevel(), bot->GetName().c_str(), _roles, dungeon->Name[0]);
-        return true;
-    }
-    else if (heroic)
-    {
-        pState->SetType(LFG_TYPE_HEROIC_DUNGEON);
-        LOG_INFO("playerbots", "Bot {} {}:{} <{}>: queues LFG, Heroic Dungeon as {} ({})",
-        bot->GetGUID().ToString().c_str(), bot->GetTeamId() == TEAM_ALLIANCE ? "A" : "H",
-        bot->GetLevel(), bot->GetName().c_str(), _roles, many ? "several dungeons" : dungeon->Name[0]);
-    }
-    else if (rbotAId)
-    {
-        pState->SetType(LFG_TYPE_RAID);
-        LOG_INFO("playerbots", "Bot {} {}:{} <{}>: queues LFG, RbotAId as {} ({})",
-        bot->GetGUID().ToString().c_str(), bot->GetTeamId() == TEAM_ALLIANCE ? "A" : "H", bot->GetLevel(), bot->GetName().c_str(), _roles, many ? "several dungeons" : dungeon->Name[0]);
-    }
-    else
-    {
-        pState->SetType(LFG_TYPE_DUNGEON);
-        LOG_INFO("playerbots", "Bot {} {}:{} <{}>: queues LFG, Dungeon as {} ({})",
-        bot->GetGUID().ToString().c_str(), bot->GetTeamId() == TEAM_ALLIANCE ? "A" : "H", bot->GetLevel(), bot->GetName().c_str(), _roles, many ? "several dungeons" : dungeon->Name[0]);
-    }*/
+    LOG_INFO("playerbots", "Bot {} {}:{} <{}>: queues LFG, Dungeon as {} ({})", bot->GetGUID().ToString().c_str(),
+             bot->GetTeamId() == TEAM_ALLIANCE ? "A" : "H", bot->GetLevel(), bot->GetName().c_str(), _roles,
+             many ? "several dungeons" : dungeon->Name[0]);
 
     // Set RbotAId Browser comment
     std::string const _gs = std::to_string(botAI->GetEquipGearScore(bot, false, false));
-
     sLFGMgr->JoinLfg(bot, roleMask, list, _gs);
 
     return true;
@@ -257,8 +162,8 @@ bool LfgRoleCheckAction::Execute(Event event)
 
         sLFGMgr->UpdateRoleCheck(group->GetGUID(), bot->GetGUID(), newRoles);
 
-        LOG_INFO("playerbots", "Bot {} {}:{} <{}>: LFG roles checked",
-            bot->GetGUID().ToString().c_str(), bot->GetTeamId() == TEAM_ALLIANCE ? "A" : "H", bot->GetLevel(), bot->GetName().c_str());
+        LOG_INFO("playerbots", "Bot {} {}:{} <{}>: LFG roles checked", bot->GetGUID().ToString().c_str(),
+                 bot->GetTeamId() == TEAM_ALLIANCE ? "A" : "H", bot->GetLevel(), bot->GetName().c_str());
 
         return true;
     }
@@ -275,19 +180,20 @@ bool LfgAcceptAction::Execute(Event event)
     uint32 id = AI_VALUE(uint32, "lfg proposal");
     if (id)
     {
-        //if (urand(0, 1 + 10 / sPlayerbotAIConfig->randomChangeMultiplier))
-        //    return false;
+        // if (urand(0, 1 + 10 / sPlayerbotAIConfig->randomChangeMultiplier))
+        //     return false;
 
         if (bot->IsInCombat() || bot->isDead())
         {
             LOG_INFO("playerbots", "Bot {} {}:{} <{}> is in combat and refuses LFG proposal {}",
-                bot->GetGUID().ToString().c_str(), bot->GetTeamId() == TEAM_ALLIANCE ? "A" : "H", bot->GetLevel(), bot->GetName().c_str(), id);
+                     bot->GetGUID().ToString().c_str(), bot->GetTeamId() == TEAM_ALLIANCE ? "A" : "H", bot->GetLevel(),
+                     bot->GetName().c_str(), id);
             sLFGMgr->UpdateProposal(id, bot->GetGUID(), false);
             return true;
         }
 
-        LOG_INFO("playerbots", "Bot {} {}:{} <{}> accepts LFG proposal {}",
-            bot->GetGUID().ToString().c_str(), bot->GetTeamId() == TEAM_ALLIANCE ? "A" : "H", bot->GetLevel(), bot->GetName().c_str(), id);
+        LOG_INFO("playerbots", "Bot {} {}:{} <{}> accepts LFG proposal {}", bot->GetGUID().ToString().c_str(),
+                 bot->GetTeamId() == TEAM_ALLIANCE ? "A" : "H", bot->GetLevel(), bot->GetName().c_str(), id);
 
         botAI->GetAiObjectContext()->GetValue<uint32>("lfg proposal")->Set(0);
 
@@ -299,7 +205,7 @@ bool LfgAcceptAction::Execute(Event event)
         {
             sRandomPlayerbotMgr->Refresh(bot);
             botAI->ResetStrategies();
-            //bot->TeleportToHomebind();
+            // bot->TeleportToHomebind();
         }
 
         botAI->Reset();
@@ -321,7 +227,7 @@ bool LfgAcceptAction::Execute(Event event)
 bool LfgLeaveAction::Execute(Event event)
 {
     // Don't leave if lfg strategy enabled
-    //if (botAI->HasStrategy("lfg", BOT_STATE_NON_COMBAT))
+    // if (botAI->HasStrategy("lfg", BOT_STATE_NON_COMBAT))
     //    return false;
 
     // Don't leave if already invited / in dungeon
@@ -332,10 +238,7 @@ bool LfgLeaveAction::Execute(Event event)
     return true;
 }
 
-bool LfgLeaveAction::isUseful()
-{
-    return true;
-}
+bool LfgLeaveAction::isUseful() { return true; }
 
 bool LfgTeleportAction::Execute(Event event)
 {
@@ -359,16 +262,17 @@ bool LfgJoinAction::isUseful()
 {
     if (!sPlayerbotAIConfig->randomBotJoinLfg)
     {
-        //botAI->ChangeStrategy("-lfg", BOT_STATE_NON_COMBAT);
+        // botAI->ChangeStrategy("-lfg", BOT_STATE_NON_COMBAT);
         return false;
     }
 
     if (bot->GetLevel() < 15)
         return false;
 
-    if ((botAI->GetMaster() && !GET_PLAYERBOT_AI(botAI->GetMaster())) || bot->GetGroup() && bot->GetGroup()->GetLeaderGUID() != bot->GetGUID())
+    if ((botAI->GetMaster() && !GET_PLAYERBOT_AI(botAI->GetMaster())) ||
+        bot->GetGroup() && bot->GetGroup()->GetLeaderGUID() != bot->GetGUID())
     {
-        //botAI->ChangeStrategy("-lfg", BOT_STATE_NON_COMBAT);
+        // botAI->ChangeStrategy("-lfg", BOT_STATE_NON_COMBAT);
         return false;
     }
 
