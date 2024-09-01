@@ -62,11 +62,13 @@ RandomPlayerbotFactory::RandomPlayerbotFactory(uint32 accountId) : accountId(acc
     availableRaces[CLASS_WARRIOR].push_back(RACE_TROLL);
     if (expansion >= EXPANSION_THE_BURNING_CRUSADE)
     {
+        availableRaces[CLASS_WARRIOR].push_back(RACE_BLOODELF);
         availableRaces[CLASS_WARRIOR].push_back(RACE_DRAENEI);
     }
 
     availableRaces[CLASS_PALADIN].push_back(RACE_HUMAN);
     availableRaces[CLASS_PALADIN].push_back(RACE_DWARF);
+    availableRaces[CLASS_PALADIN].push_back(RACE_TAUREN);
     if (expansion >= EXPANSION_THE_BURNING_CRUSADE)
     {
         availableRaces[CLASS_PALADIN].push_back(RACE_DRAENEI);
@@ -87,6 +89,8 @@ RandomPlayerbotFactory::RandomPlayerbotFactory(uint32 accountId) : accountId(acc
     availableRaces[CLASS_PRIEST].push_back(RACE_HUMAN);
     availableRaces[CLASS_PRIEST].push_back(RACE_DWARF);
     availableRaces[CLASS_PRIEST].push_back(RACE_NIGHTELF);
+    availableRaces[CLASS_PRIEST].push_back(RACE_TAUREN);
+    availableRaces[CLASS_PRIEST].push_back(RACE_GNOME);
     availableRaces[CLASS_PRIEST].push_back(RACE_TROLL);
     availableRaces[CLASS_PRIEST].push_back(RACE_UNDEAD_PLAYER);
     if (expansion >= EXPANSION_THE_BURNING_CRUSADE)
@@ -96,6 +100,9 @@ RandomPlayerbotFactory::RandomPlayerbotFactory(uint32 accountId) : accountId(acc
     }
 
     availableRaces[CLASS_MAGE].push_back(RACE_HUMAN);
+    availableRaces[CLASS_MAGE].push_back(RACE_ORC);
+    availableRaces[CLASS_MAGE].push_back(RACE_DWARF);
+    availableRaces[CLASS_MAGE].push_back(RACE_NIGHTELF);
     availableRaces[CLASS_MAGE].push_back(RACE_GNOME);
     availableRaces[CLASS_MAGE].push_back(RACE_UNDEAD_PLAYER);
     availableRaces[CLASS_MAGE].push_back(RACE_TROLL);
@@ -106,7 +113,9 @@ RandomPlayerbotFactory::RandomPlayerbotFactory(uint32 accountId) : accountId(acc
     }
 
     availableRaces[CLASS_WARLOCK].push_back(RACE_HUMAN);
+    availableRaces[CLASS_WARLOCK].push_back(RACE_DWARF);
     availableRaces[CLASS_WARLOCK].push_back(RACE_GNOME);
+    availableRaces[CLASS_WARLOCK].push_back(RACE_TROLL);
     availableRaces[CLASS_WARLOCK].push_back(RACE_UNDEAD_PLAYER);
     availableRaces[CLASS_WARLOCK].push_back(RACE_ORC);
     if (expansion >= EXPANSION_THE_BURNING_CRUSADE)
@@ -115,6 +124,7 @@ RandomPlayerbotFactory::RandomPlayerbotFactory(uint32 accountId) : accountId(acc
     }
 
     availableRaces[CLASS_SHAMAN].push_back(RACE_ORC);
+    availableRaces[CLASS_SHAMAN].push_back(RACE_DWARF);
     availableRaces[CLASS_SHAMAN].push_back(RACE_TAUREN);
     availableRaces[CLASS_SHAMAN].push_back(RACE_TROLL);
     if (expansion >= EXPANSION_THE_BURNING_CRUSADE)
@@ -122,11 +132,13 @@ RandomPlayerbotFactory::RandomPlayerbotFactory(uint32 accountId) : accountId(acc
         availableRaces[CLASS_SHAMAN].push_back(RACE_DRAENEI);
     }
 
+    availableRaces[CLASS_HUNTER].push_back(RACE_HUMAN);
     availableRaces[CLASS_HUNTER].push_back(RACE_DWARF);
     availableRaces[CLASS_HUNTER].push_back(RACE_NIGHTELF);
     availableRaces[CLASS_HUNTER].push_back(RACE_ORC);
     availableRaces[CLASS_HUNTER].push_back(RACE_TAUREN);
     availableRaces[CLASS_HUNTER].push_back(RACE_TROLL);
+    availableRaces[CLASS_HUNTER].push_back(RACE_UNDEAD_PLAYER);
     if (expansion >= EXPANSION_THE_BURNING_CRUSADE)
     {
         availableRaces[CLASS_HUNTER].push_back(RACE_DRAENEI);
@@ -135,6 +147,7 @@ RandomPlayerbotFactory::RandomPlayerbotFactory(uint32 accountId) : accountId(acc
 
     availableRaces[CLASS_DRUID].push_back(RACE_NIGHTELF);
     availableRaces[CLASS_DRUID].push_back(RACE_TAUREN);
+    availableRaces[CLASS_DRUID].push_back(RACE_TROLL);
 
     if (expansion == EXPANSION_WRATH_OF_THE_LICH_KING)
     {
