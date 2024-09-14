@@ -817,7 +817,7 @@ void RandomPlayerbotMgr::CheckBgQueue()
                          randomBotAutoJoinBGWarsongCount);
     }
 
-    LogBattlegroundInfo();
+    //LogBattlegroundInfo();
 }
 
 void RandomPlayerbotMgr::LogBattlegroundInfo()
@@ -898,7 +898,7 @@ void RandomPlayerbotMgr::CheckLfgQueue()
     if (!LfgCheckTimer || time(nullptr) > (LfgCheckTimer + 30))
         LfgCheckTimer = time(nullptr);
 
-    LOG_INFO("playerbots", "Checking LFG Queue...");
+    //LOG_INFO("playerbots", "Checking LFG Queue...");
 
     // Clear LFG list
     LfgDungeons[TEAM_ALLIANCE].clear();
@@ -928,7 +928,7 @@ void RandomPlayerbotMgr::CheckLfgQueue()
         }
     }
 
-    LOG_INFO("playerbots", "LFG Queue check finished");
+    //LOG_INFO("playerbots", "LFG Queue check finished");
 }
 
 void RandomPlayerbotMgr::CheckPlayers()
