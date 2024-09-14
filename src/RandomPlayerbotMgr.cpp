@@ -1313,12 +1313,12 @@ void RandomPlayerbotMgr::RandomTeleport(Player* bot, std::vector<WorldLocation>&
             continue;
         }
 
-        const LocaleConstant& locale = sWorld->GetDefaultDbcLocale();
+        /*const LocaleConstant& locale = sWorld->GetDefaultDbcLocale();
         LOG_INFO("playerbots",
                  "Random teleporting bot {} (level {}) to Map: {} ({}) Zone: {} ({}) Area: {} ({}) {},{},{} ({}/{} "
                  "locations)",
                  bot->GetName().c_str(), bot->GetLevel(), map->GetId(), map->GetMapName(), zone->ID,
-                 zone->area_name[locale], area->ID, area->area_name[locale], x, y, z, i + 1, tlocs.size());
+                 zone->area_name[locale], area->ID, area->area_name[locale], x, y, z, i + 1, tlocs.size());*/
 
         if (hearth)
         {
@@ -1523,9 +1523,9 @@ void RandomPlayerbotMgr::RandomTeleportForLevel(Player* bot)
         return;
 
     uint32 level = bot->GetLevel();
-    uint8 race = bot->getRace();
+    /*uint8 race = bot->getRace();
     LOG_DEBUG("playerbots", "Random teleporting bot {} for level {} ({} locations available)", bot->GetName().c_str(),
-              bot->GetLevel(), locsPerLevelCache[level].size());
+              bot->GetLevel(), locsPerLevelCache[level].size());*/
     if (level > 10 && urand(0, 100) < sPlayerbotAIConfig->probTeleToBankers * 100)
     {
         RandomTeleport(bot, bankerLocsPerLevelCache[level], true);
@@ -1542,9 +1542,9 @@ void RandomPlayerbotMgr::RandomTeleportGrindForLevel(Player* bot)
         return;
 
     uint32 level = bot->GetLevel();
-    uint8 race = bot->getRace();
+    /*uint8 race = bot->getRace();
     LOG_DEBUG("playerbots", "Random teleporting bot {} for level {} ({} locations available)", bot->GetName().c_str(),
-              bot->GetLevel(), locsPerLevelCache[level].size());
+              bot->GetLevel(), locsPerLevelCache[level].size());*/
 
     RandomTeleport(bot, locsPerLevelCache[level]);
 }
@@ -2653,8 +2653,8 @@ void RandomPlayerbotMgr::RandomTeleportForRpg(Player* bot)
 {
     uint32 race = bot->getRace();
     uint32 level = bot->GetLevel();
-    LOG_DEBUG("playerbots", "Random teleporting bot {} for RPG ({} locations available)", bot->GetName().c_str(),
-              rpgLocsCacheLevel[race].size());
+    /*LOG_DEBUG("playerbots", "Random teleporting bot {} for RPG ({} locations available)", bot->GetName().c_str(),
+              rpgLocsCacheLevel[race].size());*/
     RandomTeleport(bot, rpgLocsCacheLevel[race][level], true);
 }
 
