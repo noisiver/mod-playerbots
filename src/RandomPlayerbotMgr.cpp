@@ -1165,8 +1165,8 @@ bool RandomPlayerbotMgr::ProcessBot(Player* player)
     if (!randomize)
     {
         Randomize(player);
-        LOG_INFO("playerbots", "Bot #{} {}:{} <{}>: randomized", bot, player->GetTeamId() == TEAM_ALLIANCE ? "A" : "H",
-                 player->GetLevel(), player->GetName());
+        /*LOG_INFO("playerbots", "Bot #{} {}:{} <{}>: randomized", bot, player->GetTeamId() == TEAM_ALLIANCE ? "A" : "H",
+                 player->GetLevel(), player->GetName());*/
         uint32 randomTime =
             urand(sPlayerbotAIConfig->minRandomBotRandomizeTime, sPlayerbotAIConfig->maxRandomBotRandomizeTime);
         ScheduleRandomize(bot, randomTime);
@@ -1179,7 +1179,7 @@ bool RandomPlayerbotMgr::ProcessBot(Player* player)
     uint32 teleport = GetEventValue(bot, "teleport");
     if (!teleport)
     {
-        LOG_INFO("playerbots", "Bot #{} <{}>: teleport for level and refresh", bot, player->GetName());
+        //LOG_INFO("playerbots", "Bot #{} <{}>: teleport for level and refresh", bot, player->GetName());
         Refresh(player);
         RandomTeleportForLevel(player);
         uint32 time =
