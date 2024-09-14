@@ -583,7 +583,7 @@ void RandomPlayerbotMgr::CheckBgQueue()
 
     BgCheckTimer = time(nullptr);
 
-    LOG_INFO("playerbots", "Checking BG Queue...");
+    //LOG_INFO("playerbots", "Checking BG Queue...");
 
     BattlegroundData.clear();
 
