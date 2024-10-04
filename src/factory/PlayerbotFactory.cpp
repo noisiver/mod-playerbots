@@ -78,6 +78,19 @@ void PlayerbotFactory::Init()
 
             if (!quest->GetRequiredClasses() || quest->IsRepeatable() || quest->GetMinLevel() < 10)
                 continue;
+            
+            if (quest->GetRewSpellCast() > 0)
+            {
+                int32 spellId = quest->GetRewSpellCast();
+                SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+                if (!spellInfo)
+                    continue;
+            } else if (quest->GetRewSpell() > 0) {
+                int32 spellId = quest->GetRewSpell();
+                SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+                if (!spellInfo)
+                    continue;
+            }
 
             AddPrevQuests(questId, classQuestIds);
             classQuestIds.remove(questId);
@@ -103,9 +116,6 @@ void PlayerbotFactory::Init()
         if (id == 47181 || id == 50358 || id == 47242 || id == 52639 || id == 47147 || id == 7218)  // Test Enchant
             continue;
 
-        if (strstr(spellInfo->SpellName[0], "Test"))
-            continue;
-
         uint32 requiredLevel = spellInfo->BaseLevel;
 
         for (uint8 j = 0; j < MAX_SPELL_EFFECTS; ++j)
@@ -124,8 +134,11 @@ void PlayerbotFactory::Init()
             // SpellInfo const* enchantSpell = sSpellMgr->GetSpellInfo(enchant->spellid[0]);
             // if (!enchantSpell)
             //     continue;
+            if (strstr(spellInfo->SpellName[0], "Test"))
+                break;
 
             enchantSpellIdCache.push_back(id);
+            break;
             // LOG_INFO("playerbots", "Add {} to enchantment spells", id);
         }
     }
@@ -148,6 +161,7 @@ void PlayerbotFactory::Init()
         }
         if (sRandomItemMgr->IsTestItem(gemId))
             continue;
+
         if (!proto || !sGemPropertiesStore.LookupEntry(proto->GemProperties))
         {
             continue;
@@ -381,7 +395,7 @@ void PlayerbotFactory::Randomize(bool incremental)
     if (bot->GetLevel() >= 70)
     {
         pmo = sPerformanceMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_Arenas");
-        LOG_INFO("playerbots", "Initializing arena teams...");
+        // LOG_INFO("playerbots", "Initializing arena teams...");
         InitArenaTeam();
         if (pmo)
             pmo->finish();
@@ -2723,9 +2737,9 @@ void PlayerbotFactory::InitQuests(std::list<uint32>& questMap)
         bot->SetQuestStatus(questId, QUEST_STATUS_COMPLETE);
         bot->RewardQuest(quest, 0, bot, false);
 
-        LOG_INFO("playerbots", "Bot {} ({} level) rewarded quest {}: {} (MinLevel={}, QuestLevel={})",
-                 bot->GetName().c_str(), bot->GetLevel(), questId, quest->GetTitle().c_str(), quest->GetMinLevel(),
-                 quest->GetQuestLevel());
+        // LOG_INFO("playerbots", "Bot {} ({} level) rewarded quest {}: {} (MinLevel={}, QuestLevel={})",
+        //          bot->GetName().c_str(), bot->GetLevel(), questId, quest->GetTitle().c_str(), quest->GetMinLevel(),
+        //          quest->GetQuestLevel());
 
         if (!(count++ % 10))
             ClearInventory();
@@ -2738,7 +2752,7 @@ void PlayerbotFactory::InitInstanceQuests()
 {
     // Yunfan: use configuration instead of hard code
     uint32 currentXP = bot->GetUInt32Value(PLAYER_XP);
-    LOG_INFO("playerbots", "Initializing quests...");
+    // LOG_INFO("playerbots", "Initializing quests...");
     InitQuests(classQuestIds);
     InitQuests(specialQuestIds);
 

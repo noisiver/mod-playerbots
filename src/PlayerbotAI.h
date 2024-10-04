@@ -410,6 +410,7 @@ public:
     static bool IsCombo(Player* player, bool bySpec = false);
     static bool IsRangedDps(Player* player, bool bySpec = false);
     static bool IsMainTank(Player* player);
+    static uint32 GetGroupTankNum(Player* player);
     bool IsAssistTank(Player* player);
     bool IsAssistTankOfIndex(Player* player, int index);
     bool IsHealAssistantOfIndex(Player* player, int index);
@@ -526,6 +527,7 @@ public:
     bool HasManyPlayersNearby(uint32 trigerrValue = 20, float range = sPlayerbotAIConfig->sightDistance);
     bool AllowActive(ActivityType activityType);
     bool AllowActivity(ActivityType activityType = ALL_ACTIVITY, bool checkNow = false);
+    uint32 AutoScaleActivity(uint32 mod);
 
     // Check if player is safe to use.
     bool IsSafe(Player* player);
@@ -603,6 +605,7 @@ protected:
     bool inCombat = false;
     BotCheatMask cheatMask = BotCheatMask::none;
     Position jumpDestination = Position();
+    uint32 nextTransportCheck = 0;
 };
 
 #endif
