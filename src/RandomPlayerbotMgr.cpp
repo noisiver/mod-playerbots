@@ -586,7 +586,7 @@ void RandomPlayerbotMgr::CheckBgQueue()
 
     BgCheckTimer = time(nullptr);
 
-    LOG_INFO("playerbots", "Checking BG Queue...");
+    //LOG_INFO("playerbots", "Checking BG Queue...");
 
     BattlegroundData.clear();
 
@@ -820,7 +820,7 @@ void RandomPlayerbotMgr::CheckBgQueue()
                          randomBotAutoJoinBGWarsongCount);
     }
 
-    LogBattlegroundInfo();
+    //LogBattlegroundInfo();
 }
 
 void RandomPlayerbotMgr::LogBattlegroundInfo()
@@ -901,7 +901,7 @@ void RandomPlayerbotMgr::CheckLfgQueue()
     if (!LfgCheckTimer || time(nullptr) > (LfgCheckTimer + 30))
         LfgCheckTimer = time(nullptr);
 
-    LOG_INFO("playerbots", "Checking LFG Queue...");
+    //LOG_INFO("playerbots", "Checking LFG Queue...");
 
     // Clear LFG list
     LfgDungeons[TEAM_ALLIANCE].clear();
@@ -931,7 +931,7 @@ void RandomPlayerbotMgr::CheckLfgQueue()
         }
     }
 
-    LOG_INFO("playerbots", "LFG Queue check finished");
+    //LOG_INFO("playerbots", "LFG Queue check finished");
 }
 
 void RandomPlayerbotMgr::CheckPlayers()
@@ -1124,8 +1124,8 @@ bool RandomPlayerbotMgr::ProcessBot(Player* player)
             uint32 randomTime = urand(
                 sPlayerbotAIConfig->minRandomBotReviveTime, 
                 sPlayerbotAIConfig->maxRandomBotReviveTime);
-            LOG_INFO("playerbots", "Mark bot {} as dead, will be revived in {}s.", 
-                player->GetName().c_str(), randomTime);
+            /*LOG_INFO("playerbots", "Mark bot {} as dead, will be revived in {}s.", 
+                player->GetName().c_str(), randomTime);*/
             SetEventValue(bot, "dead", 1, sPlayerbotAIConfig->maxRandomBotInWorldTime);
             SetEventValue(bot, "revive", 1, randomTime);
             return false;
@@ -1194,8 +1194,8 @@ bool RandomPlayerbotMgr::ProcessBot(Player* player)
             // if (randomiser)
             // {
             Randomize(player);
-            LOG_INFO("playerbots", "Bot #{} {}:{} <{}>: randomized", 
-                bot, player->GetTeamId() == TEAM_ALLIANCE ? "A" : "H", player->GetLevel(), player->GetName());
+            /*LOG_INFO("playerbots", "Bot #{} {}:{} <{}>: randomized", 
+                bot, player->GetTeamId() == TEAM_ALLIANCE ? "A" : "H", player->GetLevel(), player->GetName());*/
             uint32 randomTime = urand(
                 sPlayerbotAIConfig->minRandomBotRandomizeTime, 
                 sPlayerbotAIConfig->maxRandomBotRandomizeTime); 
@@ -1214,7 +1214,7 @@ bool RandomPlayerbotMgr::ProcessBot(Player* player)
         uint32 teleport = GetEventValue(bot, "teleport");
         if (!teleport)
         {
-            LOG_INFO("playerbots", "Bot #{} <{}>: teleport for level and refresh", bot, player->GetName());
+            //LOG_INFO("playerbots", "Bot #{} <{}>: teleport for level and refresh", bot, player->GetName());
             Refresh(player);
             RandomTeleportForLevel(player);
             uint32 time = urand(
@@ -1358,12 +1358,12 @@ void RandomPlayerbotMgr::RandomTeleport(Player* bot, std::vector<WorldLocation>&
             continue;
         }
 
-        const LocaleConstant& locale = sWorld->GetDefaultDbcLocale();
+        /*const LocaleConstant& locale = sWorld->GetDefaultDbcLocale();
         LOG_INFO("playerbots",
                  "Random teleporting bot {} (level {}) to Map: {} ({}) Zone: {} ({}) Area: {} ({}) {},{},{} ({}/{} "
                  "locations)",
                  bot->GetName().c_str(), bot->GetLevel(), map->GetId(), map->GetMapName(), zone->ID,
-                 zone->area_name[locale], area->ID, area->area_name[locale], x, y, z, i + 1, tlocs.size());
+                 zone->area_name[locale], area->ID, area->area_name[locale], x, y, z, i + 1, tlocs.size());*/
 
         if (hearth)
         {
@@ -1568,9 +1568,9 @@ void RandomPlayerbotMgr::RandomTeleportForLevel(Player* bot)
         return;
 
     uint32 level = bot->GetLevel();
-    uint8 race = bot->getRace();
+    /*uint8 race = bot->getRace();
     LOG_DEBUG("playerbots", "Random teleporting bot {} for level {} ({} locations available)", bot->GetName().c_str(),
-              bot->GetLevel(), locsPerLevelCache[level].size());
+              bot->GetLevel(), locsPerLevelCache[level].size());*/
     if (level > 10 && urand(0, 100) < sPlayerbotAIConfig->probTeleToBankers * 100)
     {
         RandomTeleport(bot, bankerLocsPerLevelCache[level], true);
@@ -1587,9 +1587,9 @@ void RandomPlayerbotMgr::RandomTeleportGrindForLevel(Player* bot)
         return;
 
     uint32 level = bot->GetLevel();
-    uint8 race = bot->getRace();
+    /*uint8 race = bot->getRace();
     LOG_DEBUG("playerbots", "Random teleporting bot {} for level {} ({} locations available)", bot->GetName().c_str(),
-              bot->GetLevel(), locsPerLevelCache[level].size());
+              bot->GetLevel(), locsPerLevelCache[level].size());*/
 
     RandomTeleport(bot, locsPerLevelCache[level]);
 }
@@ -1851,7 +1851,7 @@ void RandomPlayerbotMgr::Refresh(Player* bot)
     if (bot->InBattleground())
         return;
 
-    LOG_DEBUG("playerbots", "Refreshing bot {} <{}>", bot->GetGUID().ToString().c_str(), bot->GetName().c_str());
+    //LOG_DEBUG("playerbots", "Refreshing bot {} <{}>", bot->GetGUID().ToString().c_str(), bot->GetName().c_str());
 
     PerformanceMonitorOperation* pmo = sPerformanceMonitor->start(PERF_MON_RNDBOT, "Refresh");
 
@@ -2698,8 +2698,8 @@ void RandomPlayerbotMgr::RandomTeleportForRpg(Player* bot)
 {
     uint32 race = bot->getRace();
     uint32 level = bot->GetLevel();
-    LOG_DEBUG("playerbots", "Random teleporting bot {} for RPG ({} locations available)", bot->GetName().c_str(),
-              rpgLocsCacheLevel[race].size());
+    /*LOG_DEBUG("playerbots", "Random teleporting bot {} for RPG ({} locations available)", bot->GetName().c_str(),
+              rpgLocsCacheLevel[race].size());*/
     RandomTeleport(bot, rpgLocsCacheLevel[race][level], true);
 }
 
