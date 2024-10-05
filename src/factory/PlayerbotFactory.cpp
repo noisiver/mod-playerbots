@@ -12,6 +12,7 @@
 #include "AiFactory.h"
 #include "ArenaTeam.h"
 #include "ArenaTeamMgr.h"
+#include "Config.h"
 #include "DBCStores.h"
 #include "DBCStructure.h"
 #include "GuildMgr.h"
@@ -1623,6 +1624,40 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
 
                         ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
                         if (!proto)
+                            continue;
+
+                        uint32 progressionPatchId = sConfigMgr->GetOption<uint32>("Progression.Patch", 21, false);
+                        if (progressionPatchId < 6 && proto->ItemLevel > 63)
+                            continue;
+
+                        if (progressionPatchId < 7 && proto->ItemLevel > 66)
+                            continue;
+
+                        if (progressionPatchId < 12 && proto->ItemLevel > 76)
+                            continue;
+
+                        if (progressionPatchId < 13 && proto->ItemLevel > 110)
+                            continue;
+
+                        if (progressionPatchId < 14 && proto->ItemLevel > 120)
+                            continue;
+
+                        if (progressionPatchId < 17 && proto->ItemLevel > 133)
+                            continue;
+
+                        if (progressionPatchId < 18 && proto->ItemLevel > 200)
+                            continue;
+
+                        if (progressionPatchId < 19 && proto->ItemLevel > 213)
+                            continue;
+
+                        if (progressionPatchId < 20 && proto->ItemLevel > 226)
+                            continue;
+
+                        if (progressionPatchId < 21 && proto->ItemLevel > 245)
+                            continue;
+
+                        if (!sRandomPlayerbotMgr->IsRandomBot(bot) && proto->ItemLevel > 187)
                             continue;
 
                         if (gearScoreLimit != 0 &&
