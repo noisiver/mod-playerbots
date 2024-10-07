@@ -769,49 +769,61 @@ bool RandomItemMgr::CanEquipWeapon(uint8 clazz, ItemTemplate const* proto)
     {
         case CLASS_PRIEST:
             if (proto->SubClass != ITEM_SUBCLASS_WEAPON_STAFF && proto->SubClass != ITEM_SUBCLASS_WEAPON_WAND &&
-                proto->SubClass != ITEM_SUBCLASS_WEAPON_MACE)
+                proto->SubClass != ITEM_SUBCLASS_WEAPON_MACE && proto->SubClass != ITEM_SUBCLASS_WEAPON_DAGGER)
                 return false;
             break;
         case CLASS_MAGE:
         case CLASS_WARLOCK:
             if (proto->SubClass != ITEM_SUBCLASS_WEAPON_STAFF && proto->SubClass != ITEM_SUBCLASS_WEAPON_WAND &&
-                proto->SubClass != ITEM_SUBCLASS_WEAPON_SWORD)
+                proto->SubClass != ITEM_SUBCLASS_WEAPON_DAGGER && proto->SubClass != ITEM_SUBCLASS_WEAPON_SWORD)
                 return false;
             break;
         case CLASS_WARRIOR:
-            if (proto->SubClass != ITEM_SUBCLASS_WEAPON_MACE2 && proto->SubClass != ITEM_SUBCLASS_WEAPON_SWORD2 &&
+            if (proto->SubClass != ITEM_SUBCLASS_WEAPON_MACE2 && proto->SubClass != ITEM_SUBCLASS_WEAPON_AXE &&
+                proto->SubClass != ITEM_SUBCLASS_WEAPON_POLEARM && proto->SubClass != ITEM_SUBCLASS_WEAPON_SWORD2 &&
                 proto->SubClass != ITEM_SUBCLASS_WEAPON_MACE && proto->SubClass != ITEM_SUBCLASS_WEAPON_SWORD &&
                 proto->SubClass != ITEM_SUBCLASS_WEAPON_GUN && proto->SubClass != ITEM_SUBCLASS_WEAPON_CROSSBOW &&
-                proto->SubClass != ITEM_SUBCLASS_WEAPON_BOW && proto->SubClass != ITEM_SUBCLASS_WEAPON_AXE &&
-                proto->SubClass != ITEM_SUBCLASS_WEAPON_AXE2 && proto->SubClass != ITEM_SUBCLASS_WEAPON_THROWN)
+                proto->SubClass != ITEM_SUBCLASS_WEAPON_BOW && proto->SubClass != ITEM_SUBCLASS_WEAPON_THROWN &&
+                proto->SubClass != ITEM_SUBCLASS_WEAPON_AXE2 && proto->SubClass != ITEM_SUBCLASS_WEAPON_FIST &&
+                proto->SubClass != ITEM_SUBCLASS_WEAPON_DAGGER && proto->SubClass != ITEM_SUBCLASS_WEAPON_STAFF)
                 return false;
             break;
         case CLASS_PALADIN:
-            if (proto->SubClass != ITEM_SUBCLASS_WEAPON_MACE2 && proto->SubClass != ITEM_SUBCLASS_WEAPON_SWORD2 &&
-                proto->SubClass != ITEM_SUBCLASS_WEAPON_MACE && proto->SubClass != ITEM_SUBCLASS_WEAPON_SWORD)
+        case CLASS_DEATH_KNIGHT:
+            if (proto->SubClass != ITEM_SUBCLASS_WEAPON_MACE2 && proto->SubClass != ITEM_SUBCLASS_WEAPON_POLEARM &&
+                proto->SubClass != ITEM_SUBCLASS_WEAPON_SWORD2 && proto->SubClass != ITEM_SUBCLASS_WEAPON_AXE2 &&
+                proto->SubClass != ITEM_SUBCLASS_WEAPON_AXE && proto->SubClass != ITEM_SUBCLASS_WEAPON_MACE &&
+                proto->SubClass != ITEM_SUBCLASS_WEAPON_SWORD)
                 return false;
             break;
         case CLASS_SHAMAN:
-            if (proto->SubClass != ITEM_SUBCLASS_WEAPON_MACE && proto->SubClass != ITEM_SUBCLASS_WEAPON_MACE2 &&
+            if (proto->SubClass != ITEM_SUBCLASS_WEAPON_MACE && proto->SubClass != ITEM_SUBCLASS_WEAPON_AXE &&
+                proto->SubClass != ITEM_SUBCLASS_WEAPON_FIST && proto->SubClass != ITEM_SUBCLASS_WEAPON_MACE2 &&
+                proto->SubClass != ITEM_SUBCLASS_WEAPON_AXE2 && proto->SubClass != ITEM_SUBCLASS_WEAPON_DAGGER &&
                 proto->SubClass != ITEM_SUBCLASS_WEAPON_STAFF)
                 return false;
             break;
         case CLASS_DRUID:
             if (proto->SubClass != ITEM_SUBCLASS_WEAPON_MACE && proto->SubClass != ITEM_SUBCLASS_WEAPON_MACE2 &&
-                proto->SubClass != ITEM_SUBCLASS_WEAPON_DAGGER && proto->SubClass != ITEM_SUBCLASS_WEAPON_STAFF)
+                proto->SubClass != ITEM_SUBCLASS_WEAPON_DAGGER && proto->SubClass != ITEM_SUBCLASS_WEAPON_STAFF &&
+                proto->SubClass != ITEM_SUBCLASS_WEAPON_POLEARM)
                 return false;
             break;
         case CLASS_HUNTER:
-            if (proto->SubClass != ITEM_SUBCLASS_WEAPON_AXE2 && proto->SubClass != ITEM_SUBCLASS_WEAPON_SWORD2 &&
-                proto->SubClass != ITEM_SUBCLASS_WEAPON_GUN && proto->SubClass != ITEM_SUBCLASS_WEAPON_CROSSBOW &&
-                proto->SubClass != ITEM_SUBCLASS_WEAPON_BOW)
+            if (proto->SubClass != ITEM_SUBCLASS_WEAPON_DAGGER && proto->SubClass != ITEM_SUBCLASS_WEAPON_BOW &&
+                proto->SubClass != ITEM_SUBCLASS_WEAPON_AXE2 && proto->SubClass != ITEM_SUBCLASS_WEAPON_AXE &&
+                proto->SubClass != ITEM_SUBCLASS_WEAPON_SWORD2 && proto->SubClass != ITEM_SUBCLASS_WEAPON_SWORD &&
+                proto->SubClass != ITEM_SUBCLASS_WEAPON_FIST && proto->SubClass != ITEM_SUBCLASS_WEAPON_GUN &&
+                proto->SubClass != ITEM_SUBCLASS_WEAPON_CROSSBOW && proto->SubClass != ITEM_SUBCLASS_WEAPON_STAFF &&
+                proto->SubClass != ITEM_SUBCLASS_WEAPON_POLEARM)
                 return false;
             break;
         case CLASS_ROGUE:
             if (proto->SubClass != ITEM_SUBCLASS_WEAPON_DAGGER && proto->SubClass != ITEM_SUBCLASS_WEAPON_SWORD &&
-                proto->SubClass != ITEM_SUBCLASS_WEAPON_MACE && proto->SubClass != ITEM_SUBCLASS_WEAPON_GUN &&
-                proto->SubClass != ITEM_SUBCLASS_WEAPON_CROSSBOW && proto->SubClass != ITEM_SUBCLASS_WEAPON_BOW &&
-                proto->SubClass != ITEM_SUBCLASS_WEAPON_THROWN)
+                proto->SubClass != ITEM_SUBCLASS_WEAPON_FIST && proto->SubClass != ITEM_SUBCLASS_WEAPON_MACE &&
+                proto->SubClass != ITEM_SUBCLASS_WEAPON_GUN && proto->SubClass != ITEM_SUBCLASS_WEAPON_CROSSBOW &&
+                proto->SubClass != ITEM_SUBCLASS_WEAPON_BOW && proto->SubClass != ITEM_SUBCLASS_WEAPON_THROWN &&
+                proto->SubClass != ITEM_SUBCLASS_WEAPON_AXE)
                 return false;
             break;
     }
@@ -949,19 +961,10 @@ void RandomItemMgr::BuildItemInfoCache()
 
     PlayerbotsDatabaseTransaction trans = PlayerbotsDatabase.BeginTransaction();
 
-    // generate stat weights for classes/specs
     for (auto const& itr : *itemTemplate)
     {
         ItemTemplate const* proto = &itr.second;
         if (!proto)
-            continue;
-
-        // skip non armor/weapon
-        if (proto->Class != ITEM_CLASS_WEAPON && proto->Class != ITEM_CLASS_ARMOR &&
-            proto->Class != ITEM_CLASS_CONTAINER && proto->Class != ITEM_CLASS_PROJECTILE)
-            continue;
-
-        if (!CanEquipItemNew(proto))
             continue;
 
         // skip test items
@@ -972,7 +975,8 @@ void RandomItemMgr::BuildItemInfoCache()
             strstr(proto->Name1.c_str(), " TEST") || strstr(proto->Name1.c_str(), "2200 ") ||
             strstr(proto->Name1.c_str(), "Deprecated ") || strstr(proto->Name1.c_str(), "Unused ") ||
             strstr(proto->Name1.c_str(), "Monster ") || strstr(proto->Name1.c_str(), "[PH]") ||
-            strstr(proto->Name1.c_str(), "(OLD)") || strstr(proto->Name1.c_str(), "QR"))
+            strstr(proto->Name1.c_str(), "(OLD)") || strstr(proto->Name1.c_str(), "QR") ||
+            strstr(proto->Name1.c_str(), "zzOLD"))
         {
             itemForTest.insert(proto->ItemId);
             continue;
@@ -990,29 +994,29 @@ void RandomItemMgr::BuildItemInfoCache()
             proto->RequiredReputationRank > 0)
             continue;*/
 
-        if (proto->RequiredHonorRank > 0 || proto->RequiredSkillRank > 0 || proto->RequiredCityRank > 0)
-            continue;
+        // if (proto->RequiredHonorRank > 0 || proto->RequiredSkillRank > 0 || proto->RequiredCityRank > 0)
+        //     continue;
 
-        // skip random enchant items
-        if (proto->RandomProperty)
-            continue;
+        // // skip random enchant items
+        // if (proto->RandomProperty)
+        //     continue;
 
-        // skip heirloom items
-        if (proto->Quality == ITEM_QUALITY_HEIRLOOM)
-            continue;
+        // // skip heirloom items
+        // if (proto->Quality == ITEM_QUALITY_HEIRLOOM)
+        //     continue;
 
-        // check possible equip slots
-        EquipmentSlots slot = EQUIPMENT_SLOT_START;
-        for (std::map<EquipmentSlots, std::set<InventoryType> >::iterator i = viableSlots.begin();
-             i != viableSlots.end(); ++i)
-        {
-            std::set<InventoryType> slots = viableSlots[(EquipmentSlots)i->first];
-            if (slots.find((InventoryType)proto->InventoryType) != slots.end())
-                slot = i->first;
-        }
+        // // check possible equip slots
+        // EquipmentSlots slot = EQUIPMENT_SLOT_START;
+        // for (std::map<EquipmentSlots, std::set<InventoryType> >::iterator i = viableSlots.begin();
+        //      i != viableSlots.end(); ++i)
+        // {
+        //     std::set<InventoryType> slots = viableSlots[(EquipmentSlots)i->first];
+        //     if (slots.find((InventoryType)proto->InventoryType) != slots.end())
+        //         slot = i->first;
+        // }
 
-        if (slot == EQUIPMENT_SLOT_START)
-            continue;
+        // if (slot == EQUIPMENT_SLOT_START)
+        //     continue;
 
         // Init Item cache
         // ItemInfoEntry cacheInfo;
@@ -2197,6 +2201,46 @@ void RandomItemMgr::BuildEquipCache()
 void RandomItemMgr::BuildEquipCacheNew()
 {
     LOG_INFO("playerbots", "Loading equipments cache...");
+
+    std::unordered_set<uint32> questItemIds;
+    ObjectMgr::QuestMap const& questTemplates = sObjectMgr->GetQuestTemplates();
+    for (ObjectMgr::QuestMap::const_iterator i = questTemplates.begin(); i != questTemplates.end(); ++i)
+    {
+        uint32 questId = i->first;
+        Quest const* quest = i->second;
+
+        if (quest->IsRepeatable())
+            continue;
+
+        if (quest->GetQuestLevel() <= 0)
+            continue;
+
+        if (quest->GetRequiredClasses())
+            continue;
+
+        for (int j = 0; j < quest->GetRewChoiceItemsCount(); j++)
+            if (uint32 itemId = quest->RewardChoiceItemId[j])
+            {
+                ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
+                if (proto->Class != ITEM_CLASS_WEAPON && proto->Class != ITEM_CLASS_ARMOR)
+                    continue;
+                int requiredLevel = std::max((int)proto->RequiredLevel, quest->GetQuestLevel());
+                equipCacheNew[requiredLevel][proto->InventoryType].push_back(itemId);
+                questItemIds.insert(itemId);
+            }
+
+        for (int j = 0; j < quest->GetRewItemsCount(); j++)
+            if (uint32 itemId = quest->RewardItemId[j])
+            {
+                ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
+                if (proto->Class != ITEM_CLASS_WEAPON && proto->Class != ITEM_CLASS_ARMOR)
+                    continue;
+                int requiredLevel = std::max((int)proto->RequiredLevel, quest->GetQuestLevel());
+                equipCacheNew[requiredLevel][proto->InventoryType].push_back(itemId);
+                questItemIds.insert(itemId);
+            }
+    }
+
     ItemTemplateContainer const* itemTemplates = sObjectMgr->GetItemTemplateStore();
     for (auto const& itr : *itemTemplates)
     {
@@ -2204,6 +2248,10 @@ void RandomItemMgr::BuildEquipCacheNew()
         if (!proto)
             continue;
         uint32 itemId = proto->ItemId;
+
+        if (questItemIds.find(itemId) != questItemIds.end())
+            continue;
+
         if (IsTestItem(itemId))
         {
             continue;
@@ -2265,7 +2313,7 @@ void RandomItemMgr::BuildAmmoCache()
         for (uint32 subClass = ITEM_SUBCLASS_ARROW; subClass <= ITEM_SUBCLASS_BULLET; subClass++)
         {
             QueryResult results = WorldDatabase.Query(
-                "SELECT entry, Flags FROM item_template WHERE class = {} AND subclass = {} AND RequiredLevel <= {} "
+                "SELECT entry, Flags FROM item_template WHERE class = {} AND subclass = {} AND RequiredLevel <= {} and duration = 0 "
                 "ORDER BY stackable DESC, RequiredLevel DESC",
                 ITEM_CLASS_PROJECTILE, subClass, level);
             if (!results)

@@ -26,7 +26,7 @@
 #include "DuelTargetValue.h"
 #include "EnemyHealerTargetValue.h"
 #include "EnemyPlayerValue.h"
-#include "ExpectedLifetimeValue.h"
+#include "EstimatedLifetimeValue.h"
 #include "Formations.h"
 #include "GrindTargetValue.h"
 #include "GroupValues.h"
@@ -106,6 +106,7 @@ public:
         creators["nearest npcs"] = &ValueContext::nearest_npcs;
         creators["nearest totems"] = &ValueContext::nearest_totems;
         creators["nearest vehicles"] = &ValueContext::nearest_vehicles;
+        creators["nearest vehicles far"] = &ValueContext::nearest_vehicles_far;
         creators["nearest friendly players"] = &ValueContext::nearest_friendly_players;
         creators["closest friendly players"] = &ValueContext::closest_friendly_players;
         creators["nearest enemy players"] = &ValueContext::nearest_enemy_players;
@@ -298,8 +299,8 @@ public:
         creators["boss target"] = &ValueContext::boss_target;
         creators["nearest triggers"] = &ValueContext::nearest_triggers;
         creators["neglect threat"] = &ValueContext::neglect_threat;
-        creators["expected lifetime"] = &ValueContext::expected_lifetime;
-        creators["expected group dps"] = &ValueContext::expected_group_dps;
+        creators["estimated lifetime"] = &ValueContext::expected_lifetime;
+        creators["estimated group dps"] = &ValueContext::expected_group_dps;
         creators["area debuff"] = &ValueContext::area_debuff;
         creators["nearest trap with damage"] = &ValueContext::nearest_trap_with_damange;
         creators["disperse distance"] = &ValueContext::disperse_distance;
@@ -394,6 +395,7 @@ private:
     static UntypedValue* nearest_npcs(PlayerbotAI* botAI) { return new NearestNpcsValue(botAI); }
     static UntypedValue* nearest_totems(PlayerbotAI* botAI) { return new NearestTotemsValue(botAI); }
     static UntypedValue* nearest_vehicles(PlayerbotAI* botAI) { return new NearestVehiclesValue(botAI); }
+    static UntypedValue* nearest_vehicles_far(PlayerbotAI* botAI) { return new NearestVehiclesValue(botAI, 200.0f); }
     static UntypedValue* nearest_friendly_players(PlayerbotAI* botAI) { return new NearestFriendlyPlayersValue(botAI); }
     static UntypedValue* closest_friendly_players(PlayerbotAI* botAI)
     {
@@ -536,8 +538,8 @@ private:
     static UntypedValue* boss_target(PlayerbotAI* ai) { return new BossTargetValue(ai); }
     static UntypedValue* nearest_triggers(PlayerbotAI* ai) { return new NearestTriggersValue(ai); }
     static UntypedValue* neglect_threat(PlayerbotAI* ai) { return new NeglectThreatResetValue(ai); }
-    static UntypedValue* expected_lifetime(PlayerbotAI* ai) { return new ExpectedLifetimeValue(ai); }
-    static UntypedValue* expected_group_dps(PlayerbotAI* ai) { return new ExpectedGroupDpsValue(ai); }
+    static UntypedValue* expected_lifetime(PlayerbotAI* ai) { return new EstimatedLifetimeValue(ai); }
+    static UntypedValue* expected_group_dps(PlayerbotAI* ai) { return new EstimatedGroupDpsValue(ai); }
     static UntypedValue* area_debuff(PlayerbotAI* ai) { return new AreaDebuffValue(ai); }
     static UntypedValue* nearest_trap_with_damange(PlayerbotAI* ai) { return new NearestTrapWithDamageValue(ai); }
     static UntypedValue* disperse_distance(PlayerbotAI* ai) { return new DisperseDistanceValue(ai); }

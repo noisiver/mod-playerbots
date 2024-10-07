@@ -52,6 +52,8 @@ void ChatCommandHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
     triggers.push_back(
         new TriggerNode("stay", NextAction::array(0, new NextAction("stay chat shortcut", relevance), nullptr)));
     triggers.push_back(
+        new TriggerNode("move from group", NextAction::array(0, new NextAction("move from group chat shortcut", relevance), nullptr)));
+    triggers.push_back(
         new TriggerNode("flee", NextAction::array(0, new NextAction("flee chat shortcut", relevance), nullptr)));
     triggers.push_back(new TriggerNode(
         "tank attack", NextAction::array(0, new NextAction("tank attack chat shortcut", relevance), nullptr)));
@@ -60,6 +62,10 @@ void ChatCommandHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
     triggers.push_back(
         new TriggerNode("talk", NextAction::array(0, new NextAction("gossip hello", relevance),
                                                   new NextAction("talk to quest giver", relevance), nullptr)));
+    triggers.push_back(
+        new TriggerNode("enter vehicle", NextAction::array(0, new NextAction("enter vehicle", relevance), nullptr)));
+    triggers.push_back(
+        new TriggerNode("leave vehicle", NextAction::array(0, new NextAction("leave vehicle", relevance), nullptr)));
     triggers.push_back(
         new TriggerNode("cast", NextAction::array(0, new NextAction("cast custom spell", relevance), nullptr)));
     triggers.push_back(
@@ -83,9 +89,11 @@ void ChatCommandHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
     triggers.push_back(
         new TriggerNode("bwl", NextAction::array(0, new NextAction("bwl chat shortcut", relevance), NULL)));
     triggers.push_back(
-        new TriggerNode("dps", NextAction::array(0, new NextAction("tell expected dps", relevance), NULL)));
+        new TriggerNode("dps", NextAction::array(0, new NextAction("tell estimated dps", relevance), NULL)));
     triggers.push_back(
         new TriggerNode("disperse", NextAction::array(0, new NextAction("disperse set", relevance), NULL)));
+    triggers.push_back(
+	    new TriggerNode("open items", NextAction::array(0, new NextAction("open items", relevance), nullptr)));
 }
 
 ChatCommandHandlerStrategy::ChatCommandHandlerStrategy(PlayerbotAI* botAI) : PassTroughStrategy(botAI)
@@ -158,4 +166,5 @@ ChatCommandHandlerStrategy::ChatCommandHandlerStrategy(PlayerbotAI* botAI) : Pas
     supported.push_back("rtsc");
     supported.push_back("drink");
     supported.push_back("calc");
+    supported.push_back("open items");
 }

@@ -166,7 +166,7 @@ ItemUsage ItemUsageValue::QueryItemUsageForEquip(ItemTemplate const* itemProto)
         return ITEM_USAGE_NONE;
 
     uint16 dest;
-    InventoryResult result = botAI->CanEquipItem(NULL_SLOT, dest, pItem, true, false);
+    InventoryResult result = botAI->CanEquipItem(NULL_SLOT, dest, pItem, true, true);
     pItem->RemoveFromUpdateQueueOf(bot);
     delete pItem;
 
@@ -192,6 +192,9 @@ ItemUsage ItemUsageValue::QueryItemUsageForEquip(ItemTemplate const* itemProto)
     bool shouldEquip = false;
     // uint32 statWeight = sRandomItemMgr->GetLiveStatWeight(bot, itemProto->ItemId);
     StatsWeightCalculator calculator(bot);
+    calculator.SetItemSetBonus(false);
+    calculator.SetOverflowPenalty(false);
+    
     float itemScore = calculator.CalculateItem(itemProto->ItemId);
     if (itemScore)
         shouldEquip = true;

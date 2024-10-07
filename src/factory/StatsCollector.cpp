@@ -11,7 +11,7 @@
 #include "SpellMgr.h"
 #include "UpdateFields.h"
 
-StatsCollector::StatsCollector(CollectorType type) : type_(type) { Reset(); }
+StatsCollector::StatsCollector(CollectorType type, int32 cls) : type_(type), cls_(cls) { Reset(); }
 
 void StatsCollector::Reset()
 {
@@ -89,13 +89,21 @@ void StatsCollector::CollectSpellStats(uint32 spellId, float multiplier, int32 s
     bool canNextTrigger = true;
 
     uint32 procFlags;
+    uint32 procChance;
     if (eventEntry && eventEntry->procFlags)
         procFlags = eventEntry->procFlags;
     else
         procFlags = spellInfo->ProcFlags;
-
-    if (procFlags && !CanBeTriggeredByType(spellInfo, procFlags))
+    
+    if (eventEntry && eventEntry->customChance)
+        procChance = eventEntry->customChance;
+    else
+        procChance = spellInfo->ProcChance;
+    bool lowChance =  procChance <= 5;
+    
+    if (lowChance || (procFlags && !CanBeTriggeredByType(spellInfo, procFlags)))
         canNextTrigger = false;
+
     if (spellInfo->StackAmount)
     {
         // Heuristic multiplier for spell with stackAmount since high stackAmount may not be available
@@ -221,11 +229,17 @@ bool StatsCollector::SpecialSpellFilter(uint32 spellId) {
     // trinket
     switch (spellId)
     {
+        case 27521: // Insightful Earthstorm Diamond
+            stats[STATS_TYPE_MANA_REGENERATION] += 20;
+            return true;
+        case 55381: // Insightful Earthsiege Diamond
+            stats[STATS_TYPE_MANA_REGENERATION] += 40;
+            return true;
         case 39442: // Darkmoon Card: Wrath
             if (type_ != CollectorType::SPELL_HEAL)
                 stats[STATS_TYPE_CRIT] += 50;
             return true;
-        case 59620:
+        case 59620: // Berserk
             if (type_ == CollectorType::MELEE)
                 stats[STATS_TYPE_ATTACK_POWER] += 120;
             return true;
@@ -235,6 +249,18 @@ bool StatsCollector::SpecialSpellFilter(uint32 spellId) {
         case 67771: // Death's Verdict (heroic)
             stats[STATS_TYPE_ATTACK_POWER] += 260;
             return true;
+        case 71406: // Tiny Abomination in a Jar
+            if (cls_ == CLASS_PALADIN)
+                stats[STATS_TYPE_ATTACK_POWER] += 600;
+            else
+                stats[STATS_TYPE_ATTACK_POWER] += 150;
+            return true;
+        case 71545: // Tiny Abomination in a Jar (heroic)
+            if (cls_ == CLASS_PALADIN)
+                stats[STATS_TYPE_ATTACK_POWER] += 800;
+            else
+                stats[STATS_TYPE_ATTACK_POWER] += 200;
+            return true;    
         case 71519: // Deathbringer's Will
             stats[STATS_TYPE_ATTACK_POWER] += 350;
             return true;
@@ -246,6 +272,10 @@ bool StatsCollector::SpecialSpellFilter(uint32 spellId) {
             /// Noticing that heroic item can not be triggered, probably a bug to report to AC
             if (type_ == CollectorType::SPELL_HEAL)
                 return true;
+            break;
+        case 71903: // Shadowmourne
+            stats[STATS_TYPE_STRENGTH] += 200;
+            return true;
         default:
             break;
     }
@@ -504,7 +534,8 @@ void StatsCollector::HandleApplyAura(const SpellEffectInfo& effectInfo, float mu
             break;
         }
         case SPELL_AURA_MOD_ATTACK_POWER:
-            stats[STATS_TYPE_ATTACK_POWER] += val * multiplier;
+            if (type_ == CollectorType::MELEE)
+                stats[STATS_TYPE_ATTACK_POWER] += val * multiplier;
             break;
         case SPELL_AURA_MOD_RANGED_ATTACK_POWER:
             if (type_ == CollectorType::RANGED)
@@ -642,6 +673,16 @@ void StatsCollector::HandleApplyAura(const SpellEffectInfo& effectInfo, float mu
         {
             if (canNextTrigger)
                 CollectSpellStats(effectInfo.TriggerSpell, multiplier, triggerCooldown);
+            break;
+        }
+        case SPELL_AURA_MOD_CRIT_DAMAGE_BONUS:
+        {
+            if (type_ != CollectorType::SPELL_HEAL)
+            {
+                int32 statType = effectInfo.MiscValue;
+                if (statType & SPELL_SCHOOL_MASK_NORMAL) // physical
+                    stats[STATS_TYPE_CRIT] += 30 * val * multiplier;
+            }
             break;
         }
         default:

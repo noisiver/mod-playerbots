@@ -73,12 +73,14 @@
 #include "UseMeetingStoneAction.h"
 #include "WhoAction.h"
 #include "WtsAction.h"
+#include "OpenItemAction.h"
 
 class ChatActionContext : public NamedObjectContext<Action>
 {
 public:
     ChatActionContext()
     {
+        creators["open items"] = &ChatActionContext::open_items;
         creators["range"] = &ChatActionContext::range;
         creators["stats"] = &ChatActionContext::stats;
         creators["quests"] = &ChatActionContext::quests;
@@ -132,6 +134,7 @@ public:
         creators["stay chat shortcut"] = &ChatActionContext::stay_chat_shortcut;
         creators["flee chat shortcut"] = &ChatActionContext::flee_chat_shortcut;
         creators["runaway chat shortcut"] = &ChatActionContext::runaway_chat_shortcut;
+        creators["move from group chat shortcut"] = &ChatActionContext::move_from_group_chat_shortcut;
         creators["grind chat shortcut"] = &ChatActionContext::grind_chat_shortcut;
         creators["tank attack chat shortcut"] = &ChatActionContext::tank_attack_chat_shortcut;
         creators["gossip hello"] = &ChatActionContext::gossip_hello;
@@ -171,12 +174,13 @@ public:
         creators["rtsc"] = &ChatActionContext::rtsc;
         creators["naxx chat shortcut"] = &ChatActionContext::naxx_chat_shortcut;
         creators["bwl chat shortcut"] = &ChatActionContext::bwl_chat_shortcut;
-        creators["tell expected dps"] = &ChatActionContext::tell_expected_dps;
+        creators["tell estimated dps"] = &ChatActionContext::tell_estimated_dps;
         creators["join"] = &ChatActionContext::join;
         creators["calc"] = &ChatActionContext::calc;
     }
 
 private:
+    static Action* open_items(PlayerbotAI* botAI) { return new OpenItemAction(botAI); }
     static Action* range(PlayerbotAI* botAI) { return new RangeAction(botAI); }
     static Action* flag(PlayerbotAI* botAI) { return new FlagAction(botAI); }
     static Action* craft(PlayerbotAI* botAI) { return new SetCraftAction(botAI); }
@@ -208,6 +212,7 @@ private:
     static Action* runaway_chat_shortcut(PlayerbotAI* botAI) { return new GoawayChatShortcutAction(botAI); }
     static Action* stay_chat_shortcut(PlayerbotAI* botAI) { return new StayChatShortcutAction(botAI); }
     static Action* follow_chat_shortcut(PlayerbotAI* botAI) { return new FollowChatShortcutAction(botAI); }
+    static Action* move_from_group_chat_shortcut(PlayerbotAI* botAI) { return new MoveFromGroupChatShortcutAction(botAI); }
     static Action* gb(PlayerbotAI* botAI) { return new GuildBankAction(botAI); }
     static Action* bank(PlayerbotAI* botAI) { return new BankAction(botAI); }
     static Action* help(PlayerbotAI* botAI) { return new HelpAction(botAI); }
@@ -269,7 +274,7 @@ private:
     static Action* rtsc(PlayerbotAI* botAI) { return new RTSCAction(botAI); }
     static Action* naxx_chat_shortcut(PlayerbotAI* ai) { return new NaxxChatShortcutAction(ai); }
     static Action* bwl_chat_shortcut(PlayerbotAI* ai) { return new BwlChatShortcutAction(ai); }
-    static Action* tell_expected_dps(PlayerbotAI* ai) { return new TellExpectedDpsAction(ai); }
+    static Action* tell_estimated_dps(PlayerbotAI* ai) { return new TellEstimatedDpsAction(ai); }
     static Action* join(PlayerbotAI* ai) { return new JoinGroupAction(ai); }
     static Action* calc(PlayerbotAI* ai) { return new TellCalculateItemAction(ai); }
 };
