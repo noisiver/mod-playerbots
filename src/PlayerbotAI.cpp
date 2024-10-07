@@ -4333,9 +4333,10 @@ uint32 PlayerbotAI::AutoScaleActivity(uint32 mod)
             (!HasRealPlayers(map) ||
                 !map->IsGridLoaded(bot->GetPositionX(), bot->GetPositionY())))
         {
-            if (maxDiff > 90)  return 0;
-            if (maxDiff > 60)  return (mod * 1) / 10;
-            if (maxDiff > 30)  return (mod * 2) / 10;
+            // we never want no acitivity, if you want a world that feels alive.
+            if (maxDiff > 90)   return (mod * 0.5) / 10;
+            if (maxDiff > 60)   return (mod * 1) / 10;
+            if (maxDiff > 30)   return (mod * 2) / 10;
 
             return (mod * 3) / 10;
         }
