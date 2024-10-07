@@ -1627,38 +1627,97 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
                             continue;
 
                         uint32 progressionPatchId = sConfigMgr->GetOption<uint32>("Progression.Patch", 21, false);
+
                         if (progressionPatchId < 6 && proto->ItemLevel > 63)
+                        {
                             continue;
+                        }
 
                         if (progressionPatchId < 7 && proto->ItemLevel > 66)
+                        {
                             continue;
+                        }
 
                         if (progressionPatchId < 12 && proto->ItemLevel > 76)
+                        {
                             continue;
+                        }
 
                         if (progressionPatchId < 13 && proto->ItemLevel > 110)
+                        {
                             continue;
+                        }
 
                         if (progressionPatchId < 14 && proto->ItemLevel > 120)
+                        {
                             continue;
+                        }
 
                         if (progressionPatchId < 17 && proto->ItemLevel > 133)
+                        {
                             continue;
+                        }
 
                         if (progressionPatchId < 18 && proto->ItemLevel > 200)
+                        {
                             continue;
+                        }
 
                         if (progressionPatchId < 19 && proto->ItemLevel > 213)
+                        {
                             continue;
+                        }
 
                         if (progressionPatchId < 20 && proto->ItemLevel > 226)
+                        {
                             continue;
+                        }
 
                         if (progressionPatchId < 21 && proto->ItemLevel > 245)
+                        {
                             continue;
+                        }
 
                         if (!sRandomPlayerbotMgr->IsRandomBot(bot) && proto->ItemLevel > 187)
+                        {
                             continue;
+                        }
+
+                        switch (progressionPatchId)
+                        {
+                            case 0:
+                            case 1:
+                            case 2:
+                            case 3:
+                            case 4:
+                            case 12:
+                            case 17:
+                                if (proto->Quality > ITEM_QUALITY_RARE)
+                                {
+                                    continue;
+                                }
+                                break;
+                            case 5:
+                            case 6:
+                            case 7:
+                            case 8:
+                            case 9:
+                            case 10:
+                            case 11:
+                            case 13:
+                            case 14:
+                            case 15:
+                            case 16:
+                            case 18:
+                            case 19:
+                            case 20:
+                            case 21:
+                                if (proto->Quality > ITEM_QUALITY_EPIC)
+                                {
+                                    continue;
+                                }
+                                break;
+                        }
 
                         if (gearScoreLimit != 0 &&
                             CalcMixedGearScore(proto->ItemLevel, proto->Quality) > gearScoreLimit)
