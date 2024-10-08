@@ -3926,7 +3926,10 @@ Player* PlayerbotAI::GetGroupMaster()
 
 uint32 PlayerbotAI::GetFixedBotNumer(BotTypeNumber typeNumber, uint32 maxNum, float cyclePerMin)
 {
-    uint32 randseed = rand32();                               // Seed random number
+    //deterministic seed 
+    uint8 seedNumber = uint8(typeNumber);
+    std::mt19937 rng(seedNumber);
+    uint32 randseed = rng();                                  // Seed random number
     uint32 randnum = bot->GetGUID().GetCounter() + randseed;  // Semi-random but fixed number for each bot.
 
     if (cyclePerMin > 0)
@@ -3936,8 +3939,7 @@ uint32 PlayerbotAI::GetFixedBotNumer(BotTypeNumber typeNumber, uint32 maxNum, fl
         randnum += cycle;                            // Make the random number cylce.
     }
 
-    randnum =
-        (randnum % (maxNum + 1));  // Loops the randomnumber at maxNum. Bassically removes all the numbers above 99.
+    randnum = (randnum % (maxNum + 1));  // Loops the randomnumber at maxNum. Bassically removes all the numbers above 99.
     return randnum;  // Now we have a number unique for each bot between 0 and maxNum that increases by cyclePerMin.
 }
 
@@ -4176,8 +4178,10 @@ ActivePiorityType PlayerbotAI::GetPriorityType(ActivityType activityType)
     {
         // Many bots nearby. Do not do heavy area checks.
         if (HasManyPlayersNearby())
-            ActivePiorityType::IN_ACTIVE_AREA;
+            return ActivePiorityType::IN_ACTIVE_AREA;
     }
+
+    return ActivePiorityType::IN_ACTIVE_AREA;
 }
 
 // Returns the lower and upper bracket for bots to be active.
@@ -4218,7 +4222,6 @@ std::pair<uint32, uint32> PlayerbotAI::GetPriorityBracket(ActivePiorityType type
 
     return {90, 100};
 }
-
 
 bool PlayerbotAI::AllowActive(ActivityType activityType)
 {
@@ -4281,11 +4284,13 @@ bool PlayerbotAI::AllowActive(ActivityType activityType)
         }
     }
 
+    // GetPriorityBracket acitivity
     std::pair<uint8, uint8> priorityBracket = GetPriorityBracket(type);
-    float activityPercentage = sRandomPlayerbotMgr->getActivityPercentage();  // Activity between 0 and 100.
-    if (!priorityBracket.second)                                              // No scaling
-        return true;
+    if (!priorityBracket.second)
+        return true;  // No scaling
 
+    // Activity between 0 and 100.
+    float activityPercentage = sRandomPlayerbotMgr->getActivityPercentage();  
     if (priorityBracket.first >= activityPercentage)
         return false;
     if (priorityBracket.second <= activityPercentage && priorityBracket.second < 100)
@@ -4293,14 +4298,11 @@ bool PlayerbotAI::AllowActive(ActivityType activityType)
 
     float activePerc = (activityPercentage - priorityBracket.first) / (priorityBracket.second - priorityBracket.first);
     activePerc *= (priorityBracket.second == 100) ? sPlayerbotAIConfig->botActiveAlone : 100;
-    if (sPlayerbotAIConfig->botActiveAloneAutoScale)
-    {
-        activePerc *= AutoScaleActivity(activePerc);
-    }
 
     // The last number if the amount it cycles per min. Currently set to 1% of the active bots.
-    uint32 ActivityNumber = GetFixedBotNumer(BotTypeNumber::ACTIVITY_TYPE_NUMBER, 100, activePerc * 0.01f);  
+    uint32 ActivityNumber = GetFixedBotNumer(BotTypeNumber::ACTIVITY_TYPE_NUMBER, 100, activePerc * 0.01f);
 
+    // The given percentage of bots should be active and rotate 1% of those active bots each minute.  
     return ActivityNumber <= (activePerc);
 }
 
@@ -4316,43 +4318,6 @@ bool PlayerbotAI::AllowActivity(ActivityType activityType, bool checkNow)
     allowActive[activityType] = allowed;
     allowActiveCheckTimer[activityType] = time(nullptr);
     return allowed;
-}
-
-// this mechanism helps preventing a backpressure of the mapUpdater workerThread,
-// where the worker thread recieves more requests then i can process and more
-// request are queued in the memory. As result the memory keeps footprint
-// keeps growing and bot actions are out of sync with the world due late processing.
-uint32 PlayerbotAI::AutoScaleActivity(uint32 mod)
-{
-    uint32 maxDiff = sWorldUpdateTime.GetPercentile(95);
-    if (maxDiff > 500) return 0;
-
-    if (Map* map = bot->GetMap())
-    {
-        if (map->GetEntry()->IsWorldMap() &&
-            (!HasRealPlayers(map) ||
-                !map->IsGridLoaded(bot->GetPositionX(), bot->GetPositionY())))
-        {
-            // we never want no acitivity, if you want a world that feels alive.
-            if (maxDiff > 90)   return (mod * 0.5) / 10;
-            if (maxDiff > 60)   return (mod * 1) / 10;
-            if (maxDiff > 30)   return (mod * 2) / 10;
-
-            return (mod * 3) / 10;
-        }
-        else
-        {
-            if (maxDiff > 180) return (mod * 1) / 10;
-            if (maxDiff > 160) return (mod * 2) / 10;
-            if (maxDiff > 120) return (mod * 3) / 10;
-            if (maxDiff > 90)  return (mod * 4) / 10;
-            if (maxDiff > 60)  return (mod * 5) / 10;
-            if (maxDiff > 30)  return (mod * 6) / 10;
-            if (maxDiff > 20)  return (mod * 9) / 10;
-        }
-    }
-
-    return mod;
 }
 
 bool PlayerbotAI::IsOpposing(Player* player) { return IsOpposing(player->getRace(), bot->getRace()); }

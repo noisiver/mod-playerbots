@@ -550,7 +550,6 @@ public:
     std::pair<uint32, uint32> GetPriorityBracket(ActivePiorityType type);
     bool AllowActive(ActivityType activityType);
     bool AllowActivity(ActivityType activityType = ALL_ACTIVITY, bool checkNow = false);
-    uint32 AutoScaleActivity(uint32 mod);
 
     // Check if player is safe to use.
     bool IsSafe(Player* player);
