@@ -239,6 +239,7 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
     {
         return;
     }
+
     // if (!GetMaster() || !GetMaster()->IsInWorld() || !GetMaster()->GetSession() ||
     // GetMaster()->GetSession()->isLogingOut()) {
     //     return;
@@ -301,6 +302,7 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
     //     bot->GetMotionMaster()->Clear();
     //     bot->GetMotionMaster()->MoveIdle();
     // }
+    
     // cheat options
     if (bot->IsAlive() && ((uint32)GetCheat() > 0 || (uint32)sPlayerbotAIConfig->botCheatMask > 0))
     {
@@ -4185,10 +4187,10 @@ ActivePiorityType PlayerbotAI::GetPriorityType(ActivityType activityType)
 }
 
 // Returns the lower and upper bracket for bots to be active.
-// Ie. 10,20 means all bots in this bracket will be inactive below 10% activityMod, all bots in this bracket will be
-// active above 20% activityMod and scale between those values.
+// Ie. { 10, 20 } means all bots in this bracket will be inactive below 10% activityMod,
+// and will be active above 20% activityMod and scale between those values.
 std::pair<uint32, uint32> PlayerbotAI::GetPriorityBracket(ActivePiorityType type)
-{
+{  
     switch (type)
     {
         case ActivePiorityType::HAS_REAL_PLAYER_MASTER:
@@ -4201,31 +4203,29 @@ std::pair<uint32, uint32> PlayerbotAI::GetPriorityBracket(ActivePiorityType type
         case ActivePiorityType::IN_COMBAT:
             return {0, 10};
         case ActivePiorityType::IN_BG_QUEUE:
-            return {0, 20};
         case ActivePiorityType::IN_LFG:
-            return {0, 30};
+            return {0, 20};
         case ActivePiorityType::NEARBY_PLAYER:
-            return {0, 40};
+            return {0, 30};
         case ActivePiorityType::PLAYER_FRIEND:
+            return {0, 40};
+        case ActivePiorityType::IN_ACTIVE_AREA:
         case ActivePiorityType::PLAYER_GUILD:
             return {0, 50};
-        case ActivePiorityType::IN_ACTIVE_AREA:
-        case ActivePiorityType::IN_EMPTY_SERVER:
-            return {50, 100};
         case ActivePiorityType::IN_ACTIVE_MAP:
-            return {70, 100};
+            return {20, 100};
         case ActivePiorityType::IN_INACTIVE_MAP:
-            return {80, 100};
-        default:
+            return {50, 100};
+        case ActivePiorityType::IN_EMPTY_SERVER:
             return {90, 100};
+        default:
+            return {50, 100};
     }
-
-    return {90, 100};
 }
 
 bool PlayerbotAI::AllowActive(ActivityType activityType)
 {
-    //General exceptions
+    // General exceptions
     if (activityType == PACKET_ACTIVITY)
         return true;
 
@@ -4285,19 +4285,19 @@ bool PlayerbotAI::AllowActive(ActivityType activityType)
     }
 
     // GetPriorityBracket acitivity
-    std::pair<uint8, uint8> priorityBracket = GetPriorityBracket(type);
-    if (!priorityBracket.second)
-        return true;  // No scaling
-
-    // Activity between 0 and 100.
-    float activityPercentage = sRandomPlayerbotMgr->getActivityPercentage();  
-    if (priorityBracket.first >= activityPercentage)
-        return false;
-    if (priorityBracket.second <= activityPercentage && priorityBracket.second < 100)
-        return true;
-
-    float activePerc = (activityPercentage - priorityBracket.first) / (priorityBracket.second - priorityBracket.first);
-    activePerc *= (priorityBracket.second == 100) ? sPlayerbotAIConfig->botActiveAlone : 100;
+    float activePerc = 100;
+    if (sPlayerbotAIConfig->botActiveAloneSmartScale &&
+        bot->GetLevel() >= sPlayerbotAIConfig->botActiveAloneSmartScaleWhenMinLevel &&
+        bot->GetLevel() <= sPlayerbotAIConfig->botActiveAloneSmartScaleWhenMaxLevel)
+    {
+        std::pair<uint8, uint8> priorityBracket = GetPriorityBracket(type);
+        if (!priorityBracket.second) return true; 
+        float activityPercentage = sRandomPlayerbotMgr->getActivityPercentage();
+        if (priorityBracket.first >= activityPercentage) return false;
+        if (priorityBracket.second <= activityPercentage && priorityBracket.second < 100) return true;
+        activePerc = (activityPercentage - priorityBracket.first) / (priorityBracket.second - priorityBracket.first);
+        activePerc *= (priorityBracket.second == 100) ? sPlayerbotAIConfig->botActiveAlone : 100;
+    }
 
     // The last number if the amount it cycles per min. Currently set to 1% of the active bots.
     uint32 ActivityNumber = GetFixedBotNumer(BotTypeNumber::ACTIVITY_TYPE_NUMBER, 100, activePerc * 0.01f);
@@ -5427,13 +5427,27 @@ bool PlayerbotAI::CanMove()
     if (IsInVehicle() && !IsInVehicle(true))
         return false;
 
-    if (bot->isFrozen() || bot->IsPolymorphed() || (bot->isDead() && !bot->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_GHOST)) ||
-        bot->IsBeingTeleported() || bot->isInRoots() || bot->HasAuraType(SPELL_AURA_SPIRIT_OF_REDEMPTION) ||
-        bot->HasAuraType(SPELL_AURA_MOD_CONFUSE) || bot->IsCharmed() || bot->HasAuraType(SPELL_AURA_MOD_STUN) ||
-        bot->HasUnitState(UNIT_STATE_IN_FLIGHT) || bot->HasUnitState(UNIT_STATE_LOST_CONTROL))
+    if (bot->isFrozen() ||
+        bot->IsPolymorphed() ||
+        (bot->isDead() && !bot->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_GHOST)) ||
+        bot->IsBeingTeleported() ||
+        bot->isInRoots() ||
+        bot->HasAuraType(SPELL_AURA_SPIRIT_OF_REDEMPTION) ||
+        bot->HasAuraType(SPELL_AURA_MOD_CONFUSE) ||
+        bot->IsCharmed() ||
+        bot->HasAuraType(SPELL_AURA_MOD_STUN) ||
+        bot->HasUnitState(UNIT_STATE_IN_FLIGHT) ||
+        bot->HasUnitState(UNIT_STATE_LOST_CONTROL))
+
         return false;
 
     return bot->GetMotionMaster()->GetCurrentMovementGeneratorType() != FLIGHT_MOTION_TYPE;
+}
+
+bool PlayerbotAI::IsTaxiFlying()
+{
+    return bot->HasUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT) &&
+        bot->HasUnitState(UNIT_STATE_IGNORE_PATHFINDING);
 }
 
 bool PlayerbotAI::IsInRealGuild()
