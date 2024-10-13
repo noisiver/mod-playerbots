@@ -175,21 +175,13 @@ public:
         sRandomPlayerbotMgr->HandleCommand(type, msg, player);
     }
 
-    bool OnBeforeCriteriaProgress(Player* player, AchievementCriteriaEntry const* /*criteria*/) override
+    bool OnBeforeAchiComplete(Player* player, AchievementEntry const* achievement) override
     {
-        if (sRandomPlayerbotMgr->IsRandomBot(player))
+        if (sRandomPlayerbotMgr->IsRandomBot(player) && (achievement->flags == 256 || achievement->flags == 768))
         {
             return false;
         }
-        return true;
-    }
 
-    bool OnBeforeAchiComplete(Player* player, AchievementEntry const* /*achievement*/) override
-    {
-        if (sRandomPlayerbotMgr->IsRandomBot(player))
-        {
-            return false;
-        }
         return true;
     }
 };
