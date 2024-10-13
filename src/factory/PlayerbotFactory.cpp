@@ -31,6 +31,7 @@
 #include "PlayerbotAIConfig.h"
 #include "PlayerbotDbStore.h"
 #include "Playerbots.h"
+#include "Progression.h"
 #include "RandomItemMgr.h"
 #include "RandomPlayerbotFactory.h"
 #include "SharedDefines.h"
@@ -1624,6 +1625,97 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
                         ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
                         if (!proto)
                             continue;
+
+                        if (sProgression->GetPatchId() < PATCH_RISE_OF_THE_BLOOD_GOD && proto->ItemLevel > 63)
+                        {
+                            continue;
+                        }
+
+                        if (sProgression->GetPatchId() < PATCH_DRAGONS_OF_NIGHTMARE && proto->ItemLevel > 66)
+                        {
+                            continue;
+                        }
+
+                        if (sProgression->GetPatchId() < PATCH_BEFORE_THE_STORM && proto->ItemLevel > 76)
+                        {
+                            continue;
+                        }
+
+                        if (sProgression->GetPatchId() < PATCH_BLACK_TEMPLE && proto->ItemLevel > 110)
+                        {
+                            continue;
+                        }
+
+                        if (sProgression->GetPatchId() < PATCH_VOICE_CHAT && proto->ItemLevel > 120)
+                        {
+                            continue;
+                        }
+
+                        if (sProgression->GetPatchId() < PATCH_ECHOES_OF_DOOM && proto->ItemLevel > 133)
+                        {
+                            continue;
+                        }
+
+                        if (sProgression->GetPatchId() < PATCH_SECRETS_OF_ULDUAR && proto->ItemLevel > 200)
+                        {
+                            continue;
+                        }
+
+                        if (sProgression->GetPatchId() < PATCH_CALL_OF_THE_CRUSADE && proto->ItemLevel > 213)
+                        {
+                            continue;
+                        }
+
+                        if (sProgression->GetPatchId() < PATCH_FALL_OF_THE_LICH_KING && proto->ItemLevel > 226)
+                        {
+                            continue;
+                        }
+
+                        if (sProgression->GetPatchId() < PATCH_ASSAULT_ON_THE_RUBY_SANCTUM && proto->ItemLevel > 245)
+                        {
+                            continue;
+                        }
+
+                        if (!sRandomPlayerbotMgr->IsRandomBot(bot) && proto->ItemLevel > 187)
+                        {
+                            continue;
+                        }
+
+                        switch (sProgression->GetPatchId())
+                        {
+                            case PATCH_WORLD_OF_WARCRAFT:
+                            case PATCH_MYSTERIES_OF_MARAUDON:
+                            case PATCH_RUINS_OF_THE_DIRE_MAUL:
+                            case PATCH_THE_CALL_TO_WAR:
+                            case PATCH_BATTLEGROUNDS:
+                            case PATCH_BEFORE_THE_STORM:
+                            case PATCH_ECHOES_OF_DOOM:
+                                if (proto->Quality > ITEM_QUALITY_RARE)
+                                {
+                                    continue;
+                                }
+                                break;
+                            case PATCH_ASSAULT_ON_BLACKWING_LAIR:
+                            case PATCH_RISE_OF_THE_BLOOD_GOD:
+                            case PATCH_DRAGONS_OF_NIGHTMARE:
+                            case PATCH_THE_GATES_OF_AHN_QIRAJ:
+                            case PATCH_STORMS_OF_AZEROTH:
+                            case PATCH_SHADOW_OF_THE_NECROPOLIS:
+                            case PATCH_DRUMS_OF_WAR:
+                            case PATCH_BLACK_TEMPLE:
+                            case PATCH_VOICE_CHAT:
+                            case PATCH_THE_GODS_OF_ZUL_AMAN:
+                            case PATCH_FURY_OF_THE_SUNWELL:
+                            case PATCH_SECRETS_OF_ULDUAR:
+                            case PATCH_CALL_OF_THE_CRUSADE:
+                            case PATCH_FALL_OF_THE_LICH_KING:
+                            case PATCH_ASSAULT_ON_THE_RUBY_SANCTUM:
+                                if (proto->Quality > ITEM_QUALITY_EPIC)
+                                {
+                                    continue;
+                                }
+                                break;
+                        }
 
                         if (gearScoreLimit != 0 &&
                             CalcMixedGearScore(proto->ItemLevel, proto->Quality) > gearScoreLimit)
