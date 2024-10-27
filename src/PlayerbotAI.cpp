@@ -31,6 +31,7 @@
 #include "ObjectGuid.h"
 #include "PerformanceMonitor.h"
 #include "Player.h"
+#include "GameTime.h"
 #include "PlayerbotAIConfig.h"
 #include "PlayerbotDbStore.h"
 #include "PlayerbotMgr.h"
@@ -4213,6 +4214,10 @@ ActivePiorityType PlayerbotAI::GetPriorityType(ActivityType activityType)
 
 bool PlayerbotAI::AllowActive(ActivityType activityType)
 {
+    // no activity allowed (maxRandomBots * 0.12 seconds, e.g. 4000 bots 400 seconds equals 8 minutes)
+    if (GameTime::GetUptime().count() < sPlayerbotAIConfig->maxRandomBots * 0.12)
+        return false;
+
     // General exceptions
     if (activityType == PACKET_ACTIVITY)
         return true;
