@@ -1678,9 +1678,29 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
                             continue;
                         }
 
-                        if (!sRandomPlayerbotMgr->IsRandomBot(bot) && proto->ItemLevel > 187)
+                        if (!sRandomPlayerbotMgr->IsRandomBot(bot))
                         {
-                            continue;
+                            if (progressionPatchId < 12)
+                            {
+                                 if (proto->ItemLevel > 58)
+                                 {
+                                     continue;
+                                 }
+                            }
+                            else if (progressionPatchId < 17)
+                            {
+                                 if (proto->ItemLevel > 100)
+                                 {
+                                     continue;
+                                 }
+                            }
+                            else
+                            {
+                                 if (proto->ItemLevel > 174)
+                                 {
+                                     continue;
+                                 }
+                            }
                         }
 
                         switch (progressionPatchId)
