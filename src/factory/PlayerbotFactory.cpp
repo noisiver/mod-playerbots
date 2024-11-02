@@ -1703,40 +1703,19 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
                             }
                         }
 
-                        switch (patchId)
+                        if (patchId < 5 || patchId == 12 || patchId == 17)
                         {
-                            case 0:
-                            case 1:
-                            case 2:
-                            case 3:
-                            case 4:
-                            case 12:
-                            case 17:
-                                if (proto->Quality > ITEM_QUALITY_RARE)
-                                {
-                                    continue;
-                                }
-                                break;
-                            case 5:
-                            case 6:
-                            case 7:
-                            case 8:
-                            case 9:
-                            case 10:
-                            case 11:
-                            case 13:
-                            case 14:
-                            case 15:
-                            case 16:
-                            case 18:
-                            case 19:
-                            case 20:
-                            case 21:
-                                if (proto->Quality > ITEM_QUALITY_EPIC)
-                                {
-                                    continue;
-                                }
-                                break;
+                            if (proto->Quality > ITEM_QUALITY_RARE)
+                            {
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            if (proto->Quality > ITEM_QUALITY_EPIC)
+                            {
+                                continue;
+                            }
                         }
 
                         if (gearScoreLimit != 0 &&
