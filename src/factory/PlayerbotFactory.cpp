@@ -1701,7 +1701,7 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
                                  }
                             }
 
-                            if (patchId < PATCH_ASSAULT_ON_BLACKWING_LAIR || patchId == PATCH_BEFORE_THE_STORM || patchId == PATCH_ECHOES_OF_DOOM)
+                            if (sProgression->GetPatchId() < PATCH_ASSAULT_ON_BLACKWING_LAIR || sProgression->GetPatchId() == PATCH_BEFORE_THE_STORM || sProgression->GetPatchId() == PATCH_ECHOES_OF_DOOM)
                             {
                                 if (proto->Quality > ITEM_QUALITY_RARE)
                                 {
