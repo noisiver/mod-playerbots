@@ -1701,20 +1701,20 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
                                      continue;
                                  }
                             }
-                        }
 
-                        if (patchId < 5 || patchId == 12 || patchId == 17)
-                        {
-                            if (proto->Quality > ITEM_QUALITY_RARE)
+                            if (patchId < 5 || patchId == 12 || patchId == 17)
                             {
-                                continue;
+                                if (proto->Quality > ITEM_QUALITY_RARE)
+                                {
+                                    continue;
+                                }
                             }
-                        }
-                        else
-                        {
-                            if (proto->Quality > ITEM_QUALITY_EPIC)
+                            else
                             {
-                                continue;
+                                if (proto->Quality > ITEM_QUALITY_EPIC)
+                                {
+                                    continue;
+                                }
                             }
                         }
 
