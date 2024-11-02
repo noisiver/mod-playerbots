@@ -32,6 +32,7 @@
 #include "PlayerbotAIConfig.h"
 #include "PlayerbotDbStore.h"
 #include "Playerbots.h"
+#include "Progression.h"
 #include "RandomItemMgr.h"
 #include "RandomPlayerbotFactory.h"
 #include "SharedDefines.h"
@@ -1626,68 +1627,66 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
                         if (!proto)
                             continue;
 
-                        uint8 patchId = sConfigMgr->GetOption<uint8>("Progression.Patch", 21);
-
-                        if (patchId < 6 && proto->ItemLevel > 63)
+                        if (sProgression->GetPatchId() < PATCH_RISE_OF_THE_BLOOD_GOD && proto->ItemLevel > 63)
                         {
                             continue;
                         }
 
-                        if (patchId < 7 && proto->ItemLevel > 66)
+                        if (sProgression->GetPatchId() < PATCH_DRAGONS_OF_NIGHTMARE && proto->ItemLevel > 66)
                         {
                             continue;
                         }
 
-                        if (patchId < 12 && proto->ItemLevel > 76)
+                        if (sProgression->GetPatchId() < PATCH_BEFORE_THE_STORM && proto->ItemLevel > 76)
                         {
                             continue;
                         }
 
-                        if (patchId < 13 && proto->ItemLevel > 110)
+                        if (sProgression->GetPatchId() < PATCH_BLACK_TEMPLE && proto->ItemLevel > 110)
                         {
                             continue;
                         }
 
-                        if (patchId < 14 && proto->ItemLevel > 120)
+                        if (sProgression->GetPatchId() < PATCH_VOICE_CHAT && proto->ItemLevel > 120)
                         {
                             continue;
                         }
 
-                        if (patchId < 17 && proto->ItemLevel > 133)
+                        if (sProgression->GetPatchId() < PATCH_ECHOES_OF_DOOM && proto->ItemLevel > 133)
                         {
                             continue;
                         }
 
-                        if (patchId < 18 && proto->ItemLevel > 200)
+                        if (sProgression->GetPatchId() < PATCH_SECRETS_OF_ULDUAR && proto->ItemLevel > 200)
                         {
                             continue;
                         }
 
-                        if (patchId < 19 && proto->ItemLevel > 213)
+                        if (sProgression->GetPatchId() < PATCH_CALL_OF_THE_CRUSADE && proto->ItemLevel > 213)
                         {
                             continue;
                         }
 
-                        if (patchId < 20 && proto->ItemLevel > 226)
+                        if (sProgression->GetPatchId() < PATCH_FALL_OF_THE_LICH_KING && proto->ItemLevel > 226)
                         {
                             continue;
                         }
 
-                        if (patchId < 21 && proto->ItemLevel > 245)
+                        if (sProgression->GetPatchId() < PATCH_ASSAULT_ON_THE_RUBY_SANCTUM && proto->ItemLevel > 245)
                         {
                             continue;
                         }
 
                         if (!sRandomPlayerbotMgr->IsRandomBot(bot))
                         {
-                            if (patchId < 12)
+                            if (sProgression->GetPatchId() < 12)
                             {
                                  if (proto->ItemLevel > 58)
                                  {
                                      continue;
                                  }
                             }
-                            else if (patchId < 17)
+                            else if (sProgression->GetPatchId() < 17)
                             {
                                  if (proto->ItemLevel > 100)
                                  {
@@ -1702,7 +1701,7 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
                                  }
                             }
 
-                            if (patchId < 5 || patchId == 12 || patchId == 17)
+                            if (patchId < PATCH_ASSAULT_ON_BLACKWING_LAIR || patchId == PATCH_BEFORE_THE_STORM || patchId == PATCH_ECHOES_OF_DOOM)
                             {
                                 if (proto->Quality > ITEM_QUALITY_RARE)
                                 {
