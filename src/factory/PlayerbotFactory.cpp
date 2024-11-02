@@ -31,7 +31,6 @@
 #include "PlayerbotAIConfig.h"
 #include "PlayerbotDbStore.h"
 #include "Playerbots.h"
-#include "Progression.h"
 #include "RandomItemMgr.h"
 #include "RandomPlayerbotFactory.h"
 #include "SharedDefines.h"
@@ -1626,66 +1625,68 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
                         if (!proto)
                             continue;
 
-                        if (sProgression->GetPatchId() < PATCH_RISE_OF_THE_BLOOD_GOD && proto->ItemLevel > 63)
+                        uint8 patchId = sConfigMgr->GetOption<uint8>("Progression.Patch", 21);
+
+                        if (patchId < 6 && proto->ItemLevel > 63)
                         {
                             continue;
                         }
 
-                        if (sProgression->GetPatchId() < PATCH_DRAGONS_OF_NIGHTMARE && proto->ItemLevel > 66)
+                        if (patchId < 7 && proto->ItemLevel > 66)
                         {
                             continue;
                         }
 
-                        if (sProgression->GetPatchId() < PATCH_BEFORE_THE_STORM && proto->ItemLevel > 76)
+                        if (patchId < 12 && proto->ItemLevel > 76)
                         {
                             continue;
                         }
 
-                        if (sProgression->GetPatchId() < PATCH_BLACK_TEMPLE && proto->ItemLevel > 110)
+                        if (patchId < 13 && proto->ItemLevel > 110)
                         {
                             continue;
                         }
 
-                        if (sProgression->GetPatchId() < PATCH_VOICE_CHAT && proto->ItemLevel > 120)
+                        if (patchId < 14 && proto->ItemLevel > 120)
                         {
                             continue;
                         }
 
-                        if (sProgression->GetPatchId() < PATCH_ECHOES_OF_DOOM && proto->ItemLevel > 133)
+                        if (patchId < 17 && proto->ItemLevel > 133)
                         {
                             continue;
                         }
 
-                        if (sProgression->GetPatchId() < PATCH_SECRETS_OF_ULDUAR && proto->ItemLevel > 200)
+                        if (patchId < 18 && proto->ItemLevel > 200)
                         {
                             continue;
                         }
 
-                        if (sProgression->GetPatchId() < PATCH_CALL_OF_THE_CRUSADE && proto->ItemLevel > 213)
+                        if (patchId < 19 && proto->ItemLevel > 213)
                         {
                             continue;
                         }
 
-                        if (sProgression->GetPatchId() < PATCH_FALL_OF_THE_LICH_KING && proto->ItemLevel > 226)
+                        if (patchId < 20 && proto->ItemLevel > 226)
                         {
                             continue;
                         }
 
-                        if (sProgression->GetPatchId() < PATCH_ASSAULT_ON_THE_RUBY_SANCTUM && proto->ItemLevel > 245)
+                        if (patchId < 21 && proto->ItemLevel > 245)
                         {
                             continue;
                         }
 
                         if (!sRandomPlayerbotMgr->IsRandomBot(bot))
                         {
-                            if (sProgression->GetPatchId() < 12)
+                            if (patchId < 12)
                             {
                                  if (proto->ItemLevel > 58)
                                  {
                                      continue;
                                  }
                             }
-                            else if (sProgression->GetPatchId() < 17)
+                            else if (patchId < 17)
                             {
                                  if (proto->ItemLevel > 100)
                                  {
@@ -1701,35 +1702,35 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
                             }
                         }
 
-                        switch (sProgression->GetPatchId())
+                        switch (patchId)
                         {
-                            case PATCH_WORLD_OF_WARCRAFT:
-                            case PATCH_MYSTERIES_OF_MARAUDON:
-                            case PATCH_RUINS_OF_THE_DIRE_MAUL:
-                            case PATCH_THE_CALL_TO_WAR:
-                            case PATCH_BATTLEGROUNDS:
-                            case PATCH_BEFORE_THE_STORM:
-                            case PATCH_ECHOES_OF_DOOM:
+                            case 0:
+                            case 1:
+                            case 2:
+                            case 3:
+                            case 4:
+                            case 12:
+                            case 17:
                                 if (proto->Quality > ITEM_QUALITY_RARE)
                                 {
                                     continue;
                                 }
                                 break;
-                            case PATCH_ASSAULT_ON_BLACKWING_LAIR:
-                            case PATCH_RISE_OF_THE_BLOOD_GOD:
-                            case PATCH_DRAGONS_OF_NIGHTMARE:
-                            case PATCH_THE_GATES_OF_AHN_QIRAJ:
-                            case PATCH_STORMS_OF_AZEROTH:
-                            case PATCH_SHADOW_OF_THE_NECROPOLIS:
-                            case PATCH_DRUMS_OF_WAR:
-                            case PATCH_BLACK_TEMPLE:
-                            case PATCH_VOICE_CHAT:
-                            case PATCH_THE_GODS_OF_ZUL_AMAN:
-                            case PATCH_FURY_OF_THE_SUNWELL:
-                            case PATCH_SECRETS_OF_ULDUAR:
-                            case PATCH_CALL_OF_THE_CRUSADE:
-                            case PATCH_FALL_OF_THE_LICH_KING:
-                            case PATCH_ASSAULT_ON_THE_RUBY_SANCTUM:
+                            case 5:
+                            case 6:
+                            case 7:
+                            case 8:
+                            case 9:
+                            case 10:
+                            case 11:
+                            case 13:
+                            case 14:
+                            case 15:
+                            case 16:
+                            case 18:
+                            case 19:
+                            case 20:
+                            case 21:
                                 if (proto->Quality > ITEM_QUALITY_EPIC)
                                 {
                                     continue;
