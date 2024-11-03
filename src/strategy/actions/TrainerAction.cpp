@@ -164,6 +164,7 @@ bool MaintenanceAction::Execute(Event event)
     }
     botAI->TellMaster("I'm maintaining");
     PlayerbotFactory factory(bot, bot->GetLevel());
+
     if (sRandomPlayerbotMgr->IsRandomBot(bot))
     {
         factory.InitBags(false);
@@ -178,15 +179,15 @@ bool MaintenanceAction::Execute(Event event)
         factory.InitSkills();
         factory.InitMounts();
         factory.InitGlyphs(true);
+        bot->DurabilityRepairAll(false, 1.0f, false);
+        bot->SendTalentsInfoData(false);
     }
 
     if (bot->GetLevel() >= sPlayerbotAIConfig->minEnchantingBotLevel)
     {
         factory.ApplyEnchantAndGemsNew();
     }
-    if (sRandomPlayerbotMgr->IsRandomBot(bot))
-        bot->DurabilityRepairAll(false, 1.0f, false);
-    bot->SendTalentsInfoData(false);
+
     return true;
 }
 
