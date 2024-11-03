@@ -171,11 +171,8 @@ bool MaintenanceAction::Execute(Event event)
         factory.InitFood();
         factory.InitReagents();
         factory.InitTalentsTree(true);
-    }
-    factory.InitPet();
-    factory.InitPetTalents();
-    if (sRandomPlayerbotMgr->IsRandomBot(bot))
-    {
+        factory.InitPet();
+        factory.InitPetTalents();
         factory.InitClassSpells();
         factory.InitAvailableSpells();
         factory.InitSkills();
