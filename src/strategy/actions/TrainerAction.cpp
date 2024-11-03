@@ -165,11 +165,10 @@ bool MaintenanceAction::Execute(Event event)
     botAI->TellMaster("I'm maintaining");
     PlayerbotFactory factory(bot, bot->GetLevel());
     if (sRandomPlayerbotMgr->IsRandomBot(bot))
-        factory.InitBags(false);
-    factory.InitAmmo();
-    factory.InitFood();
-    if (sRandomPlayerbotMgr->IsRandomBot(bot))
     {
+        factory.InitBags(false);
+        factory.InitAmmo();
+        factory.InitFood();
         factory.InitReagents();
         factory.InitTalentsTree(true);
     }
