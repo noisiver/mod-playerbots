@@ -168,12 +168,9 @@ bool MaintenanceAction::Execute(Event event)
     if (sRandomPlayerbotMgr->IsRandomBot(bot))
     {
         factory.InitBags(false);
-        factory.InitAmmo();
         factory.InitFood();
         factory.InitReagents();
         factory.InitTalentsTree(true);
-        factory.InitPet();
-        factory.InitPetTalents();
         factory.InitClassSpells();
         factory.InitAvailableSpells();
         factory.InitSkills();
@@ -182,6 +179,14 @@ bool MaintenanceAction::Execute(Event event)
         bot->DurabilityRepairAll(false, 1.0f, false);
         bot->SendTalentsInfoData(false);
     }
+
+    if (bot->GetClass() == CLASS_HUNTER)
+    {
+        factory.InitAmmo();
+    }
+
+    factory.InitPet();
+    factory.InitPetTalents();
 
     if (bot->GetLevel() >= sPlayerbotAIConfig->minEnchantingBotLevel)
     {
