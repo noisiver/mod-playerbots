@@ -205,102 +205,132 @@ ItemUsage ItemUsageValue::QueryItemUsageForEquip(ItemTemplate const* itemProto)
         !sRandomItemMgr->CanEquipArmor(bot->getClass(), bot->GetLevel(), itemProto))
         shouldEquip = false;
 
-    Item* oldItem = bot->GetItemByPos(dest);
-
-    // No item equiped
-    if (!oldItem)
+    uint8 possibleSlots = 1;
+    uint8 dstSlot = botAI->FindEquipSlot(itemProto, NULL_SLOT, true);
+    
+    if (dstSlot == EQUIPMENT_SLOT_FINGER1 || dstSlot == EQUIPMENT_SLOT_TRINKET1)
     {
-        if (shouldEquip)
-            return ITEM_USAGE_EQUIP;
-        else
+        possibleSlots = 2;
+    }
+
+    // Check weapon case separately to keep things a bit cleaner
+    bool have2HWeapon = false;
+    bool isValidTGWeapon = false;
+    if (dstSlot == EQUIPMENT_SLOT_MAINHAND)
+    {
+        Item* currentWeapon = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
+        have2HWeapon = currentWeapon && currentWeapon->GetTemplate()->InventoryType == INVTYPE_2HWEAPON;
+        isValidTGWeapon = itemProto->SubClass == ITEM_SUBCLASS_WEAPON_AXE2 ||
+                          itemProto->SubClass == ITEM_SUBCLASS_WEAPON_MACE2 ||
+                          itemProto->SubClass == ITEM_SUBCLASS_WEAPON_SWORD2;
+        
+        if (bot->CanDualWield() && ((itemProto->InventoryType != INVTYPE_2HWEAPON && !have2HWeapon) || (bot->CanTitanGrip() && isValidTGWeapon)))
         {
-            return ITEM_USAGE_BAD_EQUIP;
+            possibleSlots = 2;
         }
     }
 
-    ItemTemplate const* oldItemProto = oldItem->GetTemplate();
-    float oldScore = calculator.CalculateItem(oldItemProto->ItemId);
-    if (oldItem)
+    for (uint8 i = 0; i < possibleSlots; i++)
     {
-        // uint32 oldStatWeight = sRandomItemMgr->GetLiveStatWeight(bot, oldItemProto->ItemId);
-        if (itemScore || oldScore)
+        bool shouldEquipInSlot = shouldEquip;
+        Item* oldItem = bot->GetItemByPos(dest + i);
+
+        // No item equipped
+        if (!oldItem)
         {
-            shouldEquip = itemScore > oldScore * sPlayerbotAIConfig->equipUpgradeThreshold;
+            if (shouldEquipInSlot)
+                return ITEM_USAGE_EQUIP;
+            else
+            {
+                return ITEM_USAGE_BAD_EQUIP;
+            }
         }
-    }
 
-    // Bigger quiver
-    if (itemProto->Class == ITEM_CLASS_QUIVER)
-    {
-        if (!oldItem || oldItemProto->ContainerSlots < itemProto->ContainerSlots)
+        ItemTemplate const* oldItemProto = oldItem->GetTemplate();
+        float oldScore = calculator.CalculateItem(oldItemProto->ItemId);
+        if (oldItem)
         {
-            return ITEM_USAGE_EQUIP;
+            // uint32 oldStatWeight = sRandomItemMgr->GetLiveStatWeight(bot, oldItemProto->ItemId);
+            if (itemScore || oldScore)
+            {
+                shouldEquipInSlot = itemScore > oldScore * sPlayerbotAIConfig->equipUpgradeThreshold;
+            }
         }
-        else
+
+        // Bigger quiver
+        if (itemProto->Class == ITEM_CLASS_QUIVER)
         {
-            return ITEM_USAGE_NONE;
+            if (!oldItem || oldItemProto->ContainerSlots < itemProto->ContainerSlots)
+            {
+                return ITEM_USAGE_EQUIP;
+            }
+            else
+            {
+                return ITEM_USAGE_NONE;
+            }
         }
-    }
 
-    bool existingShouldEquip = true;
-    if (oldItemProto->Class == ITEM_CLASS_WEAPON && !sRandomItemMgr->CanEquipWeapon(bot->getClass(), oldItemProto))
-        existingShouldEquip = false;
+        bool existingShouldEquip = true;
+        if (oldItemProto->Class == ITEM_CLASS_WEAPON && !sRandomItemMgr->CanEquipWeapon(bot->getClass(), oldItemProto))
+            existingShouldEquip = false;
 
-    if (oldItemProto->Class == ITEM_CLASS_ARMOR &&
-        !sRandomItemMgr->CanEquipArmor(bot->getClass(), bot->GetLevel(), oldItemProto))
-        existingShouldEquip = false;
+        if (oldItemProto->Class == ITEM_CLASS_ARMOR &&
+            !sRandomItemMgr->CanEquipArmor(bot->getClass(), bot->GetLevel(), oldItemProto))
+            existingShouldEquip = false;
 
-    // uint32 oldItemPower = sRandomItemMgr->GetLiveStatWeight(bot, oldItemProto->ItemId);
-    // uint32 newItemPower = sRandomItemMgr->GetLiveStatWeight(bot, itemProto->ItemId);
+        // uint32 oldItemPower = sRandomItemMgr->GetLiveStatWeight(bot, oldItemProto->ItemId);
+        // uint32 newItemPower = sRandomItemMgr->GetLiveStatWeight(bot, itemProto->ItemId);
 
-    // Compare items based on item level, quality or itemId.
-    bool isBetter = false;
-    if (itemScore > oldScore)
-        isBetter = true;
-    // else if (newItemPower == oldScore && itemProto->Quality > oldItemProto->Quality)
-    //     isBetter = true;
-    // else if (newItemPower == oldScore && itemProto->Quality == oldItemProto->Quality && itemProto->ItemId >
-    // oldItemProto->ItemId)
-    //     isBetter = true;
+        // Compare items based on item level, quality or itemId.
+        bool isBetter = false;
+        if (itemScore > oldScore)
+            isBetter = true;
+        // else if (newItemPower == oldScore && itemProto->Quality > oldItemProto->Quality)
+        //     isBetter = true;
+        // else if (newItemPower == oldScore && itemProto->Quality == oldItemProto->Quality && itemProto->ItemId >
+        // oldItemProto->ItemId)
+        //     isBetter = true;
 
-    Item* item = CurrentItem(itemProto);
-    bool itemIsBroken =
-        item && item->GetUInt32Value(ITEM_FIELD_DURABILITY) == 0 && item->GetUInt32Value(ITEM_FIELD_MAXDURABILITY) > 0;
-    bool oldItemIsBroken =
-        oldItem->GetUInt32Value(ITEM_FIELD_DURABILITY) == 0 && oldItem->GetUInt32Value(ITEM_FIELD_MAXDURABILITY) > 0;
-
-    if (itemProto->ItemId != oldItemProto->ItemId && (shouldEquip || !existingShouldEquip) && isBetter)
-    {
-        switch (itemProto->Class)
+        Item* item = CurrentItem(itemProto);
+        bool itemIsBroken =
+            item && item->GetUInt32Value(ITEM_FIELD_DURABILITY) == 0 && item->GetUInt32Value(ITEM_FIELD_MAXDURABILITY) > 0;
+        bool oldItemIsBroken =
+            oldItem->GetUInt32Value(ITEM_FIELD_DURABILITY) == 0 && oldItem->GetUInt32Value(ITEM_FIELD_MAXDURABILITY) > 0;
+        
+        if (itemProto->ItemId != oldItemProto->ItemId && (shouldEquipInSlot || !existingShouldEquip) && isBetter)
         {
-            case ITEM_CLASS_ARMOR:
-                if (oldItemProto->SubClass <= itemProto->SubClass)
+            switch (itemProto->Class)
+            {
+                case ITEM_CLASS_ARMOR:
+                    if (oldItemProto->SubClass <= itemProto->SubClass)
+                    {
+                        // Need to add some logic to check second slot before returning, but as it happens, all three of these
+                        // return vals will result in an attempted equip action so it wouldn't have much effect currently
+                        if (itemIsBroken && !oldItemIsBroken)
+                            return ITEM_USAGE_BROKEN_EQUIP;
+                        else if (shouldEquipInSlot)
+                            return ITEM_USAGE_REPLACE;
+                        else
+                            return ITEM_USAGE_BAD_EQUIP;
+
+                        break;
+                    }
+                default:
                 {
                     if (itemIsBroken && !oldItemIsBroken)
                         return ITEM_USAGE_BROKEN_EQUIP;
-                    else if (shouldEquip)
-                        return ITEM_USAGE_REPLACE;
+                    else if (shouldEquipInSlot)
+                        return ITEM_USAGE_EQUIP;
                     else
                         return ITEM_USAGE_BAD_EQUIP;
-
-                    break;
                 }
-            default:
-            {
-                if (itemIsBroken && !oldItemIsBroken)
-                    return ITEM_USAGE_BROKEN_EQUIP;
-                else if (shouldEquip)
-                    return ITEM_USAGE_EQUIP;
-                else
-                    return ITEM_USAGE_BAD_EQUIP;
             }
         }
+
+        // Item is not better but current item is broken and new one is not.
+        if (oldItemIsBroken && !itemIsBroken)
+            return ITEM_USAGE_EQUIP;
     }
-
-    // Item is not better but current item is broken and new one is not.
-    if (oldItemIsBroken && !itemIsBroken)
-        return ITEM_USAGE_EQUIP;
-
     return ITEM_USAGE_NONE;
 }
 
@@ -355,8 +385,28 @@ bool ItemUsageValue::IsItemNeededForSkill(ItemTemplate const* proto)
 {
     switch (proto->ItemId)
     {
-        case 2901:  // Mining pick
+        case 756:  // Tunnel Pick
             return botAI->HasSkill(SKILL_MINING);
+        case 778:  // Kobold Excavation Pick
+            return botAI->HasSkill(SKILL_MINING);
+        case 1819:  // Gouging Pick
+            return botAI->HasSkill(SKILL_MINING);
+        case 1893:  // Miner's Revenge
+            return botAI->HasSkill(SKILL_MINING);
+        case 1959:  // Cold Iron Pick
+            return botAI->HasSkill(SKILL_MINING);
+        case 2901:  // Mining Pick
+            return botAI->HasSkill(SKILL_MINING);
+        case 9465:  // Digmaster 5000
+            return botAI->HasSkill(SKILL_MINING);
+        case 20723:  // Brann's Trusty Pick
+            return botAI->HasSkill(SKILL_MINING);
+        case 40772:  // Gnomish Army Knife
+            return botAI->HasSkill(SKILL_MINING) || botAI->HasSkill(SKILL_ENGINEERING) || botAI->HasSkill(SKILL_BLACKSMITHING) || botAI->HasSkill(SKILL_COOKING) || botAI->HasSkill(SKILL_SKINNING);
+        case 40892:  // Hammer Pick
+            return botAI->HasSkill(SKILL_MINING) || botAI->HasSkill(SKILL_BLACKSMITHING);
+        case 40893:  // Bladed Pickaxe
+            return botAI->HasSkill(SKILL_MINING) || botAI->HasSkill(SKILL_SKINNING);
         case 5956:  // Blacksmith Hammer
             return botAI->HasSkill(SKILL_BLACKSMITHING) || botAI->HasSkill(SKILL_ENGINEERING);
         case 6219:  // Arclight Spanner
@@ -372,6 +422,10 @@ bool ItemUsageValue::IsItemNeededForSkill(ItemTemplate const* proto)
         case 16207:  // Runed Arcanite Rod
             return botAI->HasSkill(SKILL_ENCHANTING);
         case 7005:  // Skinning Knife
+            return botAI->HasSkill(SKILL_SKINNING);
+        case 12709:
+            return botAI->HasSkill(SKILL_SKINNING);
+        case 19901:
             return botAI->HasSkill(SKILL_SKINNING);
         case 4471:  // Flint and Tinder
             return botAI->HasSkill(SKILL_COOKING);

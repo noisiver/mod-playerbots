@@ -6,28 +6,33 @@
 
 float PrinceKelesethMultiplier::GetValue(Action* action)
 {
-	Unit* boss = AI_VALUE2(Unit*, "find target", "prince keleseth");
-    if (!boss)
-    {
-        return 1.0f;
-    }
+    Unit* boss = AI_VALUE2(Unit*, "find target", "prince keleseth");
+    if (!boss) { return 1.0f; }
+
+    // Suppress auto-targeting behaviour only when a tomb is up
     if (dynamic_cast<DpsAssistAction*>(action))
     {
-        return 0.0f;
+        GuidVector members = AI_VALUE(GuidVector, "group members");
+        for (auto& member : members)
+        {
+            Unit* unit = botAI->GetUnit(member);
+            if (unit && unit->HasAura(SPELL_FROST_TOMB))
+            {
+                return 0.0f;
+            }
+        }
     }
-	return 1.0f;
+    return 1.0f;
 }
+
 float SkarvaldAndDalronnMultiplier::GetValue(Action* action)
 {
-    // Unit* skarvald = AI_VALUE2(Unit*, "find target", "skarvald the constructor");
+    // Only need to deal with Dalronn here. If he's dead, just fall back to normal dps strat
     Unit* dalronn = AI_VALUE2(Unit*, "find target", "dalronn the controller");
+    if (!dalronn) { return 1.0f; }
 
-    if (!dalronn)
-    {
-        return 1.0f;
-    }
-
-    if (dynamic_cast<DpsAssistAction*>(action))
+    // Only suppress DpsAssistAction if Dalronn is alive
+    if (dalronn->isTargetableForAttack() && dynamic_cast<DpsAssistAction*>(action))
     {
         return 0.0f;
     }
@@ -38,10 +43,7 @@ float IngvarThePlundererMultiplier::GetValue(Action* action)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "ingvar the plunderer");
     bool isTank = botAI->IsTank(bot);
-    if (!boss)
-    {
-        return 1.0f;
-    }
+    if (!boss) { return 1.0f; }
 
     // Prevent movement actions overriding current movement, we're probably dodging a slam
     if (isTank && bot->isMoving() && dynamic_cast<MovementAction*>(action))
@@ -59,10 +61,7 @@ float IngvarThePlundererMultiplier::GetValue(Action* action)
             {
                 uint32 spellId = AI_VALUE2(uint32, "spell id", action->getName());
                 SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
-                if (!spellInfo)
-                {
-                    return 1.0f;
-                }
+                if (!spellInfo) { return 1.0f; }
 
                 uint32 castTime = spellInfo->CalcCastTime(bot);
                 if (castTime != 0)
@@ -72,10 +71,8 @@ float IngvarThePlundererMultiplier::GetValue(Action* action)
             }
         }
         // Done with non-tank logic
-        if (!isTank)
-        {
-            return 1.0f;
-        }
+        if (!isTank) { return 1.0f; }
+        
         // TANK ONLY
         if (boss->FindCurrentSpellBySpellId(SPELL_SMASH) ||
             boss->FindCurrentSpellBySpellId(SPELL_DARK_SMASH))
