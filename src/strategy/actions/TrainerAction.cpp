@@ -162,27 +162,30 @@ bool MaintenanceAction::Execute(Event event)
         botAI->TellError("maintenance command is not allowed, please check the configuration.");
         return false;
     }
-
-    if (!sRandomPlayerbotMgr->IsRandomBot(bot))
-    {
-        return false;
-    }
-
     botAI->TellMaster("I'm maintaining");
     PlayerbotFactory factory(bot, bot->GetLevel());
-    factory.InitBags(false);
-    factory.InitAmmo();
-    factory.InitFood();
-    factory.InitReagents();
+    if (sRandomPlayerbotMgr->IsRandomBot(bot))
+    {
+        factory.InitBags(false);
+        factory.InitAmmo();
+        factory.InitFood();
+        factory.InitReagents();
+    }
     factory.InitTalentsTree(true);
-    factory.InitPet();
+    if (sRandomPlayerbotMgr->IsRandomBot(bot))
+    {
+        factory.InitPet();
+    }
     factory.InitPetTalents();
-    factory.InitClassSpells();
-    factory.InitAvailableSpells();
-    factory.InitSkills();
-    factory.InitMounts();
+    if (sRandomPlayerbotMgr->IsRandomBot(bot))
+    {
+        factory.InitClassSpells();
+        factory.InitAvailableSpells();
+        factory.InitSkills();
+        factory.InitMounts();
+    }
     factory.InitGlyphs(true);
-    if (bot->GetLevel() >= sPlayerbotAIConfig->minEnchantingBotLevel)
+    if (bot->GetLevel() >= sPlayerbotAIConfig->minEnchantingBotLevel && sRandomPlayerbotMgr->IsRandomBot(bot))
     {
         factory.ApplyEnchantAndGemsNew();
     }
