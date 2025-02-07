@@ -9,6 +9,7 @@
 #include "Event.h"
 #include "PlayerbotFactory.h"
 #include "Playerbots.h"
+#include "Progression.h"
 
 void TrainerAction::Learn(uint32 cost, TrainerSpell const* tSpell, std::ostringstream& msg)
 {
@@ -164,18 +165,24 @@ bool MaintenanceAction::Execute(Event event)
     }
     botAI->TellMaster("I'm maintaining");
     PlayerbotFactory factory(bot, bot->GetLevel());
-    factory.InitBags(false);
-    factory.InitAmmo();
-    factory.InitFood();
-    factory.InitReagents();
-    factory.InitTalentsTree(true);
+    if (sRandomPlayerbotMgr->IsRandomBot(bot) || sProgression->GetPatchId() < PATCH_ECHOES_OF_DOOM)
+    {
+        factory.InitTalentsTree(true);
+    }
     factory.InitPet();
     factory.InitPetTalents();
-    factory.InitClassSpells();
-    factory.InitAvailableSpells();
-    factory.InitSkills();
-    factory.InitMounts();
-    factory.InitGlyphs(true);
+    if (sRandomPlayerbotMgr->IsRandomBot(bot))
+    {
+        factory.InitBags(false);
+        factory.InitAmmo();
+        factory.InitFood();
+        factory.InitReagents();
+        factory.InitClassSpells();
+        factory.InitAvailableSpells();
+        factory.InitSkills();
+        factory.InitMounts();
+        factory.InitGlyphs(true);
+    }
     if (bot->GetLevel() >= sPlayerbotAIConfig->minEnchantingBotLevel)
     {
         factory.ApplyEnchantAndGemsNew();
