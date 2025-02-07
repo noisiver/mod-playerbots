@@ -2069,6 +2069,12 @@ void RandomPlayerbotMgr::Refresh(Player* bot)
     PlayerbotFactory factory(bot, bot->GetLevel());
     factory.Refresh();
 
+    if (IsRandomBot(bot))
+    {
+        factory.InitEquipment(true);
+        factory.InitAmmo();
+    }
+
     if (bot->GetMaxPower(POWER_MANA) > 0)
         bot->SetPower(POWER_MANA, bot->GetMaxPower(POWER_MANA));
 
