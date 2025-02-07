@@ -31,6 +31,7 @@
 #include "PlayerbotAIConfig.h"
 #include "PlayerbotDbStore.h"
 #include "Playerbots.h"
+#include "Progression.h"
 #include "RandomItemMgr.h"
 #include "RandomPlayerbotFactory.h"
 #include "SharedDefines.h"
@@ -1633,6 +1634,96 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
                         ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
                         if (!proto)
                             continue;
+
+                        if (sProgression->GetPatchId() < PATCH_RISE_OF_THE_BLOOD_GOD && proto->ItemLevel > 63)
+                        {
+                            continue;
+                        }
+
+                        if (sProgression->GetPatchId() < PATCH_DRAGONS_OF_NIGHTMARE && proto->ItemLevel > 66)
+                        {
+                            continue;
+                        }
+
+                        if (sProgression->GetPatchId() < PATCH_BEFORE_THE_STORM && proto->ItemLevel > 76)
+                        {
+                            continue;
+                        }
+
+                        if (sProgression->GetPatchId() < PATCH_BLACK_TEMPLE && proto->ItemLevel > 110)
+                        {
+                            continue;
+                        }
+
+                        if (sProgression->GetPatchId() < PATCH_VOICE_CHAT && proto->ItemLevel > 120)
+                        {
+                            continue;
+                        }
+
+                        if (sProgression->GetPatchId() < PATCH_ECHOES_OF_DOOM && proto->ItemLevel > 133)
+                        {
+                            continue;
+                        }
+
+                        if (sProgression->GetPatchId() < PATCH_SECRETS_OF_ULDUAR && proto->ItemLevel > 200)
+                        {
+                            continue;
+                        }
+
+                        if (sProgression->GetPatchId() < PATCH_CALL_OF_THE_CRUSADE && proto->ItemLevel > 213)
+                        {
+                            continue;
+                        }
+
+                        if (sProgression->GetPatchId() < PATCH_FALL_OF_THE_LICH_KING && proto->ItemLevel > 226)
+                        {
+                            continue;
+                        }
+
+                        if (sProgression->GetPatchId() < PATCH_ASSAULT_ON_THE_RUBY_SANCTUM && proto->ItemLevel > 245)
+                        {
+                            continue;
+                        }
+
+                        if (!sRandomPlayerbotMgr->IsRandomBot(bot))
+                        {
+                            if (sProgression->GetPatchId() < 12)
+                            {
+                                 if (proto->ItemLevel > 58)
+                                 {
+                                     continue;
+                                 }
+                            }
+                            else if (sProgression->GetPatchId() < 17)
+                            {
+                                 if (proto->ItemLevel > 100)
+                                 {
+                                     continue;
+                                 }
+                            }
+                            else
+                            {
+                                 if (proto->ItemLevel > 174)
+                                 {
+                                     continue;
+                                 }
+                            }
+
+                            if (sProgression->GetPatchId() < PATCH_ASSAULT_ON_BLACKWING_LAIR || sProgression->GetPatchId() == PATCH_BEFORE_THE_STORM || sProgression->GetPatchId() == PATCH_ECHOES_OF_DOOM)
+                            {
+                                if (proto->Quality > ITEM_QUALITY_RARE)
+                                {
+                                    continue;
+                                }
+                            }
+                            else
+                            {
+                                if (proto->Quality > ITEM_QUALITY_EPIC)
+                                {
+                                    continue;
+                                }
+                            }
+                        }
 
                         if (gearScoreLimit != 0 &&
                             CalcMixedGearScore(proto->ItemLevel, proto->Quality) > gearScoreLimit)
