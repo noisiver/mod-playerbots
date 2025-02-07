@@ -46,7 +46,54 @@ bool DrinkAction::Execute(Event event)
 
         botAI->SetNextCheckDelay(delay);
 
-        bot->AddAura(24707, bot);
+        uint8 level = bot->GetLevel();
+        uint32 spellId = 24707;
+        if (level < 5)
+        {
+            spellId = 430;
+        }
+        else if (level < 15)
+        {
+            spellId = 431;
+        }
+        else if (level < 25)
+        {
+            spellId = 432;
+        }
+        else if (level < 35)
+        {
+            spellId = 1133;
+        }
+        else if (level < 45)
+        {
+            spellId = 1135;
+        }
+        else if (level < 55)
+        {
+            spellId = 1137;
+        }
+        else if (level < 60)
+        {
+            spellId = 22734;
+        }
+        else if (level < 65)
+        {
+            spellId = 34291;
+        }
+        else if (level < 70)
+        {
+            spellId = 27089;
+        }
+        else if (level < 80)
+        {
+            spellId = 46755;
+        }
+        else
+        {
+            spellId = 57073;
+        }
+
+        bot->AddAura(spellId, bot);
         return true;
         // return botAI->CastSpell(24707, bot);
     }
@@ -96,7 +143,50 @@ bool EatAction::Execute(Event event)
 
         botAI->SetNextCheckDelay(delay);
 
-        bot->AddAura(24707, bot);
+        uint8 level = bot->GetLevel();
+        uint32 spellId = 24707;
+        if (level < 5)
+        {
+            spellId = 433;
+        }
+        else if (level < 15)
+        {
+            spellId = 434;
+        }
+        else if (level < 25)
+        {
+            spellId = 435;
+        }
+        else if (level < 35)
+        {
+            spellId = 1127;
+        }
+        else if (level < 45)
+        {
+            spellId = 1129;
+        }
+        else if (level < 55)
+        {
+            spellId = 1131;
+        }
+        else if (level < 65)
+        {
+            spellId = 29073;
+        }
+        else if (level < 70)
+        {
+            spellId = 33725;
+        }
+        else if (level < 80)
+        {
+            spellId = 33725;
+        }
+        else
+        {
+            spellId = 45548;
+        }
+
+        bot->AddAura(spellId, bot);
         return true;
     }
 
