@@ -419,14 +419,15 @@ bool PlayerbotAIConfig::Initialize()
     {
         for (uint32 classId = 0; classId < MAX_CLASSES; classId++)
         {
-            for (uint32 specId = 0; specId < MAX_SPECNO; specId++)
+            for (uint32 specId = 0; specId <= MAX_WORLDBUFF_SPECNO; specId++)
             {
-                for (uint32 minLevel = 0; minLevel < MAX_LEVEL; minLevel++)
+                for (uint32 minLevel = 0; minLevel <= randomBotMaxLevel; minLevel++)
                 {
-                    for (uint32 maxLevel = 0; maxLevel < MAX_LEVEL; maxLevel++)
+                    for (uint32 maxLevel = minLevel; maxLevel <= randomBotMaxLevel; maxLevel++)
                     {
-                        loadWorldBuf(factionId, classId, specId, minLevel, maxLevel);
+                        loadWorldBuff(factionId, classId, specId, minLevel, maxLevel);
                     }
+                    loadWorldBuff(factionId, classId, specId, minLevel, 0);
                 }
             }
         }
@@ -484,6 +485,7 @@ bool PlayerbotAIConfig::Initialize()
     randomBotAllianceRatio = sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotAllianceRatio", 50);
     randomBotHordeRatio = sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotHordeRatio", 50);
     disableDeathKnightLogin = sConfigMgr->GetOption<bool>("AiPlayerbot.DisableDeathKnightLogin", 0);
+    limitTalentsExpansion = sConfigMgr->GetOption<bool>("AiPlayerbot.LimitTalentsExpansion", 0);
     botActiveAlone = sConfigMgr->GetOption<int32>("AiPlayerbot.BotActiveAlone", 100);
     BotActiveAloneForceWhenInRadius = sConfigMgr->GetOption<uint32>("AiPlayerbot.BotActiveAloneForceWhenInRadius", 150);
     BotActiveAloneForceWhenInZone = sConfigMgr->GetOption<bool>("AiPlayerbot.BotActiveAloneForceWhenInZone", 1);
@@ -673,7 +675,7 @@ void PlayerbotAIConfig::log(std::string const fileName, char const* str, ...)
     fflush(stdout);
 }
 
-void PlayerbotAIConfig::loadWorldBuf(uint32 factionId1, uint32 classId1, uint32 specId1, uint32 minLevel1, uint32 maxLevel1)
+void PlayerbotAIConfig::loadWorldBuff(uint32 factionId1, uint32 classId1, uint32 specId1, uint32 minLevel1, uint32 maxLevel1)
 {
     std::vector<uint32> buffs;
 
