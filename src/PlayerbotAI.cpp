@@ -4867,6 +4867,40 @@ Item* PlayerbotAI::FindPoison() const
                                { return pItemProto->Class == ITEM_CLASS_CONSUMABLE && pItemProto->SubClass == 6; });
 }
 
+// Find Ammo
+Item* PlayerbotAI::FindAmmo() const
+{
+    // Get equipped ranged weapon
+    if (Item* rangedWeapon = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_RANGED))
+    {
+        uint32 weaponSubClass = rangedWeapon->GetTemplate()->SubClass;
+        uint32 requiredAmmoType = 0;
+
+        // Determine the correct ammo type based on the weapon
+        switch (weaponSubClass)
+        {
+            case ITEM_SUBCLASS_WEAPON_GUN:
+                requiredAmmoType = ITEM_SUBCLASS_BULLET;
+                break;
+            case ITEM_SUBCLASS_WEAPON_BOW:
+            case ITEM_SUBCLASS_WEAPON_CROSSBOW:
+                requiredAmmoType = ITEM_SUBCLASS_ARROW;
+                break;
+            default:
+                return nullptr;  // Not a ranged weapon that requires ammo
+        }
+
+        // Search inventory for the correct ammo type
+        return FindItemInInventory([requiredAmmoType](ItemTemplate const* pItemProto) -> bool
+                                   {
+                                       return pItemProto->Class == ITEM_CLASS_PROJECTILE && 
+                                              pItemProto->SubClass == requiredAmmoType;
+                                   });
+    }
+
+    return nullptr;  // No ranged weapon equipped
+}
+
 // Find Consumable
 Item* PlayerbotAI::FindConsumable(uint32 displayId) const
 {
@@ -5346,12 +5380,9 @@ bool PlayerbotAI::CanMove()
     return bot->GetMotionMaster()->GetCurrentMovementGeneratorType() != FLIGHT_MOTION_TYPE;
 }
 
-bool PlayerbotAI::IsInRealGuild()
+bool PlayerbotAI::IsRealGuild(uint32 guildId)
 {
-    if (!bot->GetGuildId())
-        return false;
-
-    Guild* guild = sGuildMgr->GetGuildById(bot->GetGuildId());
+    Guild* guild = sGuildMgr->GetGuildById(guildId);
     if (!guild)
     {
         return false;
@@ -5361,6 +5392,14 @@ bool PlayerbotAI::IsInRealGuild()
         return false;
 
     return !(sPlayerbotAIConfig->IsInRandomAccountList(leaderAccount));
+}
+
+bool PlayerbotAI::IsInRealGuild()
+{
+    if (!bot->GetGuildId())
+        return false;
+
+    return IsRealGuild(bot->GetGuildId());
 }
 
 void PlayerbotAI::QueueChatResponse(const ChatQueuedReply chatReply) { chatReplies.push_back(std::move(chatReply)); }
@@ -5392,7 +5431,7 @@ InventoryResult PlayerbotAI::CanEquipItem(uint8 slot, uint16& dest, Item* pItem,
         ItemTemplate const* pProto = pItem->GetTemplate();
         if (pProto)
         {
-            if (!sScriptMgr->CanEquipItem(bot, slot, dest, pItem, swap, not_loading))
+            if (!sScriptMgr->OnPlayerCanEquipItem(bot, slot, dest, pItem, swap, not_loading))
                 return EQUIP_ERR_CANT_DO_RIGHT_NOW;
 
             // item used

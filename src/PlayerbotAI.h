@@ -462,6 +462,7 @@ public:
     bool PlayEmote(uint32 emote);
     void Ping(float x, float y);
     Item* FindPoison() const;
+    Item* FindAmmo() const;
     Item* FindBandage() const;
     Item* FindConsumable(uint32 displayId) const;
     Item* FindStoneFor(Item* weapon) const;
@@ -556,6 +557,7 @@ public:
     void ResetJumpDestination() { jumpDestination = Position(); }
 
     bool CanMove();
+    static bool IsRealGuild(uint32 guildId);
     bool IsInRealGuild();
     static std::vector<std::string> dispel_whitelist;
     bool EqualLowercaseName(std::string s1, std::string s2);

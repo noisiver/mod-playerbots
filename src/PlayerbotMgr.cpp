@@ -31,6 +31,8 @@
 #include "WorldSession.h"
 #include "ChannelMgr.h"
 #include "BroadcastHelper.h"
+#include "PlayerbotDbStore.h"
+#include "WorldSessionMgr.h"
 
 PlayerbotHolder::PlayerbotHolder() : PlayerbotAIBase(false) {}
 class PlayerbotLoginQueryHolder : public LoginQueryHolder
@@ -63,7 +65,7 @@ void PlayerbotHolder::AddPlayerBot(ObjectGuid playerGuid, uint32 masterAccountId
     if (!accountId)
         return;
     
-    WorldSession* masterSession = masterAccountId ? sWorld->FindSession(masterAccountId) : nullptr;
+    WorldSession* masterSession = masterAccountId ? sWorldSessionMgr->FindSession(masterAccountId) : nullptr;
     Player* masterPlayer = masterSession ? masterSession->GetPlayer() : nullptr;
 
     bool isRndbot = !masterAccountId;
@@ -114,7 +116,7 @@ void PlayerbotHolder::AddPlayerBot(ObjectGuid playerGuid, uint32 masterAccountId
 
     botLoading.insert(playerGuid);
     
-    if (WorldSession* masterSession = sWorld->FindSession(masterAccountId))
+    if (WorldSession* masterSession = sWorldSessionMgr->FindSession(masterAccountId))
     {
         masterSession->AddQueryHolderCallback(CharacterDatabase.DelayQueryHolder(holder))
             .AfterComplete([this](SQLQueryHolderBase const& holder)
@@ -150,7 +152,7 @@ void PlayerbotHolder::HandlePlayerBotLoginCallback(PlayerbotLoginQueryHolder con
     }
 
     uint32 masterAccount = holder.GetMasterAccountId();
-    WorldSession* masterSession = masterAccount ? sWorld->FindSession(masterAccount) : nullptr;
+    WorldSession* masterSession = masterAccount ? sWorldSessionMgr->FindSession(masterAccount) : nullptr;
 
     // Check if masterSession->GetPlayer() is valid
     Player* masterPlayer = masterSession ? masterSession->GetPlayer() : nullptr;
@@ -487,9 +489,9 @@ void PlayerbotHolder::OnBotLogin(Player* const bot)
     }
     else
     {
-        // botAI->ResetStrategies(!sRandomPlayerbotMgr->IsRandomBot(bot));
-        botAI->ResetStrategies();
+        botAI->ResetStrategies(!sRandomPlayerbotMgr->IsRandomBot(bot));
     }
+    sPlayerbotDbStore->Load(botAI);
 
     if (master && !master->HasUnitState(UNIT_STATE_IN_FLIGHT))
     {
@@ -1054,7 +1056,8 @@ std::vector<std::string> PlayerbotHolder::HandlePlayerbotCommand(char const* arg
                 continue;
             if (ObjectAccessor::FindConnectedPlayer(guid))
                 continue;
-            if (sCharacterCache->GetCharacterGuildIdByGuid(guid))
+            uint32 guildId = sCharacterCache->GetCharacterGuildIdByGuid(guid);
+            if (guildId && PlayerbotAI::IsRealGuild(guildId))
                 continue;
             AddPlayerBot(guid, master->GetSession()->GetAccountId());
             messages.push_back("Add class " + std::string(charname));

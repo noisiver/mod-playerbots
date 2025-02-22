@@ -72,31 +72,28 @@ public:
     }
 };
 
-class PlayerbotsMetricScript : public MetricScript
-{
-public:
-    PlayerbotsMetricScript() : MetricScript("PlayerbotsMetricScript") {}
-
-    void OnMetricLogging() override
-    {
-        if (sMetric->IsEnabled())
-        {
-            sMetric->LogValue("db_queue_playerbots", uint64(PlayerbotsDatabase.QueueSize()), {});
-        }
-    }
-};
-
 class PlayerbotsPlayerScript : public PlayerScript
 {
 public:
     PlayerbotsPlayerScript() : PlayerScript("PlayerbotsPlayerScript") {}
 
-    void OnLogin(Player* player) override
+    void OnPlayerLogin(Player* player) override
     {
         if (!player->GetSession()->IsBot())
         {
             sPlayerbotsMgr->AddPlayerbotData(player, false);
             sRandomPlayerbotMgr->OnPlayerLogin(player);
+
+            // Before modifying the following messages, please make sure it does not violate the AGPLv3.0 license
+            // especially if you are distributing a repack or hosting a public server
+            // e.g. you can replace the URL with your own repository,
+            // but it should be publicly accessible and include all modifications you've made
+            if (sPlayerbotAIConfig->enabled)
+            {
+                ChatHandler(player->GetSession()).SendSysMessage(
+                    "|cff00ff00This server runs with |cff00ccffmod-playerbots|r "
+                    "|cffcccccchttps://github.com/liyunfan1223/mod-playerbots|r");
+            }
 
             if (sPlayerbotAIConfig->enabled || sPlayerbotAIConfig->randomBotAutologin)
             {
@@ -105,12 +102,13 @@ public:
                 roundedTime = roundedTime.substr(0, roundedTime.find('.') + 2);
 
                 ChatHandler(player->GetSession()).SendSysMessage(
-                    "Playerbots: bot initialization at server startup takes about '" + roundedTime + "' minutes.");
+                    "|cff00ff00Playerbots:|r bot initialization at server startup takes about '" 
+                    + roundedTime + "' minutes.");
             }
         }
     }
 
-    void OnAfterUpdate(Player* player, uint32 diff) override
+    void OnPlayerAfterUpdate(Player* player, uint32 diff) override
     {
         if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(player))
         {
@@ -123,7 +121,7 @@ public:
         }
     }
 
-    bool CanPlayerUseChat(Player* player, uint32 type, uint32 /*lang*/, std::string& msg, Player* receiver) override
+    bool OnPlayerCanUseChat(Player* player, uint32 type, uint32 /*lang*/, std::string& msg, Player* receiver) override
     {
         if (type == CHAT_MSG_WHISPER)
         {
@@ -138,7 +136,7 @@ public:
         return true;
     }
 
-    void OnChat(Player* player, uint32 type, uint32 /*lang*/, std::string& msg, Group* group) override
+    void OnPlayerChat(Player* player, uint32 type, uint32 /*lang*/, std::string& msg, Group* group) override
     {
         for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
         {
@@ -152,7 +150,7 @@ public:
         }
     }
 
-    void OnChat(Player* player, uint32 type, uint32 /*lang*/, std::string& msg) override
+    void OnPlayerChat(Player* player, uint32 type, uint32 /*lang*/, std::string& msg) override
     {
         if (type == CHAT_MSG_GUILD)
         {
@@ -173,7 +171,7 @@ public:
         }
     }
 
-    void OnChat(Player* player, uint32 type, uint32 /*lang*/, std::string& msg, Channel* channel) override
+    void OnPlayerChat(Player* player, uint32 type, uint32 /*lang*/, std::string& msg, Channel* channel) override
     {
         if (PlayerbotMgr* playerbotMgr = GET_PLAYERBOT_MGR(player))
         {
@@ -186,7 +184,7 @@ public:
         sRandomPlayerbotMgr->HandleCommand(type, msg, player);
     }
 
-    bool OnBeforeAchiComplete(Player* player, AchievementEntry const* achievement) override
+    bool OnPlayerBeforeAchievementComplete(Player* player, AchievementEntry const* achievement) override
     {
         if (sRandomPlayerbotMgr->IsRandomBot(player) && (achievement->flags == 256 || achievement->flags == 768))
         {
@@ -236,8 +234,23 @@ public:
 
     void OnBeforeWorldInitialized() override
     {
-        uint32 oldMSTime = getMSTime();
+        // Before modifying the following messages, please make sure it does not violate the AGPLv3.0 license
+        // especially if you are distributing a repack or hosting a public server
+        // e.g. you can replace the URL with your own repository,
+        // but it should be publicly accessible and include all modifications you've made
+        LOG_INFO("server.loading", "============================================================");
+        LOG_INFO("server.loading", "||                                                        ||");
+        LOG_INFO("server.loading", "||             AzerothCore Playerbots Module              ||");
+        LOG_INFO("server.loading", "||                                                        ||");
+        LOG_INFO("server.loading", "============================================================");
+        LOG_INFO("server.loading", "||    mod-playerbots is a community-driven open-source    ||");
+        LOG_INFO("server.loading", "|| project based on AzerothCore, licensed under AGPLv3.0  ||");
+        LOG_INFO("server.loading", "============================================================");
+        LOG_INFO("server.loading", "||     https://github.com/liyunfan1223/mod-playerbots     ||");
+        LOG_INFO("server.loading", "============================================================");
 
+        uint32 oldMSTime = getMSTime();
+        
         LOG_INFO("server.loading", " ");
         LOG_INFO("server.loading", "Load Playerbots Config...");
 
@@ -337,7 +350,6 @@ public:
 void AddPlayerbotsScripts()
 {
     new PlayerbotsDatabaseScript();
-    new PlayerbotsMetricScript();
     new PlayerbotsPlayerScript();
     new PlayerbotsMiscScript();
     new PlayerbotsServerScript();
