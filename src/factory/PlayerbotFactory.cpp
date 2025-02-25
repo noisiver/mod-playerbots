@@ -14,6 +14,7 @@
 #include "ArenaTeamMgr.h"
 #include "DBCStores.h"
 #include "DBCStructure.h"
+#include "Config.h"
 #include "GuildMgr.h"
 #include "InventoryAction.h"
 #include "Item.h"
