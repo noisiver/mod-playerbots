@@ -290,8 +290,7 @@ bool UseItemAction::UseItem(Item* item, ObjectGuid goGuid, Item* itemTarget, Uni
         return false;
 
     // botAI->SetNextCheckDelay(sPlayerbotAIConfig->globalCoolDown);
-    if (!(item->GetTemplate()->Class == 15 && item->GetTemplate()->SubClass == 5))
-        botAI->TellMasterNoFacing(out.str());
+    botAI->TellMasterNoFacing(out.str());
     bot->GetSession()->HandleUseItemOpcode(packet);
     return true;
 }
