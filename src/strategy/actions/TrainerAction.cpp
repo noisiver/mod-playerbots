@@ -9,7 +9,8 @@
 #include "Event.h"
 #include "PlayerbotFactory.h"
 #include "Playerbots.h"
-#include "Progression.h"
+
+#include "mod_progression.h"
 
 void TrainerAction::Learn(uint32 cost, TrainerSpell const* tSpell, std::ostringstream& msg)
 {
@@ -165,7 +166,7 @@ bool MaintenanceAction::Execute(Event event)
     }
     botAI->TellMaster("I'm maintaining");
     PlayerbotFactory factory(bot, bot->GetLevel());
-    if (sRandomPlayerbotMgr->IsRandomBot(bot) || sProgression->GetPatchId() < PATCH_ECHOES_OF_DOOM)
+    if (sRandomPlayerbotMgr->IsRandomBot(bot) || sProgressionMgr->GetPatchId() < PATCH_ECHOES_OF_DOOM)
     {
         factory.InitTalentsTree(true);
     }
