@@ -47,53 +47,69 @@ bool DrinkAction::Execute(Event event)
         botAI->SetNextCheckDelay(delay);
 
         uint8 level = bot->GetLevel();
-        uint32 spellId = 24707;
+        uint32 spellId1 = 24707;
+        uint32 spellId2 = 24707;
         if (level < 5)
         {
-            spellId = 430;
+            spellId1 = 433;
+            spellId2 = 430;
         }
         else if (level < 15)
         {
-            spellId = 431;
+            spellId1 = 434;
+            spellId2 = 431;
         }
         else if (level < 25)
         {
-            spellId = 432;
+            spellId1 = 435;
+            spellId2 = 432;
         }
         else if (level < 35)
         {
-            spellId = 1133;
+            spellId1 = 1127;
+            spellId2 = 1133;
         }
         else if (level < 45)
         {
-            spellId = 1135;
+            spellId1 = 1129;
+            spellId2 = 1135;
         }
         else if (level < 55)
         {
-            spellId = 1137;
+            spellId1 = 1131;
+            spellId2 = 1137;
         }
         else if (level < 60)
         {
-            spellId = 22734;
+            spellId1 = 1131;
+            spellId2 = 22734;
         }
         else if (level < 65)
         {
-            spellId = 34291;
+            spellId1 = 29073;
+            spellId2 = 34291;
         }
         else if (level < 70)
         {
-            spellId = 27089;
+            spellId1 = 33725;
+            spellId2 = 27089;
         }
         else if (level < 80)
         {
-            spellId = 46755;
+            spellId1 = 33725;
+            spellId2 = 46755;
         }
         else
         {
-            spellId = 57073;
+            spellId1 = 45548;
+            spellId2 = 57073;
         }
 
-        bot->AddAura(spellId, bot);
+        bot->AddAura(spellId1, bot);
+        if (bot->getPowerType() == POWER_MANA)
+        {
+            bot->AddAura(spellId2, bot);
+        }
         return true;
         // return botAI->CastSpell(24707, bot);
     }
@@ -144,49 +160,69 @@ bool EatAction::Execute(Event event)
         botAI->SetNextCheckDelay(delay);
 
         uint8 level = bot->GetLevel();
-        uint32 spellId = 24707;
+        uint32 spellId1 = 24707;
+        uint32 spellId2 = 24707;
         if (level < 5)
         {
-            spellId = 433;
+            spellId1 = 433;
+            spellId2 = 430;
         }
         else if (level < 15)
         {
-            spellId = 434;
+            spellId1 = 434;
+            spellId2 = 431;
         }
         else if (level < 25)
         {
-            spellId = 435;
+            spellId1 = 435;
+            spellId2 = 432;
         }
         else if (level < 35)
         {
-            spellId = 1127;
+            spellId1 = 1127;
+            spellId2 = 1133;
         }
         else if (level < 45)
         {
-            spellId = 1129;
+            spellId1 = 1129;
+            spellId2 = 1135;
         }
         else if (level < 55)
         {
-            spellId = 1131;
+            spellId1 = 1131;
+            spellId2 = 1137;
+        }
+        else if (level < 60)
+        {
+            spellId1 = 1131;
+            spellId2 = 22734;
         }
         else if (level < 65)
         {
-            spellId = 29073;
+            spellId1 = 29073;
+            spellId2 = 34291;
         }
         else if (level < 70)
         {
-            spellId = 33725;
+            spellId1 = 33725;
+            spellId2 = 27089;
         }
         else if (level < 80)
         {
-            spellId = 33725;
+            spellId1 = 33725;
+            spellId2 = 46755;
         }
         else
         {
-            spellId = 45548;
+            spellId1 = 45548;
+            spellId2 = 57073;
         }
 
-        bot->AddAura(spellId, bot);
+        bot->AddAura(spellId1, bot);
+        if (bot->getPowerType() == POWER_MANA)
+        {
+            bot->AddAura(spellId2, bot);
+        }
         return true;
     }
 
