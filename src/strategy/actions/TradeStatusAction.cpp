@@ -24,12 +24,23 @@ bool TradeStatusAction::Execute(Event event)
         return false;
 
     PlayerbotAI* traderBotAI = GET_PLAYERBOT_AI(trader);
-    if (trader != master && !traderBotAI)
+    
+    // Allow the master and group members to trade
+    if (trader != master && !traderBotAI && (!bot->GetGroup() || !bot->GetGroup()->IsMember(trader->GetGUID())))
     {
         bot->Whisper("I'm kind of busy now", LANG_UNIVERSAL, trader);
+        return false;
     }
 
-    if ((trader != master || !botAI->GetSecurity()->CheckLevelFor(PLAYERBOT_SECURITY_ALLOW_ALL, true, master)) &&
+    if (!sPlayerbotAIConfig->enableRandomBotTrading && sRandomPlayerbotMgr->IsRandomBot(bot))
+    {
+        bot->Whisper("Trading is disabled", LANG_UNIVERSAL, trader);
+        return false;
+    }
+
+    // Allow trades from group members or bots
+    if ((!bot->GetGroup() || !bot->GetGroup()->IsMember(trader->GetGUID())) &&
+        (trader != master || !botAI->GetSecurity()->CheckLevelFor(PLAYERBOT_SECURITY_ALLOW_ALL, true, master)) &&
         !traderBotAI)
     {
         WorldPacket p;
@@ -44,7 +55,7 @@ bool TradeStatusAction::Execute(Event event)
     uint32 status;
     p >> status;
 
-    if (status == TRADE_STATUS_TRADE_ACCEPT)
+    if (status == TRADE_STATUS_TRADE_ACCEPT || (status == TRADE_STATUS_BACK_TO_TRADE && trader->GetTradeData() && trader->GetTradeData()->IsAccepted()))
     {
         WorldPacket p;
         uint32 status = 0;
@@ -109,19 +120,20 @@ bool TradeStatusAction::Execute(Event event)
             bot->SetFacingToObject(trader);
 
         BeginTrade();
+
         return true;
     }
-
     return false;
 }
 
 void TradeStatusAction::BeginTrade()
 {
+    Player* trader = bot->GetTrader();
+    if (!trader || GET_PLAYERBOT_AI(bot->GetTrader()))
+        return;
+
     WorldPacket p;
     bot->GetSession()->HandleBeginTradeOpcode(p);
-
-    if (GET_PLAYERBOT_AI(bot->GetTrader()))
-        return;
 
     ListItemsVisitor visitor;
     IterateItems(&visitor);
@@ -144,7 +156,7 @@ void TradeStatusAction::BeginTrade()
 bool TradeStatusAction::CheckTrade()
 {
     Player* trader = bot->GetTrader();
-    if (!bot->GetTradeData() || !trader->GetTradeData())
+    if (!bot->GetTradeData() || !trader || !trader->GetTradeData())
         return false;
 
     if (!botAI->HasActivePlayerMaster() && GET_PLAYERBOT_AI(bot->GetTrader()))
