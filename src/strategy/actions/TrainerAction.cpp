@@ -35,13 +35,18 @@ void TrainerAction::Learn(uint32 cost, TrainerSpell const* tSpell, std::ostrings
         if (spellInfo->Effects[j].Effect == SPELL_EFFECT_LEARN_SPELL)
         {
             uint32 learnedSpell = spellInfo->Effects[j].TriggerSpell;
-            bot->learnSpell(learnedSpell);
-            learned = true;
+            if (!bot->HasSpell(learnedSpell))
+            {
+                bot->learnSpell(learnedSpell);
+                learned = true;
+            }
         }
     }
 
-    if (!learned)
+    if (!learned && !bot->HasSpell(tSpell->spell))
+    {
         bot->learnSpell(tSpell->spell);
+    }
 
     msg << " - learned";
 }
@@ -167,6 +172,7 @@ bool MaintenanceAction::Execute(Event event)
 
     botAI->TellMaster("I'm maintaining");
     PlayerbotFactory factory(bot, bot->GetLevel());
+
     if (sRandomPlayerbotMgr->IsRandomBot(bot))
     {
         factory.InitAttunementQuests();
@@ -175,12 +181,14 @@ bool MaintenanceAction::Execute(Event event)
         factory.InitFood();
         factory.InitReagents();
     }
+
     if (sRandomPlayerbotMgr->IsRandomBot(bot) || sProgressionMgr->GetPatchId() < PATCH_ECHOES_OF_DOOM)
     {
         factory.InitTalentsTree(true);
+        factory.InitPet();
+        factory.InitPetTalents();
     }
-    factory.InitPet();
-    factory.InitPetTalents();
+
     if (sRandomPlayerbotMgr->IsRandomBot(bot))
     {
         factory.InitClassSpells();
@@ -191,9 +199,14 @@ bool MaintenanceAction::Execute(Event event)
         factory.InitMounts();
         factory.InitGlyphs(true);
         factory.InitKeyring();
+        factory.InitPotions();
     }
-    if (bot->GetLevel() >= sPlayerbotAIConfig->minEnchantingBotLevel)
-        factory.ApplyEnchantAndGemsNew();
+
+    if (sRandomPlayerbotMgr->IsRandomBot(bot) || sProgressionMgr->GetPatchId() < PATCH_ECHOES_OF_DOOM)
+    {
+        if (bot->GetLevel() >= sPlayerbotAIConfig->minEnchantingBotLevel)
+            factory.ApplyEnchantAndGemsNew();
+    }
 
     bot->DurabilityRepairAll(false, 1.0f, false);
     bot->SendTalentsInfoData(false);
