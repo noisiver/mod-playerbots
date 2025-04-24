@@ -348,7 +348,11 @@ public:
         sRandomPlayerbotMgr->OnPlayerLogout(player);
     }
 
-    void OnPlayerbotLogoutBots() override { sRandomPlayerbotMgr->LogoutAllBots(); }
+    void OnPlayerbotLogoutBots() override
+    {
+        LOG_INFO("playerbots", "Logging out all bots...");
+        sRandomPlayerbotMgr->LogoutAllBots();
+    }
 };
 
 void AddPlayerbotsScripts()
