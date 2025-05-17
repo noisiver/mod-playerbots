@@ -10,8 +10,6 @@
 #include "PlayerbotFactory.h"
 #include "Playerbots.h"
 
-#include "mod_progression.h"
-
 void TrainerAction::Learn(uint32 cost, TrainerSpell const* tSpell, std::ostringstream& msg)
 {
     if (sPlayerbotAIConfig->autoTrainSpells != "free" && !botAI->HasCheat(BotCheatMask::gold))
