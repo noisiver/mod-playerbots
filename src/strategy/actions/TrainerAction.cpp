@@ -179,11 +179,15 @@ bool MaintenanceAction::Execute(Event event)
         factory.InitBags(false);
         factory.InitAmmo();
         factory.InitFood();
-        factory.InitReagents();
     }
 
-    if (sRandomPlayerbotMgr->IsRandomBot(bot) || sProgressionMgr->GetPatchId() < PATCH_ECHOES_OF_DOOM)
+    if (sRandomPlayerbotMgr->IsRandomBot(bot) || sWorld->getIntConfig(CONFIG_EXPANSION) < EXPANSION_WRATH_OF_THE_LICH_KING)
     {
+        if (sRandomPlayerbotMgr->IsRandomBot(bot) || bot->getClass() == CLASS_ROGUE)
+        {
+            factory.InitReagents();
+        }
+        
         factory.InitTalentsTree(true);
         factory.InitPet();
         factory.InitPetTalents();
@@ -199,11 +203,12 @@ bool MaintenanceAction::Execute(Event event)
         factory.InitMounts();
         factory.InitGlyphs(true);
         factory.InitKeyring();
-        factory.InitPotions();
     }
 
-    if (sRandomPlayerbotMgr->IsRandomBot(bot) || sProgressionMgr->GetPatchId() < PATCH_ECHOES_OF_DOOM)
+    if (sRandomPlayerbotMgr->IsRandomBot(bot) || sWorld->getIntConfig(CONFIG_EXPANSION) < EXPANSION_WRATH_OF_THE_LICH_KING)
     {
+        factory.InitPotions();
+
         if (bot->GetLevel() >= sPlayerbotAIConfig->minEnchantingBotLevel)
             factory.ApplyEnchantAndGemsNew();
     }
