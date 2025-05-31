@@ -40,6 +40,8 @@
 #include "StatsWeightCalculator.h"
 #include "World.h"
 
+#include "mod_progression.h"
+
 const uint64 diveMask = (1LL << 7) | (1LL << 44) | (1LL << 37) | (1LL << 38) | (1LL << 26) | (1LL << 30) | (1LL << 27) |
                         (1LL << 33) | (1LL << 24) | (1LL << 34);
 
