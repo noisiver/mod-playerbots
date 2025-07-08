@@ -176,6 +176,9 @@ bool MaintenanceAction::Execute(Event event)
         factory.InitBags(false);
         factory.InitAmmo();
         factory.InitFood();
+    }
+    if (sRandomPlayerbotMgr->IsRandomBot(bot) || bot->getClass() == CLASS_ROGUE || bot->getClass() == CLASS_WARLOCK)
+    {
         factory.InitReagents();
     }
     if (sRandomPlayerbotMgr->IsRandomBot(bot) || sWorld->getIntConfig(CONFIG_EXPANSION) < EXPANSION_WRATH_OF_THE_LICH_KING)
@@ -195,9 +198,9 @@ bool MaintenanceAction::Execute(Event event)
         factory.InitGlyphs(false);
         factory.InitKeyring();
     }
+    factory.InitPotions();
     if (sRandomPlayerbotMgr->IsRandomBot(bot) || sWorld->getIntConfig(CONFIG_EXPANSION) < EXPANSION_WRATH_OF_THE_LICH_KING)
     {
-        factory.InitPotions();
         if (bot->GetLevel() >= sPlayerbotAIConfig->minEnchantingBotLevel)
             factory.ApplyEnchantAndGemsNew();
     }
