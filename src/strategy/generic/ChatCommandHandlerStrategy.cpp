@@ -100,6 +100,8 @@ void ChatCommandHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
 	    new TriggerNode("unlock items", NextAction::array(0, new NextAction("unlock items", relevance), nullptr)));
     triggers.push_back(
 	    new TriggerNode("unlock traded item", NextAction::array(0, new NextAction("unlock traded item", relevance), nullptr)));
+    triggers.push_back(
+        new TriggerNode("wipe", NextAction::array(0, new NextAction("wipe", relevance), nullptr)));
 }
 
 ChatCommandHandlerStrategy::ChatCommandHandlerStrategy(PlayerbotAI* botAI) : PassTroughStrategy(botAI)
@@ -143,6 +145,7 @@ ChatCommandHandlerStrategy::ChatCommandHandlerStrategy(PlayerbotAI* botAI) : Pas
     supported.push_back("gb");
     supported.push_back("bank");
     supported.push_back("invite");
+    supported.push_back("lfg");
     supported.push_back("spell");
     supported.push_back("rti");
     supported.push_back("position");

@@ -157,7 +157,7 @@ PlayerbotAI::PlayerbotAI(Player* bot)
     masterIncomingPacketHandlers.AddHandler(CMSG_GAMEOBJ_USE, "use game object");
     masterIncomingPacketHandlers.AddHandler(CMSG_AREATRIGGER, "area trigger");
     // masterIncomingPacketHandlers.AddHandler(CMSG_GAMEOBJ_USE, "use game object");
-    masterIncomingPacketHandlers.AddHandler(CMSG_LOOT_ROLL, "loot roll");
+    // masterIncomingPacketHandlers.AddHandler(CMSG_LOOT_ROLL, "loot roll");
     masterIncomingPacketHandlers.AddHandler(CMSG_GOSSIP_HELLO, "gossip hello");
     masterIncomingPacketHandlers.AddHandler(CMSG_QUESTGIVER_HELLO, "gossip hello");
     masterIncomingPacketHandlers.AddHandler(CMSG_ACTIVATETAXI, "activate taxi");
@@ -797,6 +797,7 @@ bool PlayerbotAI::IsAllowedCommand(std::string const text)
         unsecuredCommands.insert("sendmail");
         unsecuredCommands.insert("invite");
         unsecuredCommands.insert("leave");
+        unsecuredCommands.insert("lfg");
         unsecuredCommands.insert("rpg status");
     }
 
@@ -3153,22 +3154,41 @@ bool PlayerbotAI::CastSpell(uint32 spellId, Unit* target, Item* itemTarget)
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
     if (pet && pet->HasSpell(spellId))
     {
-        bool autocast = false;
-        for (unsigned int& m_autospell : pet->m_autospells)
+        // List of spell IDs for which we do NOT want to toggle auto-cast or send message
+        // We are excluding Spell Lock and Devour Magic because they are casted in the GenericWarlockStrategy
+        // Without this exclusion, the skill would be togged for auto-cast and the player would
+        // be spammed with messages about enabling/disabling auto-cast
+        switch (spellId)
         {
-            if (m_autospell == spellId)
-            {
-                autocast = true;
+            case 19244:  // Spell Lock rank 1
+            case 19647:  // Spell Lock rank 2
+            case 19505:  // Devour Magic rank 1
+            case 19731:  // Devour Magic rank 2
+            case 19734:  // Devour Magic rank 3
+            case 19736:  // Devour Magic rank 4
+            case 27276:  // Devour Magic rank 5
+            case 27277:  // Devour Magic rank 6
+            case 48011:  // Devour Magic rank 7
+                // No message - just break out of the switch and let normal cast logic continue
                 break;
-            }
-        }
+            default:
+                bool autocast = false;
+                for (unsigned int& m_autospell : pet->m_autospells)
+                {
+                    if (m_autospell == spellId)
+                    {
+                        autocast = true;
+                        break;
+                    }
+                }
 
-        pet->ToggleAutocast(spellInfo, !autocast);
-        std::ostringstream out;
-        out << (autocast ? "|cffff0000|Disabling" : "|cFF00ff00|Enabling") << " pet auto-cast for ";
-        out << chatHelper.FormatSpell(spellInfo);
-        TellMaster(out);
-        return true;
+                pet->ToggleAutocast(spellInfo, !autocast);
+                std::ostringstream out;
+                out << (autocast ? "|cffff0000|Disabling" : "|cFF00ff00|Enabling") << " pet auto-cast for ";
+                out << chatHelper.FormatSpell(spellInfo);
+                TellMaster(out);
+                return true;
+        }
     }
 
     // aiObjectContext->GetValue<LastMovement&>("last movement")->Get().Set(nullptr);
@@ -4364,26 +4384,28 @@ bool PlayerbotAI::AllowActivity(ActivityType activityType, bool checkNow)
 
 uint32 PlayerbotAI::AutoScaleActivity(uint32 mod)
 {
+    // Current max server update time (ms), and the configured floor/ceiling values for bot scaling
     uint32 maxDiff = sWorldUpdateTime.GetMaxUpdateTimeOfCurrentTable();
     uint32 diffLimitFloor = sPlayerbotAIConfig->botActiveAloneSmartScaleDiffLimitfloor;
     uint32 diffLimitCeiling = sPlayerbotAIConfig->botActiveAloneSmartScaleDiffLimitCeiling;
-    double spreadSize = (double)(diffLimitCeiling - diffLimitFloor) / 6;
 
-    // apply scaling
+    if (diffLimitCeiling <= diffLimitFloor)
+    {
+        // Perfrom binary decision if ceiling <= floor: Either all bots are active or none are
+        return (maxDiff > diffLimitCeiling) ? 0 : mod;
+    }
+    
     if (maxDiff > diffLimitCeiling)
         return 0;
-    if (maxDiff > diffLimitFloor + (4 * spreadSize))
-        return (mod * 1) / 10;
-    if (maxDiff > diffLimitFloor + (3 * spreadSize))
-        return (mod * 3) / 10;
-    if (maxDiff > diffLimitFloor + (2 * spreadSize))
-        return (mod * 5) / 10;
-    if (maxDiff > diffLimitFloor + (1 * spreadSize))
-        return (mod * 7) / 10;
-    if (maxDiff > diffLimitFloor)
-        return (mod * 9) / 10;
-
-    return mod;
+    
+    if (maxDiff <= diffLimitFloor)
+        return mod;
+    
+    // Calculate lag progress from floor to ceiling (0 to 1)
+    double lagProgress = (maxDiff - diffLimitFloor) / (double)(diffLimitCeiling - diffLimitFloor);
+    
+    // Apply the percentage of active bots (the complement of lag progress) to the mod value
+    return static_cast<uint32>(mod * (1 - lagProgress));
 }
 
 bool PlayerbotAI::IsOpposing(Player* player) { return IsOpposing(player->getRace(), bot->getRace()); }
@@ -4408,9 +4430,48 @@ void PlayerbotAI::RemoveShapeshift()
     // RemoveAura("tree of life");
 }
 
+// Mirrors Blizzard’s GetAverageItemLevel rules :
+// https://wowpedia.fandom.com/wiki/API_GetAverageItemLevel
+uint32 PlayerbotAI::GetEquipGearScore(Player* player)
+{
+    constexpr uint8 TOTAL_SLOTS = 17;                      // every slot except Body & Tabard
+    uint32 sumLevel = 0;
+
+    /* ---------- 0.  Detect “ignore off-hand” situations --------- */
+    Item* main = player->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
+    Item* off  = player->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
+
+    bool ignoreOffhand = false;                           // true → divisor = 16
+    if (main)
+    {
+        bool twoHand = (main->GetTemplate()->InventoryType == INVTYPE_2HWEAPON);
+        if (twoHand && !player->HasAura(SPELL_TITAN_GRIP))
+            ignoreOffhand = true;                         // classic 2-hander
+    }
+    else if (!off)                                        // both hands empty
+        ignoreOffhand = true;
+
+    /* ---------- 1.  Sum up item-levels -------------------------- */
+    for (uint8 slot = EQUIPMENT_SLOT_START; slot < EQUIPMENT_SLOT_END; ++slot)
+    {
+        if (slot == EQUIPMENT_SLOT_BODY || slot == EQUIPMENT_SLOT_TABARD)
+            continue;                                     // Blizzard never counts these
+
+        if (ignoreOffhand && slot == EQUIPMENT_SLOT_OFFHAND)
+            continue;                                     // skip off-hand in 2-H case
+
+        if (Item* it = player->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
+            sumLevel += it->GetTemplate()->ItemLevel;     // missing items add 0
+    }
+
+    /* ---------- 2.  Divide by 17 or 16 -------------------------- */
+    const uint8 divisor = ignoreOffhand ? TOTAL_SLOTS - 1 : TOTAL_SLOTS; // 16 or 17
+    return sumLevel / divisor;
+}
+
 // NOTE : function rewritten as flags "withBags" and "withBank" not used, and _fillGearScoreData sometimes attribute
 // one-hand/2H Weapon in wrong slots 
-uint32 PlayerbotAI::GetEquipGearScore(Player* player)
+/*uint32 PlayerbotAI::GetEquipGearScore(Player* player)
 {
     // This function aims to calculate the equipped gear score
  
@@ -4432,11 +4493,11 @@ uint32 PlayerbotAI::GetEquipGearScore(Player* player)
             if (!player->HasAura(SPELL_TITAN_GRIP) && mh_type == INVTYPE_2HWEAPON && i == SLOT_MAIN_HAND)
                 sum += item->GetTemplate()->ItemLevel;
 	    }
-    }
+    } 
 
     uint32 gs = uint32(sum / count);
     return gs;
-}
+}*/
 
 /*uint32 PlayerbotAI::GetEquipGearScore(Player* player, bool withBags, bool withBank)
 {

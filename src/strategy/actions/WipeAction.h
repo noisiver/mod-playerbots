@@ -3,19 +3,22 @@
  * and/or modify it under version 2 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_ACCEPTBATTLEGROUNDINVITATIONACTION_H
-#define _PLAYERBOT_ACCEPTBATTLEGROUNDINVITATIONACTION_H
+#ifndef _PLAYERBOT_WIPEACTION_H
+#define _PLAYERBOT_WIPEACTION_H
 
 #include "Action.h"
 
 class PlayerbotAI;
 
-class AcceptBgInvitationAction : public Action
+class WipeAction : public Action
 {
 public:
-    AcceptBgInvitationAction(PlayerbotAI* botAI) : Action(botAI, "accept bg invitation") {}
+    WipeAction(PlayerbotAI* botAI) : Action(botAI, "wipe") {}
 
     bool Execute(Event event) override;
+
+private:
+    std::string bossName;
 };
 
 #endif

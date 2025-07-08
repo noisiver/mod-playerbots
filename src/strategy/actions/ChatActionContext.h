@@ -73,6 +73,7 @@
 #include "UseItemAction.h"
 #include "UseMeetingStoneAction.h"
 #include "WhoAction.h"
+#include "WipeAction.h"
 #include "WtsAction.h"
 #include "OpenItemAction.h"
 #include "UnlockItemAction.h"
@@ -183,7 +184,9 @@ public:
         creators["bwl chat shortcut"] = &ChatActionContext::bwl_chat_shortcut;
         creators["tell estimated dps"] = &ChatActionContext::tell_estimated_dps;
         creators["join"] = &ChatActionContext::join;
+        creators["lfg"] = &ChatActionContext::lfg;
         creators["calc"] = &ChatActionContext::calc;
+        creators["wipe"] = &ChatActionContext::wipe;
     }
 
 private:
@@ -212,6 +215,7 @@ private:
     static Action* spirit_healer(PlayerbotAI* botAI) { return new SpiritHealerAction(botAI); }
     static Action* rti(PlayerbotAI* botAI) { return new RtiAction(botAI); }
     static Action* invite(PlayerbotAI* botAI) { return new InviteToGroupAction(botAI); }
+    static Action* lfg(PlayerbotAI* botAI) { return new LfgAction(botAI); }
     static Action* spell(PlayerbotAI* botAI) { return new TellSpellAction(botAI); }
     static Action* cast_custom_spell(PlayerbotAI* botAI) { return new CastCustomSpellAction(botAI); }
     static Action* cast_custom_nc_spell(PlayerbotAI* botAI) { return new CastCustomNcSpellAction(botAI); }
@@ -288,6 +292,7 @@ private:
     static Action* tell_estimated_dps(PlayerbotAI* ai) { return new TellEstimatedDpsAction(ai); }
     static Action* join(PlayerbotAI* ai) { return new JoinGroupAction(ai); }
     static Action* calc(PlayerbotAI* ai) { return new TellCalculateItemAction(ai); }
+    static Action* wipe(PlayerbotAI* ai) { return new WipeAction(ai); }
 };
 
 #endif
