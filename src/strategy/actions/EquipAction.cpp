@@ -8,6 +8,7 @@
 #include "Event.h"
 #include "ItemCountValue.h"
 #include "ItemUsageValue.h"
+#include "ItemVisitors.h"
 #include "Playerbots.h"
 #include "StatsWeightCalculator.h"
 
@@ -96,6 +97,21 @@ void EquipAction::EquipItem(Item* item)
     // If we didn't equip as a bag, try to equip as gear
     if (!equippedBag)
     {
+        // Ranged weapons aren't handled by the rest of the weapon equip logic
+        // Handle them early here to avoid issues.
+        if (invType == INVTYPE_RANGED || invType == INVTYPE_THROWN || invType == INVTYPE_RANGEDRIGHT)
+        {
+            WorldPacket packet(CMSG_AUTOEQUIP_ITEM_SLOT, 2);
+            ObjectGuid itemguid = item->GetGUID();
+            packet << itemguid << uint8(EQUIPMENT_SLOT_RANGED);
+            bot->GetSession()->HandleAutoEquipItemSlotOpcode(packet);
+        
+            std::ostringstream out;
+            out << "Equipping " << chat->FormatItem(itemProto) << " in ranged slot";
+            botAI->TellMaster(out);
+            return;
+        }
+
         uint8 dstSlot = botAI->FindEquipSlot(itemProto, NULL_SLOT, true);
 
         // Check if the item is a weapon and whether the bot can dual wield or use Titan Grip
@@ -117,7 +133,8 @@ void EquipAction::EquipItem(Item* item)
         Item* currentMHItem = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
         bool have2HWeaponEquipped = (currentMHItem && currentMHItem->GetTemplate()->InventoryType == INVTYPE_2HWEAPON);
 
-        bool canDualWieldOrTG = (canDualWield || (canTitanGrip && isTwoHander));
+        // bool canDualWieldOrTG = (canDualWield || (canTitanGrip && isTwoHander));
+        bool canDualWieldOrTG = (canDualWield || isTwoHander);
 
         // If this is a weapon and we can dual wield or Titan Grip, check if we can improve main/off-hand setup
         if (isWeapon && canDualWieldOrTG)
@@ -139,7 +156,7 @@ void EquipAction::EquipItem(Item* item)
             // Determine where this weapon can go
             bool canGoMain = (invType == INVTYPE_WEAPON ||
                               invType == INVTYPE_WEAPONMAINHAND ||
-                              (canTitanGrip && isTwoHander));
+                              isTwoHander);
 
             bool canTGOff = false;
             if (canTitanGrip && isTwoHander && isValidTGWeapon)
@@ -170,8 +187,10 @@ void EquipAction::EquipItem(Item* item)
             // Priority 1: Replace main hand if the new weapon is strictly better
             // and if conditions allow (e.g. no conflicting 2H logic)
             bool betterThanMH = (newItemScore > mainHandScore);
-            bool mhConditionOK = ((invType != INVTYPE_2HWEAPON && !have2HWeaponEquipped) ||
-                                  (canTitanGrip && isValidTGWeapon));
+            // If a one-handed weapon is better, we can still use it instead of a two-handed weapon
+            bool mhConditionOK = (invType != INVTYPE_2HWEAPON ||
+                      (isTwoHander && !canTitanGrip) ||
+                      (canTitanGrip && isValidTGWeapon));
 
             if (canGoMain && betterThanMH && mhConditionOK)
             {
@@ -273,7 +292,7 @@ void EquipAction::EquipItem(Item* item)
     }
 
     std::ostringstream out;
-    out << "equipping " << chat->FormatItem(itemProto);
+    out << "Equipping " << chat->FormatItem(itemProto);
     botAI->TellMaster(out);
 }
 
@@ -294,19 +313,28 @@ bool EquipUpgradesAction::Execute(Event event)
             return false;
     }
 
-    ListItemsVisitor visitor;
+    CollectItemsVisitor visitor;
     IterateItems(&visitor, ITERATE_ITEMS_IN_BAGS);
 
     ItemIds items;
-    for (std::map<uint32, uint32>::iterator i = visitor.items.begin(); i != visitor.items.end(); ++i)
+    for (auto i = visitor.items.begin(); i != visitor.items.end(); ++i)
     {
-        ItemUsage usage = AI_VALUE2(ItemUsage, "item usage", i->first);
+        Item* item = *i;
+        if (!item)
+            break;
+        int32 randomProperty = item->GetItemRandomPropertyId();
+        uint32 itemId = item->GetTemplate()->ItemId;
+        std::string itemUsageParam;
+        if (randomProperty != 0) {
+            itemUsageParam = std::to_string(itemId) + "," + std::to_string(randomProperty);
+        } else {
+            itemUsageParam = std::to_string(itemId);
+        }
+        ItemUsage usage = AI_VALUE2(ItemUsage, "item usage", itemUsageParam);
+
         if (usage == ITEM_USAGE_EQUIP || usage == ITEM_USAGE_REPLACE || usage == ITEM_USAGE_BAD_EQUIP)
         {
-            // LOG_INFO("playerbots", "Bot {} <{}> auto equips item {} ({})", bot->GetGUID().ToString().c_str(),
-            // bot->GetName().c_str(), i->first, usage == 1 ? "no item in slot" : usage == 2 ? "replace" : usage == 3 ?
-            // "wrong item but empty slot" : "");
-            items.insert(i->first);
+            items.insert(itemId);
         }
     }
 
@@ -316,18 +344,31 @@ bool EquipUpgradesAction::Execute(Event event)
 
 bool EquipUpgradeAction::Execute(Event event)
 {
-    ListItemsVisitor visitor;
+    CollectItemsVisitor visitor;
     IterateItems(&visitor, ITERATE_ITEMS_IN_BAGS);
 
     ItemIds items;
-    for (std::map<uint32, uint32>::iterator i = visitor.items.begin(); i != visitor.items.end(); ++i)
+    for (auto i = visitor.items.begin(); i != visitor.items.end(); ++i)
     {
-        ItemUsage usage = AI_VALUE2(ItemUsage, "item usage", i->first);
+        Item* item = *i;
+        if (!item)
+            break;
+        int32 randomProperty = item->GetItemRandomPropertyId();
+        uint32 itemId = item->GetTemplate()->ItemId;
+        std::string itemUsageParam;
+        if (randomProperty != 0) {
+            itemUsageParam = std::to_string(itemId) + "," + std::to_string(randomProperty);
+        } else {
+            itemUsageParam = std::to_string(itemId);
+        }
+        ItemUsage usage = AI_VALUE2(ItemUsage, "item usage", itemUsageParam);
+
         if (usage == ITEM_USAGE_EQUIP || usage == ITEM_USAGE_REPLACE || usage == ITEM_USAGE_BAD_EQUIP)
         {
-            items.insert(i->first);
+            items.insert(itemId);
         }
     }
+
     EquipItems(items);
     return true;
 }

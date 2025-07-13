@@ -135,6 +135,7 @@ public:
         creators["move to loot"] = &ActionContext::move_to_loot;
         creators["open loot"] = &ActionContext::open_loot;
         creators["guard"] = &ActionContext::guard;
+        creators["return to stay position"] = &ActionContext::return_to_stay_position;
         creators["move out of enemy contact"] = &ActionContext::move_out_of_enemy_contact;
         creators["set facing"] = &ActionContext::set_facing;
         creators["set behind"] = &ActionContext::set_behind;
@@ -192,6 +193,7 @@ public:
         // BG Tactics
         creators["bg tactics"] = &ActionContext::bg_tactics;
         creators["bg move to start"] = &ActionContext::bg_move_to_start;
+        creators["bg reset objective force"] = &ActionContext::bg_reset_objective_force;
         creators["bg move to objective"] = &ActionContext::bg_move_to_objective;
         creators["bg select objective"] = &ActionContext::bg_select_objective;
         creators["bg check objective"] = &ActionContext::bg_check_objective;
@@ -247,6 +249,7 @@ public:
         creators["new rpg go innkeeper"] = &ActionContext::new_rpg_go_innkeeper;
         creators["new rpg move random"] = &ActionContext::new_rpg_move_random;
         creators["new rpg move npc"] = &ActionContext::new_rpg_move_npc;
+        creators["new rpg do quest"] = &ActionContext::new_rpg_do_quest;
     }
 
 private:
@@ -270,6 +273,7 @@ private:
     static Action* drop_target(PlayerbotAI* botAI) { return new DropTargetAction(botAI); }
     static Action* attack_duel_opponent(PlayerbotAI* botAI) { return new AttackDuelOpponentAction(botAI); }
     static Action* guard(PlayerbotAI* botAI) { return new GuardAction(botAI); }
+    static Action* return_to_stay_position(PlayerbotAI* botAI) { return new ReturnToStayPositionAction(botAI); }
     static Action* open_loot(PlayerbotAI* botAI) { return new OpenLootAction(botAI); }
     static Action* move_to_loot(PlayerbotAI* botAI) { return new MoveToLootAction(botAI); }
     static Action* _return(PlayerbotAI* botAI) { return new ReturnAction(botAI); }
@@ -373,6 +377,7 @@ private:
     // BG Tactics
     static Action* bg_tactics(PlayerbotAI* botAI) { return new BGTactics(botAI); }
     static Action* bg_move_to_start(PlayerbotAI* botAI) { return new BGTactics(botAI, "move to start"); }
+    static Action* bg_reset_objective_force(PlayerbotAI* botAI) { return new BGTactics(botAI, "reset objective force"); }
     static Action* bg_move_to_objective(PlayerbotAI* botAI) { return new BGTactics(botAI, "move to objective"); }
     static Action* bg_select_objective(PlayerbotAI* botAI) { return new BGTactics(botAI, "select objective"); }
     static Action* bg_check_objective(PlayerbotAI* botAI) { return new BGTactics(botAI, "check objective"); }
@@ -428,6 +433,7 @@ private:
     static Action* new_rpg_go_innkeeper(PlayerbotAI* ai) { return new NewRpgGoInnKeeperAction(ai); }
     static Action* new_rpg_move_random(PlayerbotAI* ai) { return new NewRpgMoveRandomAction(ai); }
     static Action* new_rpg_move_npc(PlayerbotAI* ai) { return new NewRpgMoveNpcAction(ai); }
+    static Action* new_rpg_do_quest(PlayerbotAI* ai) { return new NewRpgDoQuestAction(ai); }
 };
 
 #endif

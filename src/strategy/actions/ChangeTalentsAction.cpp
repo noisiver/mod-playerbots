@@ -125,7 +125,7 @@ std::string ChangeTalentsAction::SpecList()
 std::string ChangeTalentsAction::SpecPick(std::string param)
 {
     int cls = bot->getClass();
-    int specFound = 0;
+    // int specFound = 0; //not used, line marked for removal.
     for (int specNo = 0; specNo < MAX_SPECNO; ++specNo)
     {
         if (sPlayerbotAIConfig->premadeSpecName[cls][specNo].size() == 0)
@@ -135,6 +135,10 @@ std::string ChangeTalentsAction::SpecPick(std::string param)
         if (sPlayerbotAIConfig->premadeSpecName[cls][specNo] == param)
         {
             PlayerbotFactory::InitTalentsBySpecNo(bot, specNo, true);
+
+            PlayerbotFactory factory(bot, bot->GetLevel());
+            factory.InitGlyphs(false);
+
             std::ostringstream out;
             out << "Picking " << sPlayerbotAIConfig->premadeSpecName[cls][specNo];
             return out.str();

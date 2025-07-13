@@ -35,6 +35,7 @@ enum class HealingManaEfficiency : uint8
 };
 
 #define MAX_SPECNO 20
+#define MAX_WORLDBUFF_SPECNO 3
 
 class PlayerbotAIConfig
 {
@@ -54,7 +55,9 @@ public:
     bool IsInPvpProhibitedArea(uint32 id);
 
     bool enabled;
-    bool allowGuildBots, allowPlayerBots;
+    bool disabledWithoutRealPlayer;
+    bool EnableICCBuffs;
+    bool allowAccountBots, allowGuildBots, allowTrustedAccountBots;
     bool randomBotGuildNearby, randomBotInvitePlayer, inviteChat;
     uint32 globalCoolDown, reactDelay, maxWaitForMove, disableMoveSplinePath, maxMovementSearchTime, expireActionTime,
         dispelAuraDuration, passiveDelay, repeatDelay, errorDelay, rpgDelay, sitDelay, returnDelay, lootDelay;
@@ -70,6 +73,7 @@ public:
     float maxAoeAvoidRadius;
     std::set<uint32> aoeAvoidSpellWhitelist;
     bool tellWhenAvoidAoe;
+    std::set<uint32> disallowedGameObjects;
 
     uint32 openGoSpell;
     bool randomBotAutologin;
@@ -83,9 +87,10 @@ public:
     std::vector<uint32> randomBotQuestIds;
     uint32 randomBotTeleportDistance;
     float randomGearLoweringChance;
+    bool incrementalGearInit;
     int32 randomGearQualityLimit;
     int32 randomGearScoreLimit;
-    float randomBotMaxLevelChance;
+    float randomBotMinLevelChance, randomBotMaxLevelChance;
     float randomBotRpgChance;
     uint32 minRandomBots, maxRandomBots;
     uint32 randomBotUpdateInterval, randomBotCountChangeMinInterval, randomBotCountChangeMaxInterval;
@@ -94,10 +99,11 @@ public:
     uint32 minRandomBotChangeStrategyTime, maxRandomBotChangeStrategyTime;
     uint32 minRandomBotReviveTime, maxRandomBotReviveTime;
     uint32 minRandomBotTeleportInterval, maxRandomBotTeleportInterval;
-    uint32 randomBotInWorldWithRotationDisabled;
+    uint32 permanantlyInWorldTime;
     uint32 minRandomBotPvpTime, maxRandomBotPvpTime;
     uint32 randomBotsPerInterval;
     uint32 minRandomBotsPriceChangeInterval, maxRandomBotsPriceChangeInterval;
+    uint32 disabledWithoutRealPlayerLoginDelay, disabledWithoutRealPlayerLogoutDelay;
     bool randomBotJoinLfg;
 
     // chat
@@ -173,14 +179,28 @@ public:
 
     bool randomBotJoinBG;
     bool randomBotAutoJoinBG;
-    uint32 randomBotAutoJoinWarsongBracket;
+
+    std::string randomBotAutoJoinICBrackets;
+    std::string randomBotAutoJoinEYBrackets;
+    std::string randomBotAutoJoinAVBrackets;
+    std::string randomBotAutoJoinABBrackets;
+    std::string randomBotAutoJoinWSBrackets;
+
+    uint32 randomBotAutoJoinBGICCount;
+    uint32 randomBotAutoJoinBGEYCount;
+    uint32 randomBotAutoJoinBGAVCount;
+    uint32 randomBotAutoJoinBGABCount;
+    uint32 randomBotAutoJoinBGWSCount;
+
     uint32 randomBotAutoJoinArenaBracket;
-    uint32 randomBotAutoJoinBGWarsongCount;
+
     uint32 randomBotAutoJoinBGRatedArena2v2Count;
     uint32 randomBotAutoJoinBGRatedArena3v3Count;
     uint32 randomBotAutoJoinBGRatedArena5v5Count;
+
     bool randomBotLoginAtStartup;
     uint32 randomBotTeleLowerLevel, randomBotTeleHigherLevel;
+    std::map<uint32, std::pair<uint32, uint32>> zoneBrackets;
     bool logInGroupOnly, logValuesPerTick;
     bool fleeingEnabled;
     bool summonAtInnkeepersEnabled;
@@ -221,8 +241,8 @@ public:
     uint32 limitEnchantExpansion;
     uint32 limitGearExpansion;
     uint32 randombotStartingLevel;
-    bool enableRotation;
-    uint32 rotationPoolSize;
+    bool enablePeriodicOnlineOffline;
+    float periodicOnlineOfflineRatio;
     bool gearscorecheck;
     bool randomBotPreQuests;
 
@@ -236,6 +256,7 @@ public:
     uint32 iterationsPerTick;
 
     std::mutex m_logMtx;
+    std::vector<std::string> tradeActionExcludedPrefixes;
     std::vector<std::string> allowedLogFiles;
     std::unordered_map<std::string, std::pair<FILE*, bool>> logFiles;
 
@@ -261,8 +282,11 @@ public:
     bool randomBotShowCloak;
     bool randomBotFixedLevel;
     bool disableRandomLevels;
-    uint32 playerbotsXPrate;
+    float randomBotXPRate;
+    uint32 randomBotAllianceRatio;
+    uint32 randomBotHordeRatio;
     bool disableDeathKnightLogin;
+    bool limitTalentsExpansion;
     uint32 botActiveAlone;
     uint32 BotActiveAloneForceWhenInRadius;
     bool BotActiveAloneForceWhenInZone;
@@ -270,6 +294,8 @@ public:
     bool BotActiveAloneForceWhenIsFriend;
     bool BotActiveAloneForceWhenInGuild;
     bool botActiveAloneSmartScale;
+    uint32 botActiveAloneSmartScaleDiffLimitfloor;
+    uint32 botActiveAloneSmartScaleDiffLimitCeiling;
     uint32 botActiveAloneSmartScaleWhenMinLevel;
     uint32 botActiveAloneSmartScaleWhenMaxLevel;
 
@@ -285,6 +311,7 @@ public:
     std::string autoTrainSpells;
     bool autoPickTalents;
     bool autoUpgradeEquip;
+    int32 hunterWolfPet;
     bool autoLearnTrainerSpells;
     bool autoDoQuests;
     bool enableNewRpgStrategy;
@@ -293,6 +320,7 @@ public:
     bool autoLearnQuestSpells;
     bool autoTeleportForLevel;
     bool randomBotGroupNearby;
+    int32 enableRandomBotTrading;
     uint32 tweakValue;  // Debugging config
 
     uint32 randomBotArenaTeamCount;
@@ -309,6 +337,8 @@ public:
     bool equipmentPersistence;
     int32 equipmentPersistenceLevel;
     int32 groupInvitationPermission;
+    bool keepAltsInGroup = false;
+    bool KeepAltsInGroup() const { return keepAltsInGroup; }
     bool allowSummonInCombat;
     bool allowSummonWhenMasterIsDead;
     bool allowSummonWhenBotIsDead;
@@ -316,11 +346,22 @@ public:
     bool botRepairWhenSummon;
     bool autoInitOnly;
     float autoInitEquipLevelLimitRatio;
-    int32 maxAddedBots, maxAddedBotsPerClass;
+    int32 maxAddedBots;
     int32 addClassCommand;
     int32 addClassAccountPoolSize;
     int32 maintenanceCommand;
     int32 autoGearCommand, autoGearCommandAltBots, autoGearQualityLimit, autoGearScoreLimit;
+
+    uint32 useGroundMountAtMinLevel;
+    uint32 useFastGroundMountAtMinLevel;
+    uint32 useFlyMountAtMinLevel;
+    uint32 useFastFlyMountAtMinLevel;
+
+    // stagger flightpath takeoff
+    uint32 delayMin;
+    uint32 delayMax;
+    uint32 gapMs;
+    uint32 gapJitterMs;
 
     std::string const GetTimestampStr();
     bool hasLog(std::string const fileName)
@@ -335,7 +376,7 @@ public:
     }
     void log(std::string const fileName, const char* str, ...);
 
-    void loadWorldBuf(uint32 factionId, uint32 classId, uint32 specId, uint32 minLevel, uint32 maxLevel);
+    void loadWorldBuff(uint32 factionId, uint32 classId, uint32 specId, uint32 minLevel, uint32 maxLevel);
     static std::vector<std::vector<uint32>> ParseTempTalentsOrder(uint32 cls, std::string temp_talents_order);
     static std::vector<std::vector<uint32>> ParseTempPetTalentsOrder(uint32 spec, std::string temp_talents_order);
 };

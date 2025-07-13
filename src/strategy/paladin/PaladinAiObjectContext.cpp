@@ -8,6 +8,7 @@
 #include "DpsPaladinStrategy.h"
 #include "GenericPaladinNonCombatStrategy.h"
 #include "HealPaladinStrategy.h"
+#include "OffhealRetPaladinStrategy.h"
 #include "NamedObjectContext.h"
 #include "PaladinActions.h"
 #include "PaladinBuffStrategies.h"
@@ -48,6 +49,7 @@ public:
         creators["baoe"] = &PaladinResistanceStrategyFactoryInternal::baoe;
         creators["barmor"] = &PaladinResistanceStrategyFactoryInternal::barmor;
         creators["bcast"] = &PaladinResistanceStrategyFactoryInternal::bcast;
+        creators["bspeed"] = &PaladinResistanceStrategyFactoryInternal::bspeed;
     }
 
 private:
@@ -57,6 +59,7 @@ private:
     static Strategy* baoe(PlayerbotAI* botAI) { return new PaladinBuffAoeStrategy(botAI); }
     static Strategy* barmor(PlayerbotAI* botAI) { return new PaladinBuffArmorStrategy(botAI); }
     static Strategy* bcast(PlayerbotAI* botAI) { return new PaladinBuffCastStrategy(botAI); }
+    static Strategy* bspeed(PlayerbotAI* botAI) { return new PaladinBuffSpeedStrategy(botAI); }
 };
 
 class PaladinBuffStrategyFactoryInternal : public NamedObjectContext<Strategy>
@@ -85,12 +88,14 @@ public:
         creators["tank"] = &PaladinCombatStrategyFactoryInternal::tank;
         creators["dps"] = &PaladinCombatStrategyFactoryInternal::dps;
         creators["heal"] = &PaladinCombatStrategyFactoryInternal::heal;
+        creators["offheal"] = &PaladinCombatStrategyFactoryInternal::offheal;
     }
 
 private:
     static Strategy* tank(PlayerbotAI* botAI) { return new TankPaladinStrategy(botAI); }
     static Strategy* dps(PlayerbotAI* botAI) { return new DpsPaladinStrategy(botAI); }
     static Strategy* heal(PlayerbotAI* botAI) { return new HealPaladinStrategy(botAI); }
+    static Strategy* offheal(PlayerbotAI* botAI) { return new OffhealRetPaladinStrategy(botAI); }
 };
 
 class PaladinTriggerFactoryInternal : public NamedObjectContext<Trigger>
@@ -140,6 +145,7 @@ public:
         creators["blessing of kings on party"] = &PaladinTriggerFactoryInternal::blessing_of_kings_on_party;
         creators["blessing of wisdom on party"] = &PaladinTriggerFactoryInternal::blessing_of_wisdom_on_party;
         creators["blessing of might on party"] = &PaladinTriggerFactoryInternal::blessing_of_might_on_party;
+        creators["blessing of sanctuary on party"] = &PaladinTriggerFactoryInternal::blessing_of_sanctuary_on_party;
 
         creators["avenging wrath"] = &PaladinTriggerFactoryInternal::avenging_wrath;
     }
@@ -201,11 +207,9 @@ private:
     static Trigger* sacred_shield_on_main_tank(PlayerbotAI* ai) { return new SacredShieldOnMainTankTrigger(ai); }
 
     static Trigger* blessing_of_kings_on_party(PlayerbotAI* botAI) { return new BlessingOfKingsOnPartyTrigger(botAI); }
-    static Trigger* blessing_of_wisdom_on_party(PlayerbotAI* botAI)
-    {
-        return new BlessingOfWisdomOnPartyTrigger(botAI);
-    }
+    static Trigger* blessing_of_wisdom_on_party(PlayerbotAI* botAI) { return new BlessingOfWisdomOnPartyTrigger(botAI); }
     static Trigger* blessing_of_might_on_party(PlayerbotAI* botAI) { return new BlessingOfMightOnPartyTrigger(botAI); }
+    static Trigger* blessing_of_sanctuary_on_party(PlayerbotAI* botAI) { return new BlessingOfSanctuaryOnPartyTrigger(botAI); }
 
     static Trigger* avenging_wrath(PlayerbotAI* botAI) { return new AvengingWrathTrigger(botAI); }
 };
@@ -226,6 +230,7 @@ public:
         creators["blessing of kings on party"] = &PaladinAiObjectContextInternal::blessing_of_kings_on_party;
         creators["blessing of might on party"] = &PaladinAiObjectContextInternal::blessing_of_might_on_party;
         creators["blessing of wisdom on party"] = &PaladinAiObjectContextInternal::blessing_of_wisdom_on_party;
+        creators["blessing of sanctuary on party"] = &PaladinAiObjectContextInternal::blessing_of_sanctuary_on_party;
         creators["redemption"] = &PaladinAiObjectContextInternal::redemption;
         creators["crusader strike"] = &PaladinAiObjectContextInternal::crusader_strike;
         creators["crusader aura"] = &PaladinAiObjectContextInternal::crusader_aura;
@@ -312,18 +317,10 @@ private:
     static Action* blessing_of_wisdom(PlayerbotAI* botAI) { return new CastBlessingOfWisdomAction(botAI); }
     static Action* blessing_of_kings(PlayerbotAI* botAI) { return new CastBlessingOfKingsAction(botAI); }
     static Action* divine_storm(PlayerbotAI* botAI) { return new CastDivineStormAction(botAI); }
-    static Action* blessing_of_kings_on_party(PlayerbotAI* botAI)
-    {
-        return new CastBlessingOfKingsOnPartyAction(botAI);
-    }
-    static Action* blessing_of_might_on_party(PlayerbotAI* botAI)
-    {
-        return new CastBlessingOfMightOnPartyAction(botAI);
-    }
-    static Action* blessing_of_wisdom_on_party(PlayerbotAI* botAI)
-    {
-        return new CastBlessingOfWisdomOnPartyAction(botAI);
-    }
+    static Action* blessing_of_kings_on_party(PlayerbotAI* botAI) { return new CastBlessingOfKingsOnPartyAction(botAI); }
+    static Action* blessing_of_might_on_party(PlayerbotAI* botAI) { return new CastBlessingOfMightOnPartyAction(botAI); }
+    static Action* blessing_of_wisdom_on_party(PlayerbotAI* botAI) { return new CastBlessingOfWisdomOnPartyAction(botAI); }
+    static Action* blessing_of_sanctuary_on_party(PlayerbotAI* botAI) { return new CastBlessingOfSanctuaryOnPartyAction(botAI); }
     static Action* redemption(PlayerbotAI* botAI) { return new CastRedemptionAction(botAI); }
     static Action* crusader_strike(PlayerbotAI* botAI) { return new CastCrusaderStrikeAction(botAI); }
     static Action* crusader_aura(PlayerbotAI* botAI) { return new CastCrusaderAuraAction(botAI); }

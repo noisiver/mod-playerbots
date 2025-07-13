@@ -8,6 +8,7 @@
 #include "ChooseRpgTargetAction.h"
 #include "Event.h"
 #include "LootObjectStack.h"
+#include "NewRpgStrategy.h"
 #include "Playerbots.h"
 #include "PossibleRpgTargetsValue.h"
 #include "PvpTriggers.h"
@@ -24,44 +25,37 @@ bool AttackEnemyPlayerAction::isUseful()
 bool AttackEnemyFlagCarrierAction::isUseful()
 {
     Unit* target = context->GetValue<Unit*>("enemy flag carrier")->Get();
-    return target && sServerFacade->IsDistanceLessOrEqualThan(sServerFacade->GetDistance2d(bot, target), 75.0f) &&
+    return target && sServerFacade->IsDistanceLessOrEqualThan(sServerFacade->GetDistance2d(bot, target), 100.0f) &&
            PlayerHasFlag::IsCapturingFlag(bot);
 }
 
 bool AttackAnythingAction::isUseful()
 {
-    if (!botAI->AllowActivity(GRIND_ACTIVITY))  // Bot not allowed to be active
+    if (!bot || !botAI)  // Prevents invalid accesses
         return false;
 
-    if (!AI_VALUE(bool, "can move around"))
+    if (!botAI->AllowActivity(GRIND_ACTIVITY))  // Bot cannot be active
         return false;
 
-    if (context->GetValue<TravelTarget*>("travel target")->Get()->isTraveling() &&
-        ChooseRpgTargetAction::isFollowValid(
-            bot, *context->GetValue<TravelTarget*>("travel target")->Get()->getPosition()))  // Bot is traveling
+    if (botAI->HasStrategy("stay", BOT_STATE_NON_COMBAT))
         return false;
-    // if (bot->IsInCombat()) {
-    //     return false;
-    // }
+
+    if (bot->IsInCombat())
+        return false;
+
     Unit* target = GetTarget();
-
-    if (!target)
+    if (!target || !target->IsInWorld())  // Checks if the target is valid and in the world
         return false;
 
     std::string const name = std::string(target->GetName());
-    // Check for invalid targets: Dummy, Charge Target, Melee Target, Ranged Target
     if (!name.empty() &&
         (name.find("Dummy") != std::string::npos ||
          name.find("Charge Target") != std::string::npos ||
          name.find("Melee Target") != std::string::npos ||
          name.find("Ranged Target") != std::string::npos))
     {
-        return false;  // Target is one of the disallowed types
+        return false;
     }
-
-    // if (!ChooseRpgTargetAction::isFollowValid(bot, target))                               //Do not grind mobs far
-    // away from master.
-    //     return false;
 
     return true;
 }
@@ -89,7 +83,14 @@ bool DropTargetAction::Execute(Event event)
     bot->SetTarget(ObjectGuid::Empty);
     bot->SetSelection(ObjectGuid());
     botAI->ChangeEngine(BOT_STATE_NON_COMBAT);
-    // botAI->InterruptSpell();
+    if (bot->getClass() == CLASS_HUNTER) // Check for Hunter Class
+    {
+        Spell const* spell = bot->GetCurrentSpell(CURRENT_AUTOREPEAT_SPELL); // Get the current spell being cast by the bot
+        if (spell && spell->m_spellInfo->Id == 75) //Check spell is not nullptr before accessing m_spellInfo 
+        {
+            bot->InterruptSpell(CURRENT_AUTOREPEAT_SPELL); // Interrupt Auto Shot
+        }
+    } 
     bot->AttackStop();
 
     // if (Pet* pet = bot->GetPet())
