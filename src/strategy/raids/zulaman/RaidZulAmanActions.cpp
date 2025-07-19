@@ -1,6 +1,46 @@
 #include "Playerbots.h"
 #include "RaidZulAmanActions.h"
 
+bool ZulAmanTrashMarkTotemsAction::Execute(Event event)
+{
+    Unit* target = nullptr;
+    Unit* medicineMan = AI_VALUE2(Unit*, "find target", "amani'shi medicine man");
+
+    if (!medicineMan)
+        return false;
+
+    const GuidVector npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
+
+    for (const auto& npcGuid : npcs)
+    {
+        Unit* unit = botAI->GetUnit(npcGuid);
+
+        if (!unit)
+            continue;
+
+        if (unit->GetEntry() == NPC_AMANI_HEALING_WARD || unit->GetEntry() == NPC_AMANI_PROTECTIVE_WARD)
+        {
+            target = unit;
+            break;
+        }
+    }
+
+    if (!target)
+        return false;
+
+    if (Group* group = bot->GetGroup())
+    {
+        static constexpr uint8_t SKULL_ICON_INDEX = 7;
+        const ObjectGuid currentSkull = group->GetTargetIcon(SKULL_ICON_INDEX);
+        Unit* currentSkullUnit = botAI->GetUnit(currentSkull);
+
+        if (!currentSkullUnit || !currentSkullUnit->IsAlive() || currentSkullUnit != target)
+            group->SetTargetIcon(SKULL_ICON_INDEX, bot->GetGUID(), target->GetGUID());
+    }
+
+    return false;
+}
+
 bool ZulAmanNalorakkTankPositionAction::Execute(Event event)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "nalorakk");

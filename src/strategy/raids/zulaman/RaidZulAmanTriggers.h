@@ -3,6 +3,13 @@
 
 #include "Trigger.h"
 
+class ZulAmanTrashTrigger : public Trigger
+{
+public:
+    ZulAmanTrashTrigger(PlayerbotAI* botAI) : Trigger(botAI, "zulaman trash") {}
+    bool IsActive() override;
+};
+
 class ZulAmanNalorakkTrigger : public Trigger
 {
 public:
