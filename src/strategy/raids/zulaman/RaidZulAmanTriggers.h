@@ -17,4 +17,11 @@ public:
     bool IsActive() override;
 };
 
+class ZulAmanAkilzonTrigger : public Trigger
+{
+public:
+    ZulAmanAkilzonTrigger(PlayerbotAI* botAI) : Trigger(botAI, "zulaman akil'zon") {}
+    bool IsActive() override;
+};
+
 #endif

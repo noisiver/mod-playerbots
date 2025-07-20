@@ -20,3 +20,13 @@ bool ZulAmanNalorakkTrigger::IsActive()
 
     return true;
 }
+
+bool ZulAmanAkilzonTrigger::IsActive()
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", "akil'zon");
+
+    if (!boss)
+        return false;
+
+    return true;
+}
