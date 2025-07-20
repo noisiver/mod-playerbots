@@ -1523,6 +1523,8 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
         case 509:
             strategyName = "aq20";
             break;
+        case 532:
+            strategyName = "karazhan";
         case 533:
             strategyName = "naxx";
             break;
