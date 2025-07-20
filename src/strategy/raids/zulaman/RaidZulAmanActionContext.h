@@ -12,11 +12,13 @@ public:
     {
         creators["zulaman trash mark totems"] = &RaidZulAmanActionContext::zulaman_trash_mark_totems;
         creators["zulaman nalorakk tank position"] = &RaidZulAmanActionContext::zulaman_nalorakk_tank_position;
+        creators["zulaman nalorakk ranged position"] = &RaidZulAmanActionContext::zulaman_nalorakk_ranged_position;
     }
 
 private:
     static Action* zulaman_trash_mark_totems(PlayerbotAI* ai) { return new ZulAmanTrashMarkTotemsAction(ai); }
     static Action* zulaman_nalorakk_tank_position(PlayerbotAI* ai) { return new ZulAmanNalorakkTankPositionAction(ai); }
+    static Action* zulaman_nalorakk_ranged_position(PlayerbotAI* ai) { return new ZulAmanNalorakkRangedPositionAction(ai); }
 };
 
 #endif

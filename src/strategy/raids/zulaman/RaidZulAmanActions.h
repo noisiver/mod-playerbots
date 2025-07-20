@@ -19,7 +19,7 @@ public:
     {
     }
 
-    bool Execute(Event event) override;
+    bool Execute(Event /*event*/) override;
 };
 
 class ZulAmanNalorakkTankPositionAction : public AttackAction
@@ -30,7 +30,18 @@ public:
     {
     }
 
-    bool Execute(Event event) override;
+    bool Execute(Event /*event*/) override;
+};
+
+class ZulAmanNalorakkRangedPositionAction : public AttackAction
+{
+public:
+    ZulAmanNalorakkRangedPositionAction(PlayerbotAI* botAI, std::string const name = "zulaman nalorakk ranged position")
+        : AttackAction(botAI, name)
+    {
+    }
+
+    bool Execute(Event /*event*/) override;
 };
 
 #endif

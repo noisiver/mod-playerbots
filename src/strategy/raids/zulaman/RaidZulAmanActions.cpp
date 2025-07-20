@@ -1,7 +1,7 @@
 #include "Playerbots.h"
 #include "RaidZulAmanActions.h"
 
-bool ZulAmanTrashMarkTotemsAction::Execute(Event event)
+bool ZulAmanTrashMarkTotemsAction::Execute(Event /*event*/)
 {
     Unit* target = nullptr;
     Unit* medicineMan = AI_VALUE2(Unit*, "find target", "amani'shi medicine man");
@@ -41,7 +41,7 @@ bool ZulAmanTrashMarkTotemsAction::Execute(Event event)
     return false;
 }
 
-bool ZulAmanNalorakkTankPositionAction::Execute(Event event)
+bool ZulAmanNalorakkTankPositionAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "nalorakk");
 
@@ -54,7 +54,7 @@ bool ZulAmanNalorakkTankPositionAction::Execute(Event event)
     if (botAI->HasAggro(boss) && boss->GetVictim() == bot)
     {
         // Move the boss into position
-        const float distanceToBossPosition = boss->GetExactDist2d(ZULAMAN_NALORAKK_BOSS_POSITION);
+        float distanceToBossPosition = boss->GetExactDist2d(ZULAMAN_NALORAKK_BOSS_POSITION);
 
         if (distanceToBossPosition > 5.0f)
         {
@@ -69,36 +69,41 @@ bool ZulAmanNalorakkTankPositionAction::Execute(Event event)
         }
 
         // Make the boss face east
-        float targetOrientation = M_PI + M_PI / 2;
-        float currentOrientation = boss->GetOrientation();
+        float x = boss->GetPositionX();
+        float y = boss->GetPositionY() - 3.0f;
+        float z = bot->GetPositionZ();
+        float distance = bot->GetExactDist2d(x, y);
 
-        currentOrientation = fmod(currentOrientation + 2 * M_PI, 2 * M_PI);
-        targetOrientation = fmod(targetOrientation + 2 * M_PI, 2 * M_PI);
+        if (distance > 1.0f)
+            return MoveTo(bot->GetMapId(), x, y, z, false, false, false, false, MovementPriority::MOVEMENT_FORCED, true,
+                          false);
+    }
 
-        float orientationDiff = currentOrientation - targetOrientation;
+    return false;
+}
 
-        if (std::abs(orientationDiff) > 0.15f)
-        {
-            float currentX = bot->GetPositionX();
-            float currentY = bot->GetPositionY();
-            float centerX = boss->GetPositionX();
-            float centerY = boss->GetPositionY();
-            float radius = std::max(2.0f, bot->GetExactDist2d(centerX, centerY));
+bool ZulAmanNalorakkRangedPositionAction::Execute(Event /*event*/)
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", "nalorakk");
 
-            float angle = atan2(currentY - centerY, currentX - centerX);
+    if (!boss)
+        return false;
 
-            float arcStep = 0.125f;
-            if (orientationDiff < 0)
-                angle += arcStep;
-            else
-                angle -= arcStep;
+    if (boss->isMoving())
+        return false;
 
-            float moveX = centerX + radius * cos(angle);
-            float moveY = centerY + radius * sin(angle);
+    if (boss->GetExactDist2d(ZULAMAN_NALORAKK_BOSS_POSITION) > 5.0f)
+        return false;
 
-            return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, false,
-                          MovementPriority::MOVEMENT_FORCED, true, false);
-        }
+    if (!botAI->IsRanged(bot))
+        return false;
+
+    if (boss->isInFront(bot))
+    {
+        // Move upwards of 15 yards behind the boss
+        float x = boss->GetPositionX();
+        float y = boss->GetPositionY() + 15.0f;
+        float z = bot->GetPositionZ();
     }
 
     return false;
