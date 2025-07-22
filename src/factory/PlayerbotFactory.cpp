@@ -40,6 +40,8 @@
 #include "StatsWeightCalculator.h"
 #include "World.h"
 
+#include "mod_progression.h"
+
 const uint64 diveMask = (1LL << 7) | (1LL << 44) | (1LL << 37) | (1LL << 38) | (1LL << 26) | (1LL << 30) | (1LL << 27) |
                         (1LL << 33) | (1LL << 24) | (1LL << 34);
 
@@ -1721,6 +1723,98 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
                         ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
                         if (!proto)
                             continue;
+                        
+                        uint8 PatchId = sProgressionMgr->GetPatchId();
+
+                        if (PatchId < PATCH_RISE_OF_THE_BLOOD_GOD && proto->ItemLevel > 63)
+                        {
+                            continue;
+                        }
+
+                        if (PatchId < PATCH_DRAGONS_OF_NIGHTMARE && proto->ItemLevel > 66)
+                        {
+                            continue;
+                        }
+
+                        if (PatchId < PATCH_BEFORE_THE_STORM && proto->ItemLevel > 76)
+                        {
+                            continue;
+                        }
+
+                        if (PatchId < PATCH_BLACK_TEMPLE && proto->ItemLevel > 110)
+                        {
+                            continue;
+                        }
+
+                        if (PatchId < PATCH_VOICE_CHAT && proto->ItemLevel > 120)
+                        {
+                            continue;
+                        }
+
+                        if (PatchId < PATCH_ECHOES_OF_DOOM && proto->ItemLevel > 133)
+                        {
+                            continue;
+                        }
+
+                        if (PatchId < PATCH_SECRETS_OF_ULDUAR && proto->ItemLevel > 200)
+                        {
+                            continue;
+                        }
+
+                        if (PatchId < PATCH_CALL_OF_THE_CRUSADE && proto->ItemLevel > 213)
+                        {
+                            continue;
+                        }
+
+                        if (PatchId < PATCH_FALL_OF_THE_LICH_KING && proto->ItemLevel > 226)
+                        {
+                            continue;
+                        }
+
+                        if (PatchId < PATCH_ASSAULT_ON_THE_RUBY_SANCTUM && proto->ItemLevel > 245)
+                        {
+                            continue;
+                        }
+
+                        if (!sRandomPlayerbotMgr->IsRandomBot(bot))
+                        {
+                            if (PatchId < PATCH_BEFORE_THE_STORM)
+                            {
+                                 if (proto->ItemLevel > 58)
+                                 {
+                                     continue;
+                                 }
+                            }
+                            else if (PatchId < PATCH_ECHOES_OF_DOOM)
+                            {
+                                 if (proto->ItemLevel > 100)
+                                 {
+                                     continue;
+                                 }
+                            }
+                            else
+                            {
+                                 if (proto->ItemLevel > 174)
+                                 {
+                                     continue;
+                                 }
+                            }
+
+                            if (PatchId < PATCH_ASSAULT_ON_BLACKWING_LAIR || PatchId == PATCH_BEFORE_THE_STORM || PatchId == PATCH_ECHOES_OF_DOOM)
+                            {
+                                if (proto->Quality > ITEM_QUALITY_RARE)
+                                {
+                                    continue;
+                                }
+                            }
+                            else
+                            {
+                                if (proto->Quality > ITEM_QUALITY_EPIC)
+                                {
+                                    continue;
+                                }
+                            }
+                        }
                         
                         bool shouldCheckGS = desiredQuality > ITEM_QUALITY_NORMAL;
 
