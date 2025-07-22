@@ -49,17 +49,41 @@ bool KarazhanMaidenOfVirtuePositionBossAction::Execute(Event /*event*/)
     if (!botAI->IsTank(bot))
         return false;
 
+    Unit* healer = nullptr;
+
+    if (Group* group = bot->GetGroup())
+    {
+        for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
+        {
+            Player* member = itr->GetSource();
+
+            if (!member || !member->IsAlive() || !botAI->IsHeal(member))
+                continue;
+
+            if (!member->HasAura(SPELL_REPENTANCE))
+                break;
+
+            healer = member;
+            break;
+        }
+    }
+
     if (botAI->HasAggro(boss) && boss->GetVictim() == bot)
     {
-        const float distanceToBossPosition = boss->GetExactDist2d(KARAZHAN_MAIDEN_OF_VIRTUE_BOSS_POSITION);
+        Position position = KARAZHAN_MAIDEN_OF_VIRTUE_BOSS_POSITION;
 
-        if (distanceToBossPosition > 5.0f)
+        if (healer)
+            position = healer->GetPosition();
+
+        const float distanceToPosition = boss->GetExactDist2d(position);
+
+        if (distanceToPosition > 5.0f)
         {
-            float dirX = KARAZHAN_MAIDEN_OF_VIRTUE_BOSS_POSITION.GetPositionX() - boss->GetPositionX();
-            float dirY = KARAZHAN_MAIDEN_OF_VIRTUE_BOSS_POSITION.GetPositionY() - boss->GetPositionY();
+            float dirX = position.GetPositionX() - boss->GetPositionX();
+            float dirY = position.GetPositionY() - boss->GetPositionY();
 
-            float moveX = KARAZHAN_MAIDEN_OF_VIRTUE_BOSS_POSITION.GetPositionX() + (dirX / distanceToBossPosition) * 4.0f;
-            float moveY = KARAZHAN_MAIDEN_OF_VIRTUE_BOSS_POSITION.GetPositionY() + (dirY / distanceToBossPosition) * 4.0f;
+            float moveX = position.GetPositionX() + (dirX / distanceToPosition) * 4.0f;
+            float moveY = position.GetPositionY() + (dirY / distanceToPosition) * 4.0f;
 
             return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, false,
                           MovementPriority::MOVEMENT_FORCED, true, false);
@@ -69,14 +93,13 @@ bool KarazhanMaidenOfVirtuePositionBossAction::Execute(Event /*event*/)
     return false;
 }
 
-bool KarazhanMaidenOfVirtueSpreadRangedAction::Execute(Event /*event*/)
+bool KarazhanMaidenOfVirtuePositionRangedAction::Execute(Event /*event*/)
 {
     if (!botAI->IsRanged(bot))
         return false;
 
-    const float minDistance = 5.0f;
-    Unit* nearestPlayer = nullptr;
-    float nearestDistance = 1000.0f;
+    int maxIndex = 7;
+    int index = 0;
 
     const GuidVector members = AI_VALUE(GuidVector, "group members");
 
@@ -84,23 +107,29 @@ bool KarazhanMaidenOfVirtueSpreadRangedAction::Execute(Event /*event*/)
     {
         Unit* member = botAI->GetUnit(memberGuid);
 
-        if (!member || !member->IsAlive() || member == bot || bot->GetExactDist2d(member) > minDistance)
+        if (!member || !botAI->IsRanged(member->ToPlayer()))
             continue;
 
-        float distance = bot->GetExactDist2d(member);
+        if (member == bot)
+            break;
 
-        if (nearestDistance > distance)
+        // Reset index to 0 if there are more than 8 ranged players
+        if (index >= maxIndex)
         {
-            nearestPlayer = member;
-            nearestDistance = distance;
+            index = 0;
+            continue;
         }
+
+        index++;
     }
 
-    if (!nearestPlayer)
-        return false;
+    float distance = bot->GetExactDist2d(KARAZHAN_MAIDEN_OF_VIRTUE_RANGED_POSITION[index]);
+    const float maxDistance = 2.0f;
 
-    if (bot->GetExactDist2d(nearestPlayer) < minDistance)
-        return FleePosition(nearestPlayer->GetPosition(), minDistance);
+    if (distance > maxDistance)
+        return MoveTo(bot->GetMapId(), KARAZHAN_MAIDEN_OF_VIRTUE_RANGED_POSITION[index].GetPositionX(),
+                      KARAZHAN_MAIDEN_OF_VIRTUE_RANGED_POSITION[index].GetPositionY(), bot->GetPositionZ(), false,
+                      false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 
     return false;
 }

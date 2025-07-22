@@ -10,7 +10,7 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         triggers.push_back(new TriggerNode(
         "karazhan maiden of virtue", NextAction::array(0,
             new NextAction("karazhan maiden of virtue position boss", ACTION_MOVE + 1),
-            new NextAction("karazhan maiden of virtue spread ranged", ACTION_MOVE + 2),
+            new NextAction("karazhan maiden of virtue position ranged", ACTION_MOVE + 2),
             nullptr)));
 
         triggers.push_back(new TriggerNode(
