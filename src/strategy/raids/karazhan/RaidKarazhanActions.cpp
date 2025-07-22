@@ -61,29 +61,38 @@ bool KarazhanMaidenOfVirtuePositionBossAction::Execute(Event /*event*/)
                 continue;
 
             if (!member->HasAura(SPELL_REPENTANCE))
+            {
+                healer = nullptr;
                 break;
+            }
 
-            healer = member;
-            break;
+            if (!healer)
+                healer = member;
         }
     }
 
     if (botAI->HasAggro(boss) && boss->GetVictim() == bot)
     {
-        Position position = KARAZHAN_MAIDEN_OF_VIRTUE_BOSS_POSITION;
-
         if (healer)
-            position = healer->GetPosition();
-
-        const float distanceToPosition = boss->GetExactDist2d(position);
-
-        if (distanceToPosition > 5.0f)
         {
-            float dirX = position.GetPositionX() - boss->GetPositionX();
-            float dirY = position.GetPositionY() - boss->GetPositionY();
+            float angle = healer->GetOrientation();
+            float targetX = healer->GetPositionX() + cos(angle) * 6.0f;
+            float targetY = healer->GetPositionY() + sin(angle) * 6.0f;
+            float targetZ = healer->GetPositionZ();
 
-            float moveX = position.GetPositionX() + (dirX / distanceToPosition) * 4.0f;
-            float moveY = position.GetPositionY() + (dirY / distanceToPosition) * 4.0f;
+            return MoveTo(bot->GetMapId(), targetX, targetY, targetZ, false, false, false, true,
+                            MovementPriority::MOVEMENT_COMBAT);
+        }
+
+        const float distanceToBossPosition = boss->GetExactDist2d(KARAZHAN_MAIDEN_OF_VIRTUE_BOSS_POSITION);
+
+        if (distanceToBossPosition > 3.0f)
+        {
+            float dirX = KARAZHAN_MAIDEN_OF_VIRTUE_BOSS_POSITION.GetPositionX() - boss->GetPositionX();
+            float dirY = KARAZHAN_MAIDEN_OF_VIRTUE_BOSS_POSITION.GetPositionY() - boss->GetPositionY();
+
+            float moveX = KARAZHAN_MAIDEN_OF_VIRTUE_BOSS_POSITION.GetPositionX() + (dirX / distanceToBossPosition) * 3.0f;
+            float moveY = KARAZHAN_MAIDEN_OF_VIRTUE_BOSS_POSITION.GetPositionY() + (dirY / distanceToBossPosition) * 3.0f;
 
             return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, false,
                           MovementPriority::MOVEMENT_FORCED, true, false);
