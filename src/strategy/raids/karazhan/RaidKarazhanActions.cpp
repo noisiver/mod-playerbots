@@ -261,10 +261,30 @@ bool KarazhanTheCuratorSpreadRangedAction::Execute(Event /*event*/)
 
 bool KarazhanTerestianIllhoofMarkTargetAction::Execute(Event event)
 {
-    Unit* target = AI_VALUE2(Unit*, "find target", "demon chains");
+    Unit* target = nullptr;
+    Unit* boss = AI_VALUE2(Unit*, "find target", "terestian illhoof");
+
+    if (!boss)
+        return false;
+
+    const GuidVector npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
+
+    for (const auto& npcGuid : npcs)
+    {
+        Unit* unit = botAI->GetUnit(npcGuid);
+
+        if (!unit || !unit->IsAlive())
+            continue;
+
+        if (unit->GetEntry() == NPC_DEMON_CHAINS)
+        {
+            target = unit;
+            break;
+        }
+    }
 
     if (!target)
-        return false;
+        target = boss;
 
     if (Group* group = bot->GetGroup())
     {

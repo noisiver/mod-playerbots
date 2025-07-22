@@ -15,6 +15,9 @@ enum KarazhanSpells
 
 enum KarazhanNpcs
 {
+    // Terestian Illhoof
+    NPC_DEMON_CHAINS            = 17248,
+
     // Shade of Aran
     NPC_CONJURED_ELEMENTAL      = 17167
 };
