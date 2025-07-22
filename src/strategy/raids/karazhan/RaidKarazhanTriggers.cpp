@@ -38,6 +38,21 @@ bool KarazhanRomuloJulianneTrigger::IsActive()
     return true;
 }
 
+bool KarazhanWizardOfOzTrigger::IsActive()
+{
+    Unit* dorothee = AI_VALUE2(Unit*, "find target", "Dorothee");
+    Unit* strawman = AI_VALUE2(Unit*, "find target", "strawman");
+    Unit* tinhead = AI_VALUE2(Unit*, "find target", "tinhead");
+    Unit* tito = AI_VALUE2(Unit*, "find target", "tito");
+    Unit* roar = AI_VALUE2(Unit*, "find target", "roar");
+    Unit* crone = AI_VALUE2(Unit*, "find target", "the crone");
+
+    if (!dorothee && !strawman && !tinhead && !tito && !roar && !crone)
+        return false;
+
+    return true;
+}
+
 bool KarazhanTheCuratorTrigger::IsActive()
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "the curator");

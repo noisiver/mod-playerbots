@@ -174,6 +174,44 @@ bool KarazhanRomuloJulianneMarkTargetAction::Execute(Event event)
     return false;
 }
 
+bool KarazhanWizardOfOzMarkTargetAction::Execute(Event event)
+{
+    Unit* target = nullptr;
+    Unit* dorothee = AI_VALUE2(Unit*, "find target", "dorothee");
+    Unit* strawman = AI_VALUE2(Unit*, "find target", "strawman");
+    Unit* tinhead = AI_VALUE2(Unit*, "find target", "tinhead");
+    Unit* tito = AI_VALUE2(Unit*, "find target", "tito");
+    Unit* roar = AI_VALUE2(Unit*, "find target", "roar");
+    Unit* crone = AI_VALUE2(Unit*, "find target", "the crone");
+
+    if (dorothee)
+        target = dorothee;
+    else if (tito)
+        target = tito;
+    else if (roar)
+        target = roar;
+    else if (strawman)
+        target = strawman;
+    else if (tinhead)
+        target = tinhead;
+    else if (crone)
+        target = crone;
+
+    if (!target)
+        return false;
+
+    if (Group* group = bot->GetGroup())
+    {
+        constexpr uint8_t skullIconId = 7;
+        ObjectGuid skullGuid = group->GetTargetIcon(skullIconId);
+
+        if (skullGuid != target->GetGUID())
+            group->SetTargetIcon(skullIconId, bot->GetGUID(), target->GetGUID());
+    }
+
+    return false;
+}
+
 bool KarazhanTheCuratorMarkTargetAction::Execute(Event event)
 {
     Unit* target = AI_VALUE2(Unit*, "find target", "astral flare");

@@ -24,6 +24,13 @@ public:
     bool IsActive() override;
 };
 
+class KarazhanWizardOfOzTrigger : public Trigger
+{
+public:
+    KarazhanWizardOfOzTrigger(PlayerbotAI* botAI) : Trigger(botAI, "karazhan wizard of oz") {}
+    bool IsActive() override;
+};
+
 class KarazhanTheCuratorTrigger : public Trigger
 {
 public:

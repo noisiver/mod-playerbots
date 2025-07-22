@@ -8,7 +8,7 @@ class RaidKarazhanStrategy : public Strategy
 public:
     RaidKarazhanStrategy(PlayerbotAI* ai) : Strategy(ai) {}
 
-    std::string const getName() override { return "Karazhan"; }
+    std::string const getName() override { return "karazhan"; }
 
     void InitTriggers(std::vector<TriggerNode*>& /*triggers*/) override;
     void InitMultipliers(std::vector<Multiplier*>& /*multipliers*/) override;
