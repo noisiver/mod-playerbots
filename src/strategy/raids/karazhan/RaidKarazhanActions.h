@@ -58,6 +58,14 @@ public:
     bool Execute(Event /*event*/) override;
 };
 
+class KarazhanRomuloJulianneMarkTargetAction : public AttackAction
+{
+public:
+    KarazhanRomuloJulianneMarkTargetAction(PlayerbotAI* botAI, std::string const name = "karazhan romulo julianne mark target") : AttackAction(botAI, name) {}
+
+    bool Execute(Event /*event*/) override;
+};
+
 class KarazhanTheCuratorMarkTargetAction : public AttackAction
 {
 public:

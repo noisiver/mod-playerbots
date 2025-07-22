@@ -17,6 +17,13 @@ public:
     bool IsActive() override;
 };
 
+class KarazhanRomuloJulianneTrigger : public Trigger
+{
+public:
+    KarazhanRomuloJulianneTrigger(PlayerbotAI* botAI) : Trigger(botAI, "karazhan romulo julianne") {}
+    bool IsActive() override;
+};
+
 class KarazhanTheCuratorTrigger : public Trigger
 {
 public:

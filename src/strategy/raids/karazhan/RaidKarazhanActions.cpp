@@ -143,6 +143,37 @@ bool KarazhanMaidenOfVirtuePositionRangedAction::Execute(Event /*event*/)
     return false;
 }
 
+bool KarazhanRomuloJulianneMarkTargetAction::Execute(Event event)
+{
+    Unit* target = nullptr;
+    Unit* romulo = AI_VALUE2(Unit*, "find target", "romulo");
+    Unit* julianne = AI_VALUE2(Unit*, "find target", "julianne");
+
+    if (!romulo || !julianne)
+        return false;
+
+    const int maxPctDifference = 10;
+
+    if (julianne->GetHealthPct() + maxPctDifference < romulo->GetHealthPct() || julianne->GetHealthPct() < 1.0f)
+        target = romulo;
+    else if (romulo->GetHealthPct() + maxPctDifference < julianne->GetHealthPct() || romulo->GetHealthPct() < 1.0f)
+        target = julianne;
+
+    if (!target)
+        return false;
+
+    if (Group* group = bot->GetGroup())
+    {
+        constexpr uint8_t skullIconId = 7;
+        ObjectGuid skullGuid = group->GetTargetIcon(skullIconId);
+
+        if (skullGuid != target->GetGUID())
+            group->SetTargetIcon(skullIconId, bot->GetGUID(), target->GetGUID());
+    }
+
+    return false;
+}
+
 bool KarazhanTheCuratorMarkTargetAction::Execute(Event event)
 {
     Unit* target = AI_VALUE2(Unit*, "find target", "astral flare");
