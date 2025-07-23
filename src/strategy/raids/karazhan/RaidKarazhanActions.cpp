@@ -1,32 +1,30 @@
 #include "Playerbots.h"
 #include "RaidKarazhanActions.h"
 
-bool KarazhanMoroesMarkTargetAction::Execute(Event event)
+Unit* GetFirstAliveUnit(std::initializer_list<Unit*> units)
 {
-    Unit* target = nullptr;
-    Unit* dorothea = AI_VALUE2(Unit*, "find target", "baroness dorothea millstipe");
-    Unit* catriona = AI_VALUE2(Unit*, "find target", "lady catriona von'indi");
-    Unit* keira = AI_VALUE2(Unit*, "find target", "lady keira berrybuck");
-    Unit* rafe = AI_VALUE2(Unit*, "find target", "baron rafe dreuger");
-    Unit* robin = AI_VALUE2(Unit*, "find target", "lord robin daris");
-    Unit* crispin = AI_VALUE2(Unit*, "find target", "lord crispin ference");
+    for (Unit* unit : units)
+        if (unit && unit->IsAlive())
+            return unit;
 
-    if (dorothea && dorothea->IsAlive())
-        target = dorothea;
-    else if (catriona && catriona->IsAlive())
-        target = catriona;
-    else if (keira && keira->IsAlive())
-        target = keira;
-    else if (rafe && rafe->IsAlive())
-        target = rafe;
-    else if (robin && robin->IsAlive())
-        target = robin;
-    else if (crispin && crispin->IsAlive())
-        target = crispin;
+    return nullptr;
+}
 
-    if (!target)
-        return false;
+Unit* GetAliveUnitByEntry(PlayerbotAI* botAI, const GuidVector& npcs, uint32 entry)
+{
+    for (const auto& npcGuid : npcs)
+    {
+        Unit* unit = botAI->GetUnit(npcGuid);
 
+        if (unit && unit->IsAlive() && unit->GetEntry() == entry)
+            return unit;
+    }
+
+    return nullptr;
+}
+
+void SetSkullIcon(Player* bot, Unit* target)
+{
     if (Group* group = bot->GetGroup())
     {
         constexpr uint8_t skullIconId = 7;
@@ -35,7 +33,86 @@ bool KarazhanMoroesMarkTargetAction::Execute(Event event)
         if (skullGuid != target->GetGUID())
             group->SetTargetIcon(skullIconId, bot->GetGUID(), target->GetGUID());
     }
+}
 
+bool HasFlameWreathNearby(Player* bot)
+{
+    if (bot->HasAura(SPELL_FLAME_WREATH))
+        return true;
+
+    if (Group* group = bot->GetGroup())
+    {
+        for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
+        {
+            Player* member = itr->GetSource();
+
+            if (!member || !member->IsAlive() || member == bot)
+                continue;
+
+            if (member->HasAura(SPELL_FLAME_WREATH) && bot->GetExactDist2d(member) <= 5.0f)
+                return true;
+        }
+    }
+
+    return false;
+}
+
+Unit* GetNearestPlayer(Player* bot, float distance)
+{
+    if (Group* group = bot->GetGroup())
+    {
+        for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
+        {
+            Player* member = itr->GetSource();
+
+            if (!member || !member->IsAlive() || member == bot)
+                continue;
+
+            if (bot->GetExactDist2d(member) < distance)
+                return member;
+        }
+    }
+
+    return nullptr;
+}
+
+Position GetPositionToMoveBoss(Unit* boss, Position targetPosition, float maxDistance)
+{
+    const float distanceToPosition = boss->GetExactDist2d(targetPosition);
+
+    float dX = targetPosition.GetPositionX() - boss->GetPositionX();
+    float dY = targetPosition.GetPositionY() - boss->GetPositionY();
+
+    float mX = targetPosition.GetPositionX() + (dX / distanceToPosition) * maxDistance;
+    float mY = targetPosition.GetPositionY() + (dY / distanceToPosition) * maxDistance;
+
+    return {mX, mY, 0};
+}
+
+Position GetPositionNearTarget(Unit* target, float radius)
+{
+    float angle = target->GetOrientation();
+    float targetX = target->GetPositionX() + cos(angle) * radius;
+    float targetY = target->GetPositionY() + sin(angle) * radius;
+    float targetZ = target->GetPositionZ();
+
+    return {targetX, targetY, targetZ};
+}
+
+bool KarazhanMoroesMarkTargetAction::Execute(Event event)
+{
+    Unit* dorothea = AI_VALUE2(Unit*, "find target", "baroness dorothea millstipe");
+    Unit* catriona = AI_VALUE2(Unit*, "find target", "lady catriona von'indi");
+    Unit* keira = AI_VALUE2(Unit*, "find target", "lady keira berrybuck");
+    Unit* rafe = AI_VALUE2(Unit*, "find target", "baron rafe dreuger");
+    Unit* robin = AI_VALUE2(Unit*, "find target", "lord robin daris");
+    Unit* crispin = AI_VALUE2(Unit*, "find target", "lord crispin ference");
+    Unit* target = GetFirstAliveUnit({dorothea, catriona, keira, rafe, robin, crispin});
+
+    if (!target)
+        return false;
+
+    SetSkullIcon(bot, target);
     return false;
 }
 
@@ -75,27 +152,22 @@ bool KarazhanMaidenOfVirtuePositionBossAction::Execute(Event /*event*/)
     {
         if (healer)
         {
-            float angle = healer->GetOrientation();
-            float targetX = healer->GetPositionX() + cos(angle) * 6.0f;
-            float targetY = healer->GetPositionY() + sin(angle) * 6.0f;
-            float targetZ = healer->GetPositionZ();
+            const Position targetPosition = GetPositionNearTarget(healer, 6.0f);
 
-            return MoveTo(bot->GetMapId(), targetX, targetY, targetZ, false, false, false, true,
-                            MovementPriority::MOVEMENT_COMBAT);
+            return MoveTo(bot->GetMapId(), targetPosition.GetPositionX(), targetPosition.GetPositionY(),
+                          targetPosition.GetPositionZ(), false, false, false, true, MovementPriority::MOVEMENT_COMBAT);
         }
 
+        const float maxDistance = 3.0f;
         const float distanceToBossPosition = boss->GetExactDist2d(KARAZHAN_MAIDEN_OF_VIRTUE_BOSS_POSITION);
 
-        if (distanceToBossPosition > 3.0f)
+        if (distanceToBossPosition > maxDistance)
         {
-            float dirX = KARAZHAN_MAIDEN_OF_VIRTUE_BOSS_POSITION.GetPositionX() - boss->GetPositionX();
-            float dirY = KARAZHAN_MAIDEN_OF_VIRTUE_BOSS_POSITION.GetPositionY() - boss->GetPositionY();
+            const Position targetPosition = GetPositionToMoveBoss(boss, KARAZHAN_MAIDEN_OF_VIRTUE_BOSS_POSITION, maxDistance);
 
-            float moveX = KARAZHAN_MAIDEN_OF_VIRTUE_BOSS_POSITION.GetPositionX() + (dirX / distanceToBossPosition) * 3.0f;
-            float moveY = KARAZHAN_MAIDEN_OF_VIRTUE_BOSS_POSITION.GetPositionY() + (dirY / distanceToBossPosition) * 3.0f;
-
-            return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, false,
-                          MovementPriority::MOVEMENT_FORCED, true, false);
+            return MoveTo(bot->GetMapId(), targetPosition.GetPositionX(), targetPosition.GetPositionY(),
+                          bot->GetPositionZ(), false, false, false, false, MovementPriority::MOVEMENT_FORCED, true,
+                          false);
         }
     }
 
@@ -162,53 +234,24 @@ bool KarazhanRomuloJulianneMarkTargetAction::Execute(Event event)
     if (!target)
         return false;
 
-    if (Group* group = bot->GetGroup())
-    {
-        constexpr uint8_t skullIconId = 7;
-        ObjectGuid skullGuid = group->GetTargetIcon(skullIconId);
-
-        if (skullGuid != target->GetGUID())
-            group->SetTargetIcon(skullIconId, bot->GetGUID(), target->GetGUID());
-    }
-
+    SetSkullIcon(bot, target);
     return false;
 }
 
 bool KarazhanWizardOfOzMarkTargetAction::Execute(Event event)
 {
-    Unit* target = nullptr;
     Unit* dorothee = AI_VALUE2(Unit*, "find target", "dorothee");
     Unit* strawman = AI_VALUE2(Unit*, "find target", "strawman");
     Unit* tinhead = AI_VALUE2(Unit*, "find target", "tinhead");
     Unit* tito = AI_VALUE2(Unit*, "find target", "tito");
     Unit* roar = AI_VALUE2(Unit*, "find target", "roar");
     Unit* crone = AI_VALUE2(Unit*, "find target", "the crone");
-
-    if (dorothee)
-        target = dorothee;
-    else if (tito)
-        target = tito;
-    else if (roar)
-        target = roar;
-    else if (strawman)
-        target = strawman;
-    else if (tinhead)
-        target = tinhead;
-    else if (crone)
-        target = crone;
+    Unit* target = GetFirstAliveUnit({dorothee, strawman, tinhead, tito, roar, crone});
 
     if (!target)
         return false;
 
-    if (Group* group = bot->GetGroup())
-    {
-        constexpr uint8_t skullIconId = 7;
-        ObjectGuid skullGuid = group->GetTargetIcon(skullIconId);
-
-        if (skullGuid != target->GetGUID())
-            group->SetTargetIcon(skullIconId, bot->GetGUID(), target->GetGUID());
-    }
-
+    SetSkullIcon(bot, target);
     return false;
 }
 
@@ -219,15 +262,7 @@ bool KarazhanTheCuratorMarkTargetAction::Execute(Event event)
     if (!target)
         return false;
 
-    if (Group* group = bot->GetGroup())
-    {
-        constexpr uint8_t skullIconId = 7;
-        ObjectGuid skullGuid = group->GetTargetIcon(skullIconId);
-
-        if (skullGuid != target->GetGUID())
-            group->SetTargetIcon(skullIconId, bot->GetGUID(), target->GetGUID());
-    }
-
+    SetSkullIcon(bot, target);
     return false;
 }
 
@@ -243,18 +278,16 @@ bool KarazhanTheCuratorPositionBossAction::Execute(Event /*event*/)
 
     if (botAI->HasAggro(boss) && boss->GetVictim() == bot)
     {
+        const float maxDistance = 3.0f;
         const float distanceToBossPosition = boss->GetExactDist2d(KARAZHAN_THE_CURATOR_BOSS_POSITION);
 
-        if (distanceToBossPosition > 5.0f)
+        if (distanceToBossPosition > maxDistance)
         {
-            float dirX = KARAZHAN_THE_CURATOR_BOSS_POSITION.GetPositionX() - boss->GetPositionX();
-            float dirY = KARAZHAN_THE_CURATOR_BOSS_POSITION.GetPositionY() - boss->GetPositionY();
+            const Position targetPosition = GetPositionToMoveBoss(boss, KARAZHAN_THE_CURATOR_BOSS_POSITION, maxDistance);
 
-            float moveX = KARAZHAN_THE_CURATOR_BOSS_POSITION.GetPositionX() + (dirX / distanceToBossPosition) * 4.0f;
-            float moveY = KARAZHAN_THE_CURATOR_BOSS_POSITION.GetPositionY() + (dirY / distanceToBossPosition) * 4.0f;
-
-            return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, false,
-                          MovementPriority::MOVEMENT_FORCED, true, false);
+            return MoveTo(bot->GetMapId(), targetPosition.GetPositionX(), targetPosition.GetPositionY(),
+                          bot->GetPositionZ(), false, false, false, false, MovementPriority::MOVEMENT_FORCED, true,
+                          false);
         }
     }
 
@@ -267,31 +300,9 @@ bool KarazhanTheCuratorSpreadRangedAction::Execute(Event /*event*/)
         return false;
 
     const float minDistance = 5.0f;
-    Unit* nearestPlayer = nullptr;
-    float nearestDistance = 1000.0f;
+    Unit* nearestPlayer = GetNearestPlayer(bot, minDistance);
 
-    const GuidVector members = AI_VALUE(GuidVector, "group members");
-
-    for (const auto& memberGuid : members)
-    {
-        Unit* member = botAI->GetUnit(memberGuid);
-
-        if (!member || !member->IsAlive() || member == bot || bot->GetExactDist2d(member) > minDistance)
-            continue;
-
-        float distance = bot->GetExactDist2d(member);
-
-        if (nearestDistance > distance)
-        {
-            nearestPlayer = member;
-            nearestDistance = distance;
-        }
-    }
-
-    if (!nearestPlayer)
-        return false;
-
-    if (bot->GetExactDist2d(nearestPlayer) < minDistance)
+    if (nearestPlayer)
         return FleePosition(nearestPlayer->GetPosition(), minDistance);
 
     return false;
@@ -299,40 +310,18 @@ bool KarazhanTheCuratorSpreadRangedAction::Execute(Event /*event*/)
 
 bool KarazhanTerestianIllhoofMarkTargetAction::Execute(Event event)
 {
-    Unit* target = nullptr;
     Unit* boss = AI_VALUE2(Unit*, "find target", "terestian illhoof");
 
     if (!boss)
         return false;
 
     const GuidVector npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
-
-    for (const auto& npcGuid : npcs)
-    {
-        Unit* unit = botAI->GetUnit(npcGuid);
-
-        if (!unit || !unit->IsAlive())
-            continue;
-
-        if (unit->GetEntry() == NPC_DEMON_CHAINS)
-        {
-            target = unit;
-            break;
-        }
-    }
+    Unit* target = GetAliveUnitByEntry(botAI, npcs, NPC_DEMON_CHAINS);
 
     if (!target)
         target = boss;
 
-    if (Group* group = bot->GetGroup())
-    {
-        constexpr uint8_t skullIconId = 7;
-        ObjectGuid skullGuid = group->GetTargetIcon(skullIconId);
-
-        if (skullGuid != target->GetGUID())
-            group->SetTargetIcon(skullIconId, bot->GetGUID(), target->GetGUID());
-    }
-
+    SetSkullIcon(bot, target);
     return false;
 }
 
@@ -366,30 +355,7 @@ bool KarazhanShadeOfAranFlameWreathAction::Execute(Event /*event*/)
     if (!bot->IsAlive())
         return false;
 
-    bool shouldStay = false;
-    const float safeDistance = 10.0f;
-    const GuidVector members = AI_VALUE(GuidVector, "group members");
-
-    for (const auto& memberGuid : members)
-    {
-        Unit* member = botAI->GetUnit(memberGuid);
-
-        if (!member || !member->IsAlive() || member == bot)
-            continue;
-
-        float distance = bot->GetExactDist2d(member);
-
-        if (distance < safeDistance)
-        {
-            if (member->HasAura(SPELL_FLAME_WREATH))
-            {
-                shouldStay = true;
-                break;
-            }
-        }
-    }
-
-    if (shouldStay || bot->HasAura(SPELL_FLAME_WREATH))
+    if (HasFlameWreathNearby(bot))
     {
         AI_VALUE(LastMovement&, "last movement").Set(nullptr);
         bot->GetMotionMaster()->Clear();
@@ -403,39 +369,14 @@ bool KarazhanShadeOfAranFlameWreathAction::Execute(Event /*event*/)
 
 bool KarazhanShadeOfAranMarkTargetAction::Execute(Event /*event*/)
 {
-    Unit* target = nullptr;
+    
     const GuidVector npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
-
-    for (const auto& npcGuid : npcs)
-    {
-        Unit* unit = botAI->GetUnit(npcGuid);
-
-        if (!unit || !unit->IsAlive())
-            continue;
-
-        if (unit->GetEntry() == NPC_CONJURED_ELEMENTAL)
-        {
-            target = unit;
-            break;
-        }
-    }
+    Unit* target = GetAliveUnitByEntry(botAI, npcs, NPC_CONJURED_ELEMENTAL);
 
     if (!target)
         return false;
 
-    if (Group* group = bot->GetGroup())
-    {
-        constexpr uint8_t skullIconId = 7;
-        ObjectGuid skullGuid = group->GetTargetIcon(skullIconId);
-
-        if (Unit* unit = botAI->GetUnit(skullGuid))
-            if (unit->GetEntry() == NPC_CONJURED_ELEMENTAL && unit->IsAlive())
-                return false;
-
-        if (skullGuid != target->GetGUID())
-            group->SetTargetIcon(skullIconId, bot->GetGUID(), target->GetGUID());
-    }
-
+    SetSkullIcon(bot, target);
     return false;
 }
 
@@ -455,18 +396,8 @@ bool KarazhanShadeOfAranSpreadRangedAction::Execute(Event /*event*/)
     if (boss->HasUnitState(UNIT_STATE_CASTING) && boss->FindCurrentSpellBySpellId(SPELL_ARCANE_EXPLOSION))
         return false;
 
-    const GuidVector members = AI_VALUE(GuidVector, "group members");
-
-    for (const auto& memberGuid : members)
-    {
-        Unit* member = botAI->GetUnit(memberGuid);
-
-        if (!member || !member->IsAlive())
-            continue;
-
-        if (member->HasAura(SPELL_FLAME_WREATH))
-            return false;
-    }
+    if (HasFlameWreathNearby(bot))
+        return false;
 
     const float maxBossDistance = 12.0f;
     float bossDistance = bot->GetExactDist2d(boss);
@@ -487,31 +418,11 @@ bool KarazhanShadeOfAranSpreadRangedAction::Execute(Event /*event*/)
                         MovementPriority::MOVEMENT_COMBAT);
     }
 
-    const float minPlayerDistance = 5.0f;
-    Unit* nearestPlayer = nullptr;
-    float nearestDistance = 1000.0f;
+    const float minDistance = 5.0f;
+    Unit* nearestPlayer = GetNearestPlayer(bot, minDistance);
 
-    for (const auto& memberGuid : members)
-    {
-        Unit* member = botAI->GetUnit(memberGuid);
-
-        if (!member || !member->IsAlive() || member == bot || bot->GetExactDist2d(member) > minPlayerDistance)
-            continue;
-
-        float distance = bot->GetExactDist2d(member);
-
-        if (nearestDistance > distance)
-        {
-            nearestPlayer = member;
-            nearestDistance = distance;
-        }
-    }
-
-    if (!nearestPlayer)
-        return false;
-
-    if (bot->GetExactDist2d(nearestPlayer) < minPlayerDistance)
-        return FleePosition(nearestPlayer->GetPosition(), minPlayerDistance);
+    if (nearestPlayer)
+        return FleePosition(nearestPlayer->GetPosition(), minDistance);
 
     return false;
 }
