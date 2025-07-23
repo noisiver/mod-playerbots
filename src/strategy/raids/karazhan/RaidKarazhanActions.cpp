@@ -99,6 +99,21 @@ Position GetPositionNearTarget(Unit* target, float radius)
     return {targetX, targetY, targetZ};
 }
 
+Position GetPositionToMoveCloserToTarget(Player* bot, Unit* target, float maxDistance)
+{
+    float dX = bot->GetPositionX() - target->GetPositionX();
+    float dY = bot->GetPositionY() - target->GetPositionY();
+    float length = std::sqrt(dX * dX + dY * dY);
+
+    dX /= length;
+    dY /= length;
+
+    float tX = target->GetPositionX() + dX * maxDistance;
+    float tY = target->GetPositionY() + dY * maxDistance;
+
+    return {tX, tY, 0};
+}
+
 bool KarazhanMoroesMarkTargetAction::Execute(Event event)
 {
     Unit* dorothea = AI_VALUE2(Unit*, "find target", "baroness dorothea millstipe");
@@ -404,18 +419,10 @@ bool KarazhanShadeOfAranSpreadRangedAction::Execute(Event /*event*/)
 
     if (bossDistance > maxBossDistance)
     {
-        float dirX = bot->GetPositionX() - boss->GetPositionX();
-        float dirY = bot->GetPositionY() - boss->GetPositionY();
-        float length = std::sqrt(dirX * dirX + dirY * dirY);
+        const Position position = GetPositionToMoveCloserToTarget(bot, boss, maxBossDistance);
 
-        dirX /= length;
-        dirY /= length;
-
-        float targetX = boss->GetPositionX() + dirX * maxBossDistance;
-        float targetY = boss->GetPositionY() + dirY * maxBossDistance;
-
-        return MoveTo(bot->GetMapId(), targetX, targetY, bot->GetPositionZ(), false, false, false, true,
-                        MovementPriority::MOVEMENT_COMBAT);
+        return MoveTo(bot->GetMapId(), position.GetPositionX(), position.GetPositionY(), bot->GetPositionZ(), false,
+                      false, false, true, MovementPriority::MOVEMENT_COMBAT);
     }
 
     const float minDistance = 5.0f;
