@@ -76,17 +76,18 @@ Unit* GetNearestPlayer(Player* bot, float distance)
     return nullptr;
 }
 
-Position GetPositionToMoveBoss(Unit* boss, Position targetPosition, float maxDistance)
+Position GetPositionToMoveBoss(Unit* boss, Position position, float radius)
 {
-    const float distanceToPosition = boss->GetExactDist2d(targetPosition);
+    const float distanceToPosition = boss->GetExactDist2d(position);
 
-    float dX = targetPosition.GetPositionX() - boss->GetPositionX();
-    float dY = targetPosition.GetPositionY() - boss->GetPositionY();
+    float dX = position.GetPositionX() - boss->GetPositionX();
+    float dY = position.GetPositionY() - boss->GetPositionY();
 
-    float mX = targetPosition.GetPositionX() + (dX / distanceToPosition) * maxDistance;
-    float mY = targetPosition.GetPositionY() + (dY / distanceToPosition) * maxDistance;
+    float mX = position.GetPositionX() + (dX / distanceToPosition) * radius;
+    float mY = position.GetPositionY() + (dY / distanceToPosition) * radius;
+    float mZ = position.GetPositionZ();
 
-    return {mX, mY, 0};
+    return {mX, mY, mZ};
 }
 
 Position GetPositionNearTarget(Unit* target, float radius)
@@ -99,7 +100,7 @@ Position GetPositionNearTarget(Unit* target, float radius)
     return {targetX, targetY, targetZ};
 }
 
-Position GetPositionToMoveCloserToTarget(Player* bot, Unit* target, float maxDistance)
+Position GetPositionToMoveCloserToTarget(Player* bot, Unit* target, float radius)
 {
     float dX = bot->GetPositionX() - target->GetPositionX();
     float dY = bot->GetPositionY() - target->GetPositionY();
@@ -108,10 +109,10 @@ Position GetPositionToMoveCloserToTarget(Player* bot, Unit* target, float maxDis
     dX /= length;
     dY /= length;
 
-    float tX = target->GetPositionX() + dX * maxDistance;
-    float tY = target->GetPositionY() + dY * maxDistance;
+    float tX = target->GetPositionX() + dX * radius;
+    float tY = target->GetPositionY() + dY * radius;
 
-    return {tX, tY, 0};
+    return {tX, tY, bot->GetPositionZ()};
 }
 
 bool KarazhanMoroesMarkTargetAction::Execute(Event event)
@@ -165,25 +166,20 @@ bool KarazhanMaidenOfVirtuePositionBossAction::Execute(Event /*event*/)
 
     if (botAI->HasAggro(boss) && boss->GetVictim() == bot)
     {
+        float radius = 3.0f;
+        float distance = boss->GetExactDist2d(KARAZHAN_MAIDEN_OF_VIRTUE_BOSS_POSITION);
+        Position position = GetPositionToMoveBoss(boss, KARAZHAN_MAIDEN_OF_VIRTUE_BOSS_POSITION, radius);
+
         if (healer)
         {
-            const Position targetPosition = GetPositionNearTarget(healer, 6.0f);
-
-            return MoveTo(bot->GetMapId(), targetPosition.GetPositionX(), targetPosition.GetPositionY(),
-                          targetPosition.GetPositionZ(), false, false, false, true, MovementPriority::MOVEMENT_COMBAT);
+            radius = 1.0f;
+            distance = bot->GetExactDist2d(healer);
+            position = GetPositionNearTarget(healer, 6.0f);
         }
 
-        const float maxDistance = 3.0f;
-        const float distanceToBossPosition = boss->GetExactDist2d(KARAZHAN_MAIDEN_OF_VIRTUE_BOSS_POSITION);
-
-        if (distanceToBossPosition > maxDistance)
-        {
-            const Position targetPosition = GetPositionToMoveBoss(boss, KARAZHAN_MAIDEN_OF_VIRTUE_BOSS_POSITION, maxDistance);
-
-            return MoveTo(bot->GetMapId(), targetPosition.GetPositionX(), targetPosition.GetPositionY(),
-                          bot->GetPositionZ(), false, false, false, false, MovementPriority::MOVEMENT_FORCED, true,
-                          false);
-        }
+        if (distance > radius)
+            return MoveTo(bot->GetMapId(), position.GetPositionX(), position.GetPositionY(), bot->GetPositionZ(), false,
+                          false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
     return false;
@@ -293,12 +289,12 @@ bool KarazhanTheCuratorPositionBossAction::Execute(Event /*event*/)
 
     if (botAI->HasAggro(boss) && boss->GetVictim() == bot)
     {
-        const float maxDistance = 3.0f;
-        const float distanceToBossPosition = boss->GetExactDist2d(KARAZHAN_THE_CURATOR_BOSS_POSITION);
+        const float radius = 3.0f;
+        const float distance = boss->GetExactDist2d(KARAZHAN_THE_CURATOR_BOSS_POSITION);
 
-        if (distanceToBossPosition > maxDistance)
+        if (distance > radius)
         {
-            const Position targetPosition = GetPositionToMoveBoss(boss, KARAZHAN_THE_CURATOR_BOSS_POSITION, maxDistance);
+            const Position targetPosition = GetPositionToMoveBoss(boss, KARAZHAN_THE_CURATOR_BOSS_POSITION, radius);
 
             return MoveTo(bot->GetMapId(), targetPosition.GetPositionX(), targetPosition.GetPositionY(),
                           bot->GetPositionZ(), false, false, false, false, MovementPriority::MOVEMENT_FORCED, true,
