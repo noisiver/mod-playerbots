@@ -6,20 +6,23 @@
 enum KarazhanSpells
 {
     // Maiden of Virtue
-    SPELL_REPENTANCE            = 29511,
+    SPELL_REPENTANCE                = 29511,
+
+    // The Big Bad Wolf
+    SPELL_LITTLE_RED_RIDING_HOOD    = 30756,
 
     // Shade of Aran
-    SPELL_FLAME_WREATH          = 29946,
-    SPELL_ARCANE_EXPLOSION      = 29973
+    SPELL_FLAME_WREATH              = 29946,
+    SPELL_ARCANE_EXPLOSION          = 29973
 };
 
 enum KarazhanNpcs
 {
     // Terestian Illhoof
-    NPC_DEMON_CHAINS            = 17248,
+    NPC_DEMON_CHAINS                = 17248,
 
     // Shade of Aran
-    NPC_CONJURED_ELEMENTAL      = 17167
+    NPC_CONJURED_ELEMENTAL          = 17167
 };
 
 const Position KARAZHAN_MAIDEN_OF_VIRTUE_BOSS_POSITION = Position(-10945.881f, -2103.7817f, 92.71163f);
@@ -57,6 +60,14 @@ class KarazhanMaidenOfVirtuePositionRangedAction : public AttackAction
 {
 public:
     KarazhanMaidenOfVirtuePositionRangedAction(PlayerbotAI* botAI, std::string const name = "karazhan maiden of virtue position ranged") : AttackAction(botAI, name) {}
+
+    bool Execute(Event /*event*/) override;
+};
+
+class KarazhanBigBadWolfRunAwayAction : public AttackAction
+{
+public:
+    KarazhanBigBadWolfRunAwayAction(PlayerbotAI* botAI, std::string const name = "karazhan big bad wolf run away") : AttackAction(botAI, name) {}
 
     bool Execute(Event /*event*/) override;
 };
