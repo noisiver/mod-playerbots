@@ -14,6 +14,11 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             nullptr)));
 
         triggers.push_back(new TriggerNode(
+            "karazhan big bad wolf", NextAction::array(0,
+            new NextAction("karazhan big bad wolf run away", ACTION_EMERGENCY + 1),
+            nullptr)));
+
+        triggers.push_back(new TriggerNode(
             "karazhan romulo julianne", NextAction::array(0,
             new NextAction("karazhan romulo julianne mark target", ACTION_RAID + 1),
             nullptr)));

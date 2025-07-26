@@ -27,6 +27,16 @@ bool KarazhanMaidenOfVirtueTrigger::IsActive()
     return true;
 }
 
+bool KarazhanBigBadWolfTrigger::IsActive()
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", "the big bad wolf");
+
+    if (!boss)
+        return false;
+
+    return true;
+}
+
 bool KarazhanRomuloJulianneTrigger::IsActive()
 {
     Unit* julianne = AI_VALUE2(Unit*, "find target", "julianne");
