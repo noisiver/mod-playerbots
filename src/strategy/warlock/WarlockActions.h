@@ -47,8 +47,6 @@ public:
     CreateSoulShardAction(PlayerbotAI* botAI) : Action(botAI, "create soul shard") {}
     bool Execute(Event event) override;
     bool isUseful() override;
-private:
-    uint32 lastCreateSoulShardTime = 0;  // Per-bot cooldown timer in ms
 };
 
 class DestroySoulShardAction : public InventoryAction
@@ -86,6 +84,7 @@ class CastCreateSoulstoneAction : public CastBuffSpellAction
 {
 public:
     CastCreateSoulstoneAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "create soulstone") {}
+    bool isUseful() override;
 };
 
 class UseSoulstoneSelfAction : public UseSpellItemAction
