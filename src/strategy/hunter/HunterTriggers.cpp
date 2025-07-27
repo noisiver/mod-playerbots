@@ -4,13 +4,29 @@
  */
 
 #include "HunterTriggers.h"
-
+#include "GenericSpellActions.h"
 #include "GenericTriggers.h"
 #include "HunterActions.h"
+#include "PlayerbotAI.h"
 #include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"
 #include "SharedDefines.h"
+
+bool KillCommandTrigger::IsActive()
+{
+    Unit* target = GetTarget();
+    return !botAI->HasAura("kill command", target);
+}
+
+bool BlackArrowTrigger::IsActive()
+{
+    if (botAI->HasStrategy("trap weave", BOT_STATE_COMBAT))
+        return false;
+
+    return DebuffTrigger::IsActive();
+    return BuffTrigger::IsActive();
+}
 
 bool HunterAspectOfTheHawkTrigger::IsActive()
 {
@@ -25,6 +41,7 @@ bool HunterNoStingsActiveTrigger::IsActive()
     Unit* target = AI_VALUE(Unit*, "current target");
     return DebuffTrigger::IsActive() && target && !botAI->HasAura("serpent sting", target, false, true) &&
            !botAI->HasAura("scorpid sting", target, false, true) && !botAI->HasAura("viper sting", target, false, true);
+    return BuffTrigger::IsActive();
 }
 
 bool HuntersPetDeadTrigger::IsActive()
@@ -120,4 +137,5 @@ bool SerpentStingOnAttackerTrigger::IsActive()
     }
     return !botAI->HasAura("scorpid sting", target, false, true) &&
            !botAI->HasAura("viper sting", target, false, true);
+    return BuffTrigger::IsActive();
 }
