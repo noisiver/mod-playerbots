@@ -33,6 +33,8 @@
 #include "raids/RaidStrategyContext.h"
 #include "raids/aq20/RaidAq20ActionContext.h"
 #include "raids/aq20/RaidAq20TriggerContext.h"
+#include "raids/blacktemple/RaidBlackTempleActionContext.h"
+#include "raids/blacktemple/RaidBlackTempleTriggerContext.h"
 #include "raids/blackwinglair/RaidBwlActionContext.h"
 #include "raids/blackwinglair/RaidBwlTriggerContext.h"
 #include "raids/eyeofeternity/RaidEoEActionContext.h"
@@ -115,6 +117,7 @@ void AiObjectContext::BuildSharedActionContexts(SharedNamedObjectContextList<Act
     actionContexts.Add(new RaidVoAActionContext());
     actionContexts.Add(new RaidUlduarActionContext());
     actionContexts.Add(new RaidIccActionContext());
+    actionContexts.Add(new RaidBlackTempleActionContext());
     actionContexts.Add(new WotlkDungeonUKActionContext());
     actionContexts.Add(new WotlkDungeonNexActionContext());
     actionContexts.Add(new WotlkDungeonANActionContext());
@@ -147,6 +150,7 @@ void AiObjectContext::BuildSharedTriggerContexts(SharedNamedObjectContextList<Tr
     triggerContexts.Add(new RaidVoATriggerContext());
     triggerContexts.Add(new RaidUlduarTriggerContext());
     triggerContexts.Add(new RaidIccTriggerContext());
+    triggerContexts.Add(new RaidBlackTempleTriggerContext());
     triggerContexts.Add(new WotlkDungeonUKTriggerContext());
     triggerContexts.Add(new WotlkDungeonNexTriggerContext());
     triggerContexts.Add(new WotlkDungeonANTriggerContext());
