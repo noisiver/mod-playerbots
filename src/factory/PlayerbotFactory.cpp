@@ -39,6 +39,7 @@
 #include "SpellAuraDefines.h"
 #include "StatsWeightCalculator.h"
 #include "World.h"
+#include "AiObjectContext.h"
 
 #include "mod_progression.h"
 
@@ -3424,6 +3425,9 @@ void PlayerbotFactory::InitReagents()
 void PlayerbotFactory::InitGlyphs(bool increment)
 {
     bot->InitGlyphsForLevel();
+    if (!increment &&
+        botAI->GetAiObjectContext()->GetValue<bool>("custom_glyphs")->Get())
+        return;   // // Added for custom Glyphs - custom glyphs flag test
 
     if (!increment)
     {
