@@ -1528,6 +1528,9 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
         case 533:
             strategyName = "naxx";
             break;
+        case 564:
+            strategyName = "blacktemple";
+            break;
         case 568:
             strategyName = "zulaman";
             break;
@@ -2937,6 +2940,18 @@ bool PlayerbotAI::CanCastSpell(uint32 spellid, Unit* target, bool checkHasSpell,
         {
             LOG_DEBUG("playerbots", "Can cast spell failed. No spellInfo. - target name: {}, spellid: {}, bot name: {}",
                       target->GetName(), spellid, bot->GetName());
+        }
+        return false;
+    }
+
+    if ((bot->GetShapeshiftForm() == FORM_FLIGHT || bot->GetShapeshiftForm() == FORM_FLIGHT_EPIC) && !bot->IsInCombat())
+    {
+        if (!sPlayerbotAIConfig->logInGroupOnly || (bot->GetGroup() && HasRealPlayerMaster()))
+        {
+            LOG_DEBUG(
+                "playerbots",
+                "Can cast spell failed. In flight form (not in combat). - target name: {}, spellid: {}, bot name: {}",
+                target->GetName(), spellid, bot->GetName());
         }
         return false;
     }

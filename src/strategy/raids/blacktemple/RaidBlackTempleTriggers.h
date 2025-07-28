@@ -1,0 +1,8 @@
+#ifndef _PLAYERBOT_RAIDBLACKTEMPLETRIGGERS_H
+#define _PLAYERBOT_RAIDBLACKTEMPLETRIGGERS_H
+
+#include "Trigger.h"
+
+
+
+#endif

@@ -14,6 +14,7 @@
 #include "RaidVoAStrategy.h"
 #include "RaidKarazhanStrategy.h"
 #include "RaidZulAmanStrategy.h"
+#include "RaidBlackTempleStrategy.h"
 
 class RaidStrategyContext : public NamedObjectContext<Strategy>
 {
@@ -35,6 +36,7 @@ public:
         creators["onyxia"] = &RaidStrategyContext::onyxia;
         creators["karazhan"] = &RaidStrategyContext::karazhan;
         creators["zulaman"] = &RaidStrategyContext::zulaman;
+        creators["blacktemple"] = &RaidStrategyContext::blacktemple;
     }
 
 private:
@@ -50,6 +52,7 @@ private:
     static Strategy* onyxia(PlayerbotAI* botAI) { return new RaidOnyxiaStrategy(botAI); }
     static Strategy* karazhan(PlayerbotAI* botAI) { return new RaidKarazhanStrategy(botAI); }
     static Strategy* zulaman(PlayerbotAI* botAI) { return new RaidZulAmanStrategy(botAI); }
+    static Strategy* blacktemple(PlayerbotAI* botAI) { return new RaidBlackTempleStrategy(botAI); }
 };
 
 #endif
