@@ -1,31 +1,10 @@
 #include "Playerbots.h"
 #include "RaidKarazhanActions.h"
 
-bool KarazhanMoroesMarkTargetAction::Execute(Event event)
+void MarkTargetWithSkull(Player* bot, Unit* target)
 {
-    Unit* target = nullptr;
-    Unit* dorothea = AI_VALUE2(Unit*, "find target", "baroness dorothea millstipe");
-    Unit* catriona = AI_VALUE2(Unit*, "find target", "lady catriona von'indi");
-    Unit* keira = AI_VALUE2(Unit*, "find target", "lady keira berrybuck");
-    Unit* rafe = AI_VALUE2(Unit*, "find target", "baron rafe dreuger");
-    Unit* robin = AI_VALUE2(Unit*, "find target", "lord robin daris");
-    Unit* crispin = AI_VALUE2(Unit*, "find target", "lord crispin ference");
-
-    if (dorothea && dorothea->IsAlive())
-        target = dorothea;
-    else if (catriona && catriona->IsAlive())
-        target = catriona;
-    else if (keira && keira->IsAlive())
-        target = keira;
-    else if (rafe && rafe->IsAlive())
-        target = rafe;
-    else if (robin && robin->IsAlive())
-        target = robin;
-    else if (crispin && crispin->IsAlive())
-        target = crispin;
-
     if (!target)
-        return false;
+        return;
 
     if (Group* group = bot->GetGroup())
     {
@@ -35,6 +14,63 @@ bool KarazhanMoroesMarkTargetAction::Execute(Event event)
         if (skullGuid != target->GetGUID())
             group->SetTargetIcon(skullIconId, bot->GetGUID(), target->GetGUID());
     }
+}
+
+Unit* GetFirstAliveUnit(const std::vector<Unit*>& units)
+{
+    for (Unit* unit : units)
+        if (unit && unit->IsAlive())
+            return unit;
+
+    return nullptr;
+}
+
+Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, const GuidVector& npcs, uint32 entry)
+{
+    for (const auto& npcGuid : npcs)
+    {
+        Unit* unit = botAI->GetUnit(npcGuid);
+
+        if (unit && unit->IsAlive() && unit->GetEntry() == entry)
+            return unit;
+    }
+
+    return nullptr;
+}
+
+Unit* GetNearestPlayer(Player* bot, float radius)
+{
+    if (Group* group = bot->GetGroup())
+    {
+        for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
+        {
+            Player* member = itr->GetSource();
+
+            if (!member || !member->IsAlive() || member == bot)
+                continue;
+
+            if (bot->GetExactDist2d(member) < radius)
+                return member;
+        }
+    }
+
+    return nullptr;
+}
+
+bool KarazhanMoroesMarkTargetAction::Execute(Event event)
+{
+    Unit* dorothea = AI_VALUE2(Unit*, "find target", "baroness dorothea millstipe");
+    Unit* catriona = AI_VALUE2(Unit*, "find target", "lady catriona von'indi");
+    Unit* keira = AI_VALUE2(Unit*, "find target", "lady keira berrybuck");
+    Unit* rafe = AI_VALUE2(Unit*, "find target", "baron rafe dreuger");
+    Unit* robin = AI_VALUE2(Unit*, "find target", "lord robin daris");
+    Unit* crispin = AI_VALUE2(Unit*, "find target", "lord crispin ference");
+    Unit* target = GetFirstAliveUnit({dorothea, catriona, keira, rafe, robin, crispin});
+
+    if (!target)
+        return false;
+
+    MarkTargetWithSkull(bot, target);
 
     return false;
 }
@@ -158,7 +194,17 @@ bool KarazhanBigBadWolfRunAwayAction::Execute(Event event)
     bot->AttackStop();
     bot->InterruptNonMeleeSpells(false);
 
-    return MoveAway(boss, 10.0f);
+    constexpr float threshold = 1.0f;
+    Position target = KARAZHAN_BIG_BAD_WOLF_RUN_POSITION[currentIndex];
+
+    if (bot->GetExactDist2d(target.GetPositionX(), target.GetPositionY()) < threshold)
+    {
+        currentIndex = (currentIndex + 1) % 4;
+        target = KARAZHAN_BIG_BAD_WOLF_RUN_POSITION[currentIndex];
+    }
+
+    return MoveTo(bot->GetMapId(), target.GetPositionX(), target.GetPositionY(), target.GetPositionZ(), false, false,
+                  false, true, MovementPriority::MOVEMENT_FORCED);
 }
 
 bool KarazhanRomuloJulianneMarkTargetAction::Execute(Event event)
@@ -180,52 +226,25 @@ bool KarazhanRomuloJulianneMarkTargetAction::Execute(Event event)
     if (!target)
         return false;
 
-    if (Group* group = bot->GetGroup())
-    {
-        constexpr uint8_t skullIconId = 7;
-        ObjectGuid skullGuid = group->GetTargetIcon(skullIconId);
-
-        if (skullGuid != target->GetGUID())
-            group->SetTargetIcon(skullIconId, bot->GetGUID(), target->GetGUID());
-    }
+    MarkTargetWithSkull(bot, target);
 
     return false;
 }
 
 bool KarazhanWizardOfOzMarkTargetAction::Execute(Event event)
 {
-    Unit* target = nullptr;
     Unit* dorothee = AI_VALUE2(Unit*, "find target", "dorothee");
     Unit* strawman = AI_VALUE2(Unit*, "find target", "strawman");
     Unit* tinhead = AI_VALUE2(Unit*, "find target", "tinhead");
     Unit* tito = AI_VALUE2(Unit*, "find target", "tito");
     Unit* roar = AI_VALUE2(Unit*, "find target", "roar");
     Unit* crone = AI_VALUE2(Unit*, "find target", "the crone");
-
-    if (dorothee && dorothee->IsAlive())
-        target = dorothee;
-    else if (strawman && strawman->IsAlive())
-        target = strawman;
-    else if (tinhead && tinhead->IsAlive())
-        target = tinhead;
-    else if (tito && tito->IsAlive())
-        target = tito;
-    else if (roar && roar->IsAlive())
-        target = roar;
-    else if (crone && crone->IsAlive())
-        target = crone;
+    Unit* target = GetFirstAliveUnit({dorothee, strawman, tinhead, tito, roar, crone});
 
     if (!target)
         return false;
 
-    if (Group* group = bot->GetGroup())
-    {
-        constexpr uint8_t skullIconId = 7;
-        ObjectGuid skullGuid = group->GetTargetIcon(skullIconId);
-
-        if (skullGuid != target->GetGUID())
-            group->SetTargetIcon(skullIconId, bot->GetGUID(), target->GetGUID());
-    }
+    MarkTargetWithSkull(bot, target);
 
     return false;
 }
@@ -237,14 +256,7 @@ bool KarazhanTheCuratorMarkTargetAction::Execute(Event event)
     if (!target)
         return false;
 
-    if (Group* group = bot->GetGroup())
-    {
-        constexpr uint8_t skullIconId = 7;
-        ObjectGuid skullGuid = group->GetTargetIcon(skullIconId);
-
-        if (skullGuid != target->GetGUID())
-            group->SetTargetIcon(skullIconId, bot->GetGUID(), target->GetGUID());
-    }
+    MarkTargetWithSkull(bot, target);
 
     return false;
 }
@@ -287,24 +299,7 @@ bool KarazhanTheCuratorSpreadRangedAction::Execute(Event /*event*/)
         return false;
 
     const float minDistance = 5.0f;
-    Unit* nearestPlayer = nullptr;
-
-    if (Group* group = bot->GetGroup())
-    {
-        for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
-        {
-            Player* member = itr->GetSource();
-
-            if (!member || !member->IsAlive() || member == bot)
-                continue;
-
-            if (bot->GetExactDist2d(member) < minDistance)
-            {
-                nearestPlayer = member;
-                break;
-            }
-        }
-    }
+    Unit* nearestPlayer = GetNearestPlayer(bot, minDistance);
 
     if (nearestPlayer)
         return FleePosition(nearestPlayer->GetPosition(), minDistance);
@@ -319,31 +314,13 @@ bool KarazhanTerestianIllhoofMarkTargetAction::Execute(Event event)
     if (!boss)
         return false;
 
-    Unit* target = nullptr;
     const GuidVector npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
-
-    for (const auto& npcGuid : npcs)
-    {
-        Unit* unit = botAI->GetUnit(npcGuid);
-
-        if (unit && unit->IsAlive() && unit->GetEntry() == NPC_DEMON_CHAINS)
-        {
-            target = unit;
-            break;
-        }
-    }
+    Unit* target = GetFirstAliveUnitByEntry(botAI, npcs, NPC_DEMON_CHAINS);
 
     if (!target)
         target = boss;
 
-    if (Group* group = bot->GetGroup())
-    {
-        constexpr uint8_t skullIconId = 7;
-        ObjectGuid skullGuid = group->GetTargetIcon(skullIconId);
-
-        if (skullGuid != target->GetGUID())
-            group->SetTargetIcon(skullIconId, bot->GetGUID(), target->GetGUID());
-    }
+    MarkTargetWithSkull(bot, target);
 
     return false;
 }
@@ -373,12 +350,10 @@ bool KarazhanShadeOfAranArcaneExplosionAction::Execute(Event /*event*/)
     return true;
 }
 
-bool KarazhanShadeOfAranFlameWreathAction::Execute(Event /*event*/)
+bool IsFlameWreathActive(Player* bot)
 {
-    if (!bot->IsAlive())
+    if (bot->HasAura(SPELL_FLAME_WREATH))
         return false;
-
-    bool shouldStandStill = false;
 
     if (Group* group = bot->GetGroup())
     {
@@ -390,53 +365,37 @@ bool KarazhanShadeOfAranFlameWreathAction::Execute(Event /*event*/)
                 continue;
 
             if (member->HasAura(SPELL_FLAME_WREATH))
-            {
-                shouldStandStill = true;
-                break;
-            }
+                return false;
         }
     }
+}
 
-    if (shouldStandStill || bot->HasAura(SPELL_FLAME_WREATH))
-    {
-        AI_VALUE(LastMovement&, "last movement").Set(nullptr);
-        bot->GetMotionMaster()->Clear();
+bool KarazhanShadeOfAranFlameWreathAction::Execute(Event /*event*/)
+{
+    if (!bot->IsAlive())
+        return false;
 
-        if (bot->isMoving())
-            bot->StopMoving();
-    }
+    if (!IsFlameWreathActive)
+        return false;
+
+    AI_VALUE(LastMovement&, "last movement").Set(nullptr);
+    bot->GetMotionMaster()->Clear();
+
+    if (bot->isMoving())
+        bot->StopMoving();
 
     return false;
 }
 
 bool KarazhanShadeOfAranMarkTargetAction::Execute(Event /*event*/)
 {
-    Unit* target = nullptr;
-
     const GuidVector npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
-
-    for (const auto& npcGuid : npcs)
-    {
-        Unit* unit = botAI->GetUnit(npcGuid);
-
-        if (unit && unit->IsAlive() && unit->GetEntry() == NPC_CONJURED_ELEMENTAL)
-        {
-            target = unit;
-            break;
-        }
-    }
+    Unit* target = GetFirstAliveUnitByEntry(botAI, npcs, NPC_CONJURED_ELEMENTAL);
 
     if (!target)
         return false;
 
-    if (Group* group = bot->GetGroup())
-    {
-        constexpr uint8_t skullIconId = 7;
-        ObjectGuid skullGuid = group->GetTargetIcon(skullIconId);
-
-        if (skullGuid != target->GetGUID())
-            group->SetTargetIcon(skullIconId, bot->GetGUID(), target->GetGUID());
-    }
+    MarkTargetWithSkull(bot, target);
 
     return false;
 }
@@ -457,22 +416,8 @@ bool KarazhanShadeOfAranSpreadRangedAction::Execute(Event /*event*/)
     if (boss->HasUnitState(UNIT_STATE_CASTING) && boss->FindCurrentSpellBySpellId(SPELL_ARCANE_EXPLOSION))
         return false;
 
-    if (bot->HasAura(SPELL_FLAME_WREATH))
+    if (IsFlameWreathActive)
         return false;
-
-    if (Group* group = bot->GetGroup())
-    {
-        for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
-        {
-            Player* member = itr->GetSource();
-
-            if (!member || !member->IsAlive() || member == bot)
-                continue;
-
-            if (member->HasAura(SPELL_FLAME_WREATH))
-                return false;
-        }
-    }
 
     const float maxBossDistance = 12.0f;
     float bossDistance = bot->GetExactDist2d(boss);
@@ -494,24 +439,7 @@ bool KarazhanShadeOfAranSpreadRangedAction::Execute(Event /*event*/)
     }
 
     const float minDistance = 5.0f;
-    Unit* nearestPlayer = nullptr;
-
-    if (Group* group = bot->GetGroup())
-    {
-        for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
-        {
-            Player* member = itr->GetSource();
-
-            if (!member || !member->IsAlive() || member == bot)
-                continue;
-
-            if (bot->GetExactDist2d(member) < minDistance)
-            {
-                nearestPlayer = member;
-                break;
-            }
-        }
-    }
+    Unit* nearestPlayer = GetNearestPlayer(bot, minDistance);
 
     if (nearestPlayer)
         return FleePosition(nearestPlayer->GetPosition(), minDistance);

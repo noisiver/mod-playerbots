@@ -38,6 +38,13 @@ const Position KARAZHAN_MAIDEN_OF_VIRTUE_RANGED_POSITION[8] =
     { -10944.495f, -2123.857f, 92.18021f },
 };
 
+const Position KARAZHAN_BIG_BAD_WOLF_RUN_POSITION[4] = {
+    { -10913.391f, -1773.5083f, 90.47706f },
+    { -10875.456f, -1779.0358f, 90.47706f },
+    { -10872.281f, -1751.6376f, 90.47716f },
+    { -10910.492f, -1747.401f, 90.477165f }
+};
+
 const Position KARAZHAN_THE_CURATOR_BOSS_POSITION = Position(-11139.463f, -1884.6451f, 165.76564f);
 
 class KarazhanMoroesMarkTargetAction : public AttackAction
@@ -70,6 +77,9 @@ public:
     KarazhanBigBadWolfRunAwayAction(PlayerbotAI* botAI, std::string const name = "karazhan big bad wolf run away") : AttackAction(botAI, name) {}
 
     bool Execute(Event /*event*/) override;
+
+private:
+    size_t currentIndex = 0;
 };
 
 class KarazhanRomuloJulianneMarkTargetAction : public AttackAction
