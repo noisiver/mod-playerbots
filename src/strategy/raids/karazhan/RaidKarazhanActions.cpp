@@ -381,3 +381,143 @@ bool KarazhanShadeOfAranSpreadRangedAction::Execute(Event /*event*/)
 
     return false;
 }
+
+bool KarazhanNetherspiteSoakBeamsAction::Execute(Event /*event*/)
+{
+    if (!bot->IsAlive())
+        return false;
+
+    Unit* boss = AI_VALUE2(Unit*, "find target", "netherspite");
+
+    if (!boss)
+        return false;
+
+    Unit* redPortal = bot->FindNearestCreature(NPC_RED_PORTAL, 100.0f);
+    Unit* greenPortal = bot->FindNearestCreature(NPC_GREEN_PORTAL, 100.0f);
+    Unit* bluePortal = bot->FindNearestCreature(NPC_BLUE_PORTAL, 100.0f);
+
+    if (!redPortal || !greenPortal || !bluePortal)
+        return false;
+
+    Unit* portal = nullptr;
+
+    if (Group* group = bot->GetGroup())
+    {
+        for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
+        {
+            Player* member = itr->GetSource();
+
+            if (!member || !member->IsAlive() || member->IsGameMaster())
+                continue;
+
+            if ((botAI->IsTank(bot) && !botAI->IsTank(member)) ||
+                (botAI->IsHeal(bot) && !botAI->IsHeal(member)) ||
+                (botAI->IsDps(bot) && !botAI->IsDps(member)))
+                continue;
+
+            if ((botAI->IsTank(member) && (member->HasAura(SPELL_RED_DEBUFF) || (member->GetAura(SPELL_RED_BUFF) && member->GetAura(SPELL_RED_BUFF)->GetStackAmount() >= 30))) ||
+                (botAI->IsHeal(member) && (member->HasAura(SPELL_GREEN_DEBUFF) || (member->GetAura(SPELL_GREEN_BUFF) && member->GetAura(SPELL_GREEN_BUFF)->GetStackAmount() >= 30))) ||
+                (botAI->IsDps(member) && (member->HasAura(SPELL_BLUE_DEBUFF) || (member->GetAura(SPELL_BLUE_BUFF) && member->GetAura(SPELL_BLUE_BUFF)->GetStackAmount() >= 30))))
+                continue;
+
+            if (member == bot)
+            {
+                if (botAI->IsTank(bot))
+                    portal = redPortal;
+                else if (botAI->IsHeal(bot))
+                    portal = greenPortal;
+                else if (botAI->IsDps(bot))
+                    portal = bluePortal;
+            }
+
+            break;
+        }
+    }
+
+    RaidKarazhanHelpers karazhanHelper(botAI);
+
+    if (portal)
+    {
+        if (!karazhanHelper.IsBetween(boss, portal))
+        {
+            float bx = boss->GetPositionX();
+            float by = boss->GetPositionY();
+            float px = portal->GetPositionX();
+            float py = portal->GetPositionY();
+            float botx = bot->GetPositionX();
+            float boty = bot->GetPositionY();
+
+            float dx = px - bx;
+            float dy = py - by;
+
+            float botdx = botx - bx;
+            float botdy = boty - by;
+
+            float lenSq = dx * dx + dy * dy;
+            float t = (lenSq > 0) ? ((botdx * dx + botdy * dy) / lenSq) : 0.0f;
+            t = std::clamp(t, 0.0f, 1.0f);
+
+            float closestX = bx + t * dx;
+            float closestY = by + t * dy;
+            float closestZ = bot->GetPositionZ();
+
+            return MoveTo(bot->GetMapId(), closestX, closestY, closestZ, false, false, false, true,
+                          MovementPriority::MOVEMENT_FORCED);
+        }
+
+        if (botAI->IsTank(bot))
+        {
+            constexpr float stopDistance = 10.0f;
+            constexpr float stepDistance = 3.0f;
+
+            float portalX = portal->GetPositionX();
+            float portalY = portal->GetPositionY();
+            float portalZ = portal->GetPositionZ();
+
+            float botX = bot->GetPositionX();
+            float botY = bot->GetPositionY();
+            float botZ = bot->GetPositionZ();
+
+            float dx = portalX - botX;
+            float dy = portalY - botY;
+            float dz = portalZ - botZ;
+            float distance = std::sqrt(dx * dx + dy * dy + dz * dz);
+
+            if (distance > stopDistance)
+            {
+                float moveDist = std::min(stepDistance, distance - stopDistance);
+                float norm = std::sqrt(dx * dx + dy * dy + dz * dz);
+                float stepX = botX + (dx / norm) * moveDist;
+                float stepY = botY + (dy / norm) * moveDist;
+                float stepZ = botZ + (dz / norm) * moveDist;
+
+                return MoveTo(bot->GetMapId(), stepX, stepY, stepZ, false, false, false, true,
+                              MovementPriority::MOVEMENT_FORCED);
+            }
+        }
+    }
+    else
+    {
+        if (karazhanHelper.IsBetween(boss, redPortal) || karazhanHelper.IsBetween(boss, greenPortal) || karazhanHelper.IsBetween(boss, bluePortal))
+        {
+            float bx = boss->GetPositionX();
+            float by = boss->GetPositionY();
+            float botx = bot->GetPositionX();
+            float boty = bot->GetPositionY();
+            float radius = std::sqrt((botx - bx) * (botx - bx) + (boty - by) * (boty - by));
+            float angle = std::atan2(boty - by, botx - bx);
+
+            constexpr float angleStep = M_PI / 18.0f;
+            float newAngle = angle + angleStep;
+
+            float newX = bx + radius * std::cos(newAngle);
+            float newY = by + radius * std::sin(newAngle);
+            float newZ = bot->GetPositionZ();
+
+            return MoveTo(bot->GetMapId(), newX, newY, newZ, false, false, false, true,
+                            MovementPriority::MOVEMENT_FORCED);
+        }
+    }
+
+    return false;
+}

@@ -80,3 +80,35 @@ bool RaidKarazhanHelpers::IsFlameWreathActive()
 
     return false;
 }
+
+bool RaidKarazhanHelpers::IsBetween(Unit* first, Unit* second)
+{
+    float bx = first->GetPositionX();
+    float by = first->GetPositionY();
+    float px = second->GetPositionX();
+    float py = second->GetPositionY();
+    float botx = bot->GetPositionX();
+    float boty = bot->GetPositionY();
+
+    // Vector from boss to portal
+    float dx = px - bx;
+    float dy = py - by;
+
+    // Vector from boss to bot
+    float botdx = botx - bx;
+    float botdy = boty - by;
+
+    // Project bot position onto the line segment [boss, portal]
+    float lenSq = dx * dx + dy * dy;
+    float t = (lenSq > 0) ? ((botdx * dx + botdy * dy) / lenSq) : 0.0f;
+    t = std::clamp(t, 0.0f, 1.0f);
+
+    // Closest point on the line segment
+    float closestX = bx + t * dx;
+    float closestY = by + t * dy;
+
+    // Distance from bot to the closest point on the line
+    float dist = std::sqrt((botx - closestX) * (botx - closestX) + (boty - closestY) * (boty - closestY));
+
+    return dist < 1.0f;
+}

@@ -14,6 +14,7 @@ public:
     Unit* GetFirstAliveUnitByEntry(uint32 /*entry*/);
     Unit* GetNearestPlayer(float /*radius*/);
     bool IsFlameWreathActive();
+    bool IsBetween(Unit* /*first*/, Unit* /*second*/);
 };
 
 #endif

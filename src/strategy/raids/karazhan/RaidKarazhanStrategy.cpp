@@ -46,6 +46,11 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             new NextAction("karazhan shade of aran spread ranged", ACTION_MOVE + 1),
             new NextAction("karazhan shade of aran mark target", ACTION_RAID +1),
             nullptr)));
+
+        triggers.push_back(new TriggerNode(
+            "karazhan netherspite", NextAction::array(0,
+            new NextAction("karazhan netherspite soak beams", ACTION_RAID + 1),
+            nullptr)));
 }
 
 void RaidKarazhanStrategy::InitMultipliers(std::vector<Multiplier*>& /*multipliers*/)

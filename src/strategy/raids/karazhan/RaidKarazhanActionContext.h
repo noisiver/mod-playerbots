@@ -29,6 +29,8 @@ public:
         creators["karazhan shade of aran flame wreath"] = &RaidKarazhanActionContext::karazhan_shade_of_aran_flame_wreath;
         creators["karazhan shade of aran mark target"] = &RaidKarazhanActionContext::karazhan_shade_of_aran_mark_target;
         creators["karazhan shade of aran spread ranged"] = &RaidKarazhanActionContext::karazhan_shade_of_aran_spread_ranged;
+
+        creators["karazhan netherspite soak beams"] = &RaidKarazhanActionContext::karazhan_netherspite_soak_beams;
     }
 
 private:
@@ -51,6 +53,8 @@ private:
     static Action* karazhan_shade_of_aran_flame_wreath(PlayerbotAI* ai) { return new KarazhanShadeOfAranFlameWreathAction(ai); }
     static Action* karazhan_shade_of_aran_mark_target(PlayerbotAI* ai) { return new KarazhanShadeOfAranMarkTargetAction(ai); }
     static Action* karazhan_shade_of_aran_spread_ranged(PlayerbotAI* ai) { return new KarazhanShadeOfAranSpreadRangedAction(ai); }
+
+    static Action* karazhan_netherspite_soak_beams(PlayerbotAI* ai) { return new KarazhanNetherspiteSoakBeamsAction(ai); }
 };
 
 #endif
