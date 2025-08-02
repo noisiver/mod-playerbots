@@ -177,10 +177,12 @@ bool MaintenanceAction::Execute(Event event)
         factory.InitAmmo();
         factory.InitFood();
     }
-    if (sRandomPlayerbotMgr->IsRandomBot(bot) || bot->getClass() == CLASS_ROGUE || bot->getClass() == CLASS_WARLOCK)
+    if (sRandomPlayerbotMgr->IsRandomBot(bot) || bot->getClass() == CLASS_WARLOCK)
     {
         factory.InitReagents();
     }
+    factory.InitConsumables();
+    factory.InitPotions();
     if (sRandomPlayerbotMgr->IsRandomBot(bot) || sWorld->getIntConfig(CONFIG_EXPANSION) < EXPANSION_WRATH_OF_THE_LICH_KING)
     {
         factory.InitTalentsTree(true);
@@ -198,16 +200,13 @@ bool MaintenanceAction::Execute(Event event)
         factory.InitGlyphs(false);
         factory.InitKeyring();
     }
-    factory.InitPotions();
     if (sRandomPlayerbotMgr->IsRandomBot(bot) || sWorld->getIntConfig(CONFIG_EXPANSION) < EXPANSION_WRATH_OF_THE_LICH_KING)
     {
         if (bot->GetLevel() >= sPlayerbotAIConfig->minEnchantingBotLevel)
             factory.ApplyEnchantAndGemsNew();
+        bot->DurabilityRepairAll(false, 1.0f, false);
+        bot->SendTalentsInfoData(false);
     }
-
-    bot->DurabilityRepairAll(false, 1.0f, false);
-    bot->SendTalentsInfoData(false);
-
     return true;
 }
 
