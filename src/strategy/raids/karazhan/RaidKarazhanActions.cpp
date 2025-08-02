@@ -374,7 +374,7 @@ bool KarazhanShadeOfAranSpreadRangedAction::Execute(Event /*event*/)
     return false;
 }
 
-bool KarazhanNetherspiteSoakBeamsAction::Execute(Event /*event*/)
+/*bool KarazhanNetherspiteSoakBeamsAction::Execute(Event /*event*//*)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "netherspite");
 
@@ -515,7 +515,7 @@ bool KarazhanNetherspiteSoakBeamsAction::Execute(Event /*event*/)
     return false;
 }
 
-bool KarazhanNetherspiteAvoidVoidZoneAction::Execute(Event /*event*/)
+bool KarazhanNetherspiteAvoidVoidZoneAction::Execute(Event /*event*//*)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "netherspite");
 
@@ -529,4 +529,4 @@ bool KarazhanNetherspiteAvoidVoidZoneAction::Execute(Event /*event*/)
         return false;
 
     return false;
-}
+}*/

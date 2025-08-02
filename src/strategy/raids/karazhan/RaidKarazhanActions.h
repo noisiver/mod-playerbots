@@ -16,19 +16,19 @@ enum KarazhanSpells
     SPELL_ARCANE_EXPLOSION          = 29973,
 
     // Netherspite
-    SPELL_RED_BUFF                  = 30421,
-    SPELL_GREEN_BUFF                = 30422,
-    SPELL_BLUE_BUFF                 = 30423,
+    //SPELL_RED_BUFF                  = 30421,
+    //SPELL_GREEN_BUFF                = 30422,
+    //SPELL_BLUE_BUFF                 = 30423,
 
-    SPELL_BLUE_CHANNEL              = 30463,
-    SPELL_GREEN_CHANNEL             = 30464,
-    SPELL_RED_CHANNEL               = 30465,
+    //SPELL_BLUE_CHANNEL              = 30463,
+    //SPELL_GREEN_CHANNEL             = 30464,
+    //SPELL_RED_CHANNEL               = 30465,
 
-    SPELL_RED_DEBUFF                = 38637,
-    SPELL_GREEN_DEBUFF              = 38638,
-    SPELL_BLUE_DEBUFF               = 38639,
+    //SPELL_RED_DEBUFF                = 38637,
+    //SPELL_GREEN_DEBUFF              = 38638,
+    //SPELL_BLUE_DEBUFF               = 38639,
 
-    SPELL_BANISH                    = 39833
+    //SPELL_BANISH                    = 39833
 };
 
 enum KarazhanNpcs
@@ -40,10 +40,10 @@ enum KarazhanNpcs
     NPC_CONJURED_ELEMENTAL          = 17167,
 
     // Netherspite
-    NPC_VOIDZONE                    = 16697,
-    NPC_RED_PORTAL                  = 17369,
-    NPC_BLUE_PORTAL                 = 17368,
-    NPC_GREEN_PORTAL                = 17367
+    //NPC_VOIDZONE                    = 16697,
+    //NPC_RED_PORTAL                  = 17369,
+    //NPC_BLUE_PORTAL                 = 17368,
+    //NPC_GREEN_PORTAL                = 17367
 };
 
 const Position KARAZHAN_MAIDEN_OF_VIRTUE_BOSS_POSITION = Position(-10945.881f, -2103.7817f, 92.71163f);
@@ -183,12 +183,12 @@ public:
     bool Execute(Event /*event*/) override;
 };
 
-class KarazhanNetherspiteSoakBeamsAction : public AttackAction
+/*class KarazhanNetherspiteSoakBeamsAction : public AttackAction
 {
 public:
     KarazhanNetherspiteSoakBeamsAction(PlayerbotAI* botAI, std::string const name = "karazhan netherspite soak beams") : AttackAction(botAI, name) {}
 
-    bool Execute(Event /*event*/) override;
+    bool Execute(Event /*event*//*) override;
 
 private:
     uint32 lastMoveTime = 0;
@@ -199,7 +199,7 @@ class KarazhanNetherspiteAvoidVoidZoneAction : public AttackAction
 public:
     KarazhanNetherspiteAvoidVoidZoneAction(PlayerbotAI* botAI, std::string const name = "karazhan netherspite avoid void zone") : AttackAction(botAI, name) {}
 
-    bool Execute(Event /*event*/) override;
-};
+    bool Execute(Event /*event*//*) override;
+};*/
 
 #endif

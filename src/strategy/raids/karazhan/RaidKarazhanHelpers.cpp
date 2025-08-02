@@ -81,7 +81,7 @@ bool RaidKarazhanHelpers::IsFlameWreathActive()
     return false;
 }
 
-bool RaidKarazhanHelpers::IsBetween(Unit* first, Unit* second)
+/*bool RaidKarazhanHelpers::IsBetween(Unit* first, Unit* second)
 {
     float bx = first->GetPositionX();
     float by = first->GetPositionY();
@@ -216,4 +216,4 @@ Unit* RaidKarazhanHelpers::GetNearestUnitByEntryWithinRadius(uint32 entry, float
     }
 
     return nullptr;
-}
+}*/
