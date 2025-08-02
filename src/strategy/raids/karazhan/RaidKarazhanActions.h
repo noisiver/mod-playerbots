@@ -26,7 +26,9 @@ enum KarazhanSpells
 
     SPELL_RED_DEBUFF                = 38637,
     SPELL_GREEN_DEBUFF              = 38638,
-    SPELL_BLUE_DEBUFF               = 38639
+    SPELL_BLUE_DEBUFF               = 38639,
+
+    SPELL_BANISH                    = 39833
 };
 
 enum KarazhanNpcs
@@ -185,6 +187,17 @@ class KarazhanNetherspiteSoakBeamsAction : public AttackAction
 {
 public:
     KarazhanNetherspiteSoakBeamsAction(PlayerbotAI* botAI, std::string const name = "karazhan netherspite soak beams") : AttackAction(botAI, name) {}
+
+    bool Execute(Event /*event*/) override;
+
+private:
+    uint32 lastMoveTime = 0;
+};
+
+class KarazhanNetherspiteAvoidVoidZoneAction : public AttackAction
+{
+public:
+    KarazhanNetherspiteAvoidVoidZoneAction(PlayerbotAI* botAI, std::string const name = "karazhan netherspite avoid void zone") : AttackAction(botAI, name) {}
 
     bool Execute(Event /*event*/) override;
 };

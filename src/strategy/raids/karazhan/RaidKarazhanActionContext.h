@@ -31,6 +31,8 @@ public:
         creators["karazhan shade of aran spread ranged"] = &RaidKarazhanActionContext::karazhan_shade_of_aran_spread_ranged;
 
         creators["karazhan netherspite soak beams"] = &RaidKarazhanActionContext::karazhan_netherspite_soak_beams;
+        creators["karazhan netherspite avoid void zone"] = &RaidKarazhanActionContext::karazhan_netherspite_avoid_void_zone;
+        creators["karazhan netherspite banished"] = &RaidKarazhanActionContext::karazhan_netherspite_banished;
     }
 
 private:
@@ -55,6 +57,8 @@ private:
     static Action* karazhan_shade_of_aran_spread_ranged(PlayerbotAI* ai) { return new KarazhanShadeOfAranSpreadRangedAction(ai); }
 
     static Action* karazhan_netherspite_soak_beams(PlayerbotAI* ai) { return new KarazhanNetherspiteSoakBeamsAction(ai); }
+    static Action* karazhan_netherspite_avoid_void_zone(PlayerbotAI* ai) { return new KarazhanNetherspiteAvoidVoidZoneAction(ai); }
+    static Action* karazhan_netherspite_banished(PlayerbotAI* ai) { return new KarazhanNetherspiteBanishedAction(ai); }
 };
 
 #endif

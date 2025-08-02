@@ -112,3 +112,108 @@ bool RaidKarazhanHelpers::IsBetween(Unit* first, Unit* second)
 
     return dist < 1.0f;
 }
+
+Position RaidKarazhanHelpers::GetPositionBetween(Unit* first, Unit* second)
+{
+    float bx = first->GetPositionX();
+    float by = first->GetPositionY();
+    float px = second->GetPositionX();
+    float py = second->GetPositionY();
+    float botx = bot->GetPositionX();
+    float boty = bot->GetPositionY();
+
+    float dx = px - bx;
+    float dy = py - by;
+
+    float botdx = botx - bx;
+    float botdy = boty - by;
+
+    float lenSq = dx * dx + dy * dy;
+    float t = (lenSq > 0) ? ((botdx * dx + botdy * dy) / lenSq) : 0.0f;
+    t = std::clamp(t, 0.0f, 1.0f);
+
+    float closestX = bx + t * dx;
+    float closestY = by + t * dy;
+    float closestZ = bot->GetPositionZ();
+
+    return Position(closestX, closestY, closestZ);
+}
+
+Position RaidKarazhanHelpers::GetPositionToRotateAroundTarget(Unit* target)
+{
+    float bx = target->GetPositionX();
+    float by = target->GetPositionY();
+    float botx = bot->GetPositionX();
+    float boty = bot->GetPositionY();
+    float radius = std::sqrt((botx - bx) * (botx - bx) + (boty - by) * (boty - by));
+    float angle = std::atan2(boty - by, botx - bx);
+
+    constexpr float angleStep = M_PI / 18.0f;
+    float newAngle = angle + angleStep;
+
+    float newX = bx + radius * std::cos(newAngle);
+    float newY = by + radius * std::sin(newAngle);
+    float newZ = bot->GetPositionZ();
+
+    return Position(newX, newY, newZ);
+}
+
+Position RaidKarazhanHelpers::GetPositionToMoveCloserToTarget(Unit* target)
+{
+    constexpr float stopDistance = 10.0f;
+    constexpr float stepDistance = 3.0f;
+
+    float portalX = target->GetPositionX();
+    float portalY = target->GetPositionY();
+    float portalZ = target->GetPositionZ();
+
+    float botX = bot->GetPositionX();
+    float botY = bot->GetPositionY();
+    float botZ = bot->GetPositionZ();
+
+    float dx = portalX - botX;
+    float dy = portalY - botY;
+    float dz = portalZ - botZ;
+    float distance = std::sqrt(dx * dx + dy * dy + dz * dz);
+
+    if (distance > stopDistance)
+    {
+        float moveDist = std::min(stepDistance, distance - stopDistance);
+        float norm = std::sqrt(dx * dx + dy * dy + dz * dz);
+        float stepX = botX + (dx / norm) * moveDist;
+        float stepY = botY + (dy / norm) * moveDist;
+        float stepZ = botZ + (dz / norm) * moveDist;
+
+        return Position(stepX, stepY, stepZ);
+    }
+
+    return Position(bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ());
+}
+
+Position RaidKarazhanHelpers::GetFlankPosition(Unit* target, float distance, bool rightFlank)
+{
+    float angle = target->GetOrientation();
+    // 90 degrees to the left or right
+    angle += rightFlank ? M_PI_2 : -M_PI_2;
+
+    float x = target->GetPositionX() + std::cos(angle) * distance;
+    float y = target->GetPositionY() + std::sin(angle) * distance;
+    float z = target->GetPositionZ();
+
+    return Position(x, y, z);
+}
+
+Unit* RaidKarazhanHelpers::GetNearestUnitByEntryWithinRadius(uint32 entry, float radius)
+{
+    const GuidVector npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
+
+    for (const auto& npcGuid : npcs)
+    {
+        Unit* unit = botAI->GetUnit(npcGuid);
+
+        if (unit && !unit->IsAlive() && unit->GetEntry() == entry && bot->GetExactDist2d(unit) < radius)
+            return unit;
+    }
+
+    return nullptr;
+}
