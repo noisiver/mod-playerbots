@@ -22,9 +22,11 @@
 #include "BattlegroundSA.h"
 #include "BattlegroundWS.h"
 #include "Event.h"
+#include "IVMapMgr.h"
 #include "Playerbots.h"
 #include "PositionValue.h"
 #include "PvpTriggers.h"
+#include "PathGenerator.h"
 #include "ServerFacade.h"
 #include "Vehicle.h"
 
@@ -1965,7 +1967,7 @@ bool BGTactics::selectObjective(bool reset)
                         if (Map* map = bot->GetMap())
                         {
                             float groundZ = map->GetHeight(rx, ry, rz);
-                            if (groundZ == -200000.0f)
+                            if (groundZ == VMAP_INVALID_HEIGHT_VALUE)
                                 rz = groundZ;
                         }
 
@@ -2083,7 +2085,7 @@ bool BGTactics::selectObjective(bool reset)
                     if (Map* map = bot->GetMap())
                     {
                         float groundZ = map->GetHeight(rx, ry, rz);
-                        if (groundZ == -200000.0f)
+                        if (groundZ == VMAP_INVALID_HEIGHT_VALUE)
                             rz = groundZ;
                     }
 
@@ -2126,7 +2128,7 @@ bool BGTactics::selectObjective(bool reset)
                 if (Map* map = bot->GetMap())
                 {
                     float groundZ = map->GetHeight(rx, ry, rz);
-                    if (groundZ == -200000.0f)
+                    if (groundZ == VMAP_INVALID_HEIGHT_VALUE)
                         rz = groundZ;
                 }
 
@@ -2149,7 +2151,7 @@ bool BGTactics::selectObjective(bool reset)
                 if (radius > 0.0f)
                 {
                     bot->GetRandomPoint(origin, radius, rx, ry, rz);
-                    if (rz == -200000.0f)
+                    if (rz == VMAP_INVALID_HEIGHT_VALUE)
                         target.Relocate(rx, ry, rz);
                     else
                         target.Relocate(origin);
@@ -2382,7 +2384,7 @@ bool BGTactics::selectObjective(bool reset)
                 if (Map* map = bot->GetMap())
                 {
                     float groundZ = map->GetHeight(rx, ry, rz);
-                    if (groundZ == -200000.0f)
+                    if (groundZ == VMAP_INVALID_HEIGHT_VALUE)
                         rz = groundZ;
                 }
                 pos.Set(rx, ry, rz, bot->GetMapId());
@@ -2398,8 +2400,8 @@ bool BGTactics::selectObjective(bool reset)
                 {
                     uint8 state = ab->GetCapturePointInfo(nodeId)._state;
 
-                    bool isContested = (team == TEAM_ALLIANCE && state == BG_AB_NODE_STATE_ALLY_CONTESTED) ||
-                                       (team == TEAM_HORDE && state == BG_AB_NODE_STATE_HORDE_CONTESTED);
+                    bool isContested = (team == TEAM_ALLIANCE && state == BG_AB_NODE_STATE_HORDE_CONTESTED) ||
+                                       (team == TEAM_HORDE && state == BG_AB_NODE_STATE_ALLY_CONTESTED);
                     bool isOwned = (team == TEAM_ALLIANCE && state == BG_AB_NODE_STATE_ALLY_OCCUPIED) ||
                                    (team == TEAM_HORDE && state == BG_AB_NODE_STATE_HORDE_OCCUPIED);
 
@@ -2473,7 +2475,7 @@ bool BGTactics::selectObjective(bool reset)
                 if (Map* map = bot->GetMap())
                 {
                     float groundZ = map->GetHeight(rx, ry, rz);
-                    if (groundZ == -200000.0f)
+                    if (groundZ == VMAP_INVALID_HEIGHT_VALUE)
                         rz = groundZ;
                 }
 
@@ -2568,7 +2570,7 @@ bool BGTactics::selectObjective(bool reset)
                     if (Map* map = bot->GetMap())
                     {
                         float groundZ = map->GetHeight(rx, ry, rz);
-                        if (groundZ == -200000.0f)
+                        if (groundZ == VMAP_INVALID_HEIGHT_VALUE)
                             rz = groundZ;
                     }
 
@@ -2596,7 +2598,7 @@ bool BGTactics::selectObjective(bool reset)
                     if (Map* map = bot->GetMap())
                     {
                         float groundZ = map->GetHeight(rx, ry, rz);
-                        if (groundZ == -200000.0f)
+                        if (groundZ == VMAP_INVALID_HEIGHT_VALUE)
                             rz = groundZ;
                     }
 
@@ -4151,7 +4153,6 @@ bool ArenaTactics::Execute(Event event)
     if (bot->isMoving())
         return false;
 
-
     // startup phase
     if (bg->GetStartDelayTime() > 0)
         return false;
@@ -4162,12 +4163,29 @@ bool ArenaTactics::Execute(Event event)
     if (botAI->HasStrategy("buff", BOT_STATE_NON_COMBAT))
         botAI->ChangeStrategy("-buff", BOT_STATE_NON_COMBAT);
 
-    // this causes bot to reset constantly in arena
-    //    if (sBattlegroundMgr->IsArenaType(bg->GetBgTypeID()))
-    //    {
-    //        botAI->ResetStrategies(false);
-    //        botAI->SetMaster(nullptr);
-    //    }
+    Unit* target = bot->GetVictim();
+    if (target)
+    {
+        bool losBlocked = !bot->IsWithinLOSInMap(target) || fabs(bot->GetPositionZ() - target->GetPositionZ()) > 5.0f;
+
+        if (losBlocked)
+        {
+            PathGenerator path(bot);
+            path.CalculatePath(target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), false);
+
+            if (path.GetPathType() != PATHFIND_NOPATH)
+            {
+                // If you are casting a spell and lost your target due to LoS, interrupt the cast and move
+                if (bot->IsNonMeleeSpellCast(false, true, true, false, true))
+                    bot->InterruptNonMeleeSpells(true);
+
+                float x, y, z;
+                target->GetPosition(x, y, z);
+                botAI->TellMasterNoFacing("Repositioning to exit the LoS target!");
+                return MoveTo(target->GetMapId(), x + frand(-1, +1), y + frand(-1, +1), z, false, true);
+            }
+        }
+    }
 
     if (!bot->IsInCombat())
         return moveToCenter(bg);

@@ -36,6 +36,7 @@
 #include "ListSpellsAction.h"
 #include "LogLevelAction.h"
 #include "LootStrategyAction.h"
+#include "LootRollAction.h"
 #include "MailAction.h"
 #include "NamedObjectContext.h"
 #include "NewRpgAction.h"
@@ -78,6 +79,9 @@
 #include "OpenItemAction.h"
 #include "UnlockItemAction.h"
 #include "UnlockTradedItemAction.h"
+#include "PetAction.h"
+#include "TellGlyphsAction.h"
+#include "EquipGlyphsAction.h"
 
 class ChatActionContext : public NamedObjectContext<Action>
 {
@@ -187,6 +191,10 @@ public:
         creators["lfg"] = &ChatActionContext::lfg;
         creators["calc"] = &ChatActionContext::calc;
         creators["wipe"] = &ChatActionContext::wipe;
+        creators["pet"] = &ChatActionContext::pet;
+		creators["glyphs"] = &ChatActionContext::glyphs; // Added for custom Glyphs
+		creators["glyph equip"] = &ChatActionContext::glyph_equip; // Added for custom Glyphs
+        creators["roll"] = &ChatActionContext::roll_action;
     }
 
 private:
@@ -293,6 +301,10 @@ private:
     static Action* join(PlayerbotAI* ai) { return new JoinGroupAction(ai); }
     static Action* calc(PlayerbotAI* ai) { return new TellCalculateItemAction(ai); }
     static Action* wipe(PlayerbotAI* ai) { return new WipeAction(ai); }
+    static Action* pet(PlayerbotAI* botAI) { return new PetAction(botAI); }
+	static Action* glyphs(PlayerbotAI* botAI) { return new TellGlyphsAction(botAI); } // Added for custom Glyphs
+	static Action* glyph_equip(PlayerbotAI* ai) { return new EquipGlyphsAction(ai); } // Added for custom Glyphs
+    static Action* roll_action(PlayerbotAI* botAI) { return new RollAction(botAI); }
 };
 
 #endif
