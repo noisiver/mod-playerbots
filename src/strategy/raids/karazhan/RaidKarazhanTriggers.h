@@ -59,4 +59,11 @@ public:
     bool IsActive() override;
 };
 
+/*class KarazhanNetherspiteTrigger : public Trigger
+{
+public:
+    KarazhanNetherspiteTrigger(PlayerbotAI* botAI) : Trigger(botAI, "karazhan netherspite") {}
+    bool IsActive() override;
+};*/
+
 #endif
