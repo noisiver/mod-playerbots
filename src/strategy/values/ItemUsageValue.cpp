@@ -282,10 +282,11 @@ ItemUsage ItemUsageValue::QueryItemUsageForEquip(ItemTemplate const* itemProto, 
             }
         }
 
-        if (bot->getClass() == CLASS_SHAMAN && botAI->FindEquipSlot(itemProto, NULL_SLOT, true) == EQUIPMENT_SLOT_OFFHAND)
-            if (AiFactory::GetPlayerSpecTab(bot) != SHAMAN_TAB_ENHANCEMENT)
-                if (!(itemProto->Class == ITEM_CLASS_ARMOR && itemProto->SubClass == ITEM_SUBCLASS_ARMOR_SHIELD))
-                    return ITEM_USAGE_NONE;
+        if (bot->getClass() == CLASS_SHAMAN && AiFactory::GetPlayerSpecTab(bot) != SHAMAN_TAB_ENHANCEMENT &&
+            ((botAI->FindEquipSlot(itemProto, NULL_SLOT, true) == EQUIPMENT_SLOT_OFFHAND &&
+              !(itemProto->Class == ITEM_CLASS_ARMOR && itemProto->SubClass == ITEM_SUBCLASS_ARMOR_SHIELD)) ||
+             (itemProto->Class == ITEM_CLASS_WEAPON && itemProto->InventoryType == INVTYPE_2HWEAPON)))
+            return ITEM_USAGE_NONE;
     }
 
     Item* pItem = Item::CreateItem(itemProto->ItemId, 1, bot, false, 0, true);
