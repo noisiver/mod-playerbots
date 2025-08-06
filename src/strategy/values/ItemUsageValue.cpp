@@ -247,7 +247,11 @@ ItemUsage ItemUsageValue::QueryItemUsageForEquip(ItemTemplate const* itemProto, 
         if (itemProto->Class == ITEM_CLASS_WEAPON && itemProto->SubClass == ITEM_SUBCLASS_WEAPON_GUN)
             return ITEM_USAGE_NONE;
 
-        if (itemProto->Class == ITEM_CLASS_ARMOR)
+        if (itemProto->Class == ITEM_CLASS_ARMOR &&
+            (itemProto->InventoryType == INVTYPE_HEAD || itemProto->InventoryType == INVTYPE_SHOULDERS ||
+             itemProto->InventoryType == INVTYPE_CHEST || itemProto->InventoryType == INVTYPE_WAIST ||
+             itemProto->InventoryType == INVTYPE_LEGS || itemProto->InventoryType == INVTYPE_FEET ||
+             itemProto->InventoryType == INVTYPE_WRISTS || itemProto->InventoryType == INVTYPE_HANDS))
         {
             switch (bot->getClass())
             {
