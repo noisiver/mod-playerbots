@@ -258,12 +258,12 @@ ItemUsage ItemUsageValue::QueryItemUsageForEquip(ItemTemplate const* itemProto, 
                 case CLASS_WARRIOR:
                 case CLASS_PALADIN:
                 case CLASS_DEATH_KNIGHT:
-                    if (itemProto->SubClass != ITEM_SUBCLASS_ARMOR_PLATE)
+                    if ((bot->HasSpell(750) && itemProto->SubClass != ITEM_SUBCLASS_ARMOR_PLATE) || (!bot->HasSpell(750) && itemProto->SubClass != ITEM_SUBCLASS_ARMOR_MAIL))
                         return ITEM_USAGE_NONE;
                     break;
                 case CLASS_HUNTER:
                 case CLASS_SHAMAN:
-                    if (itemProto->SubClass != ITEM_SUBCLASS_ARMOR_MAIL)
+                    if ((bot->HasSpell(8737) && itemProto->SubClass != ITEM_SUBCLASS_ARMOR_MAIL) || (!bot->HasSpell(8737) && itemProto->SubClass != ITEM_SUBCLASS_ARMOR_LEATHER))
                         return ITEM_USAGE_NONE;
                     break;
                 case CLASS_ROGUE:
@@ -282,11 +282,9 @@ ItemUsage ItemUsageValue::QueryItemUsageForEquip(ItemTemplate const* itemProto, 
             }
         }
 
-        if (bot->getClass() == CLASS_SHAMAN && AiFactory::GetPlayerSpecTab(bot) != SHAMAN_TAB_ENHANCEMENT &&
-            ((botAI->FindEquipSlot(itemProto, NULL_SLOT, true) == EQUIPMENT_SLOT_OFFHAND &&
-              !(itemProto->Class == ITEM_CLASS_ARMOR && itemProto->SubClass == ITEM_SUBCLASS_ARMOR_SHIELD)) ||
-             (itemProto->Class == ITEM_CLASS_WEAPON && itemProto->InventoryType == INVTYPE_2HWEAPON)))
-            return ITEM_USAGE_NONE;
+        if ((bot->getClass() == CLASS_SHAMAN && AiFactory::GetPlayerSpecTab(bot) != SHAMAN_TAB_ENHANCEMENT) || (bot->getClass() == CLASS_PALADIN && AiFactory::GetPlayerSpecTab(bot) == PALADIN_TAB_HOLY))
+            if ((botAI->FindEquipSlot(itemProto, NULL_SLOT, true) == EQUIPMENT_SLOT_OFFHAND && !(itemProto->Class == ITEM_CLASS_ARMOR && itemProto->SubClass == ITEM_SUBCLASS_ARMOR_SHIELD)) || (itemProto->Class == ITEM_CLASS_WEAPON && itemProto->InventoryType == INVTYPE_2HWEAPON))
+                return ITEM_USAGE_NONE;
     }
 
     Item* pItem = Item::CreateItem(itemProto->ItemId, 1, bot, false, 0, true);
