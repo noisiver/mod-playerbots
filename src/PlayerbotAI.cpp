@@ -2379,7 +2379,7 @@ std::string PlayerbotAI::GetLocalizedGameObjectName(uint32 entry)
     return name;
 }
 
-/*std::vector<Player*> PlayerbotAI::GetPlayersInGroup()
+std::vector<Player*> PlayerbotAI::GetPlayersInGroup()
 {
     std::vector<Player*> members;
 
@@ -2396,34 +2396,6 @@ std::string PlayerbotAI::GetLocalizedGameObjectName(uint32 entry)
             continue;
 
         members.push_back(ref->GetSource());
-    }
-
-    return members;
-}*/
-
-std::vector<Player*> PlayerbotAI::GetPlayersInGroup()
-{
-    std::vector<Player*> members;
-
-    Group* group = bot->GetGroup();
-    if (!group)
-        return members;
-
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member)
-            continue;
-
-        // Celaning, we don't call 2 times GET_PLAYERBOT_AI and never reference it if nil
-        if (auto* ai = GET_PLAYERBOT_AI(member))
-        {
-            // If it's a bot (not real player) => we ignor it
-            if (!ai->IsRealPlayer())
-                continue;
-        }
-
-        members.push_back(member);
     }
 
     return members;
@@ -4245,6 +4217,19 @@ bool PlayerbotAI::AllowActive(ActivityType activityType)
         if (bot->IsInCombat())
         {
             return true;
+        }
+    }
+
+    // only keep updating till initializing time has completed,
+    // which prevents unneeded expensive GameTime calls.
+    if (_isBotInitializing)
+    {
+        _isBotInitializing = GameTime::GetUptime().count() < sPlayerbotAIConfig->maxRandomBots * 0.11;
+
+        // no activity allowed during bot initialization
+        if (_isBotInitializing)
+        {
+            return false;
         }
     }
 
