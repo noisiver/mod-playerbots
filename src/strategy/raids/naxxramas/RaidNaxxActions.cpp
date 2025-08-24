@@ -972,16 +972,8 @@ bool GluthPositionAction::Execute(Event event)
     {
         if (AI_VALUE2(bool, "has aggro", "boss target"))
         {
-            if (raid25)
-            {
-                return MoveTo(NAXX_MAP_ID, helper.mainTankPos25.first, helper.mainTankPos25.second,
-                              bot->GetPositionZ(), false, false, false, false, MovementPriority::MOVEMENT_COMBAT);
-            }
-            else
-            {
-                return MoveTo(NAXX_MAP_ID, helper.mainTankPos10.first, helper.mainTankPos10.second,
-                              bot->GetPositionZ(), false, false, false, false, MovementPriority::MOVEMENT_COMBAT);
-            }
+            return MoveTo(NAXX_MAP_ID, helper.mainTankPos25.first, helper.mainTankPos25.second,
+                          bot->GetPositionZ(), false, false, false, false, MovementPriority::MOVEMENT_COMBAT);
         }
     }
     else if (botAI->IsAssistTankOfIndex(bot, 1))
@@ -1029,11 +1021,6 @@ bool GluthPositionAction::Execute(Event event)
 bool GluthSlowdownAction::Execute(Event event)
 {
     if (!helper.UpdateBossAI())
-    {
-        return false;
-    }
-    bool raid25 = bot->GetRaidDifficulty() == RAID_DIFFICULTY_25MAN_NORMAL;
-    if (!raid25)
     {
         return false;
     }
