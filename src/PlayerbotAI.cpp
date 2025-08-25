@@ -1429,11 +1429,6 @@ void PlayerbotAI::DoNextAction(bool min)
             if (!bot->InBattleground())
             {
                 botAI->ChangeStrategy("+follow", BOT_STATE_NON_COMBAT);
-
-                if (botAI->GetMaster() == botAI->GetGroupMaster())
-                    botAI->TellMaster("Hello, I follow you!");
-                else
-                    botAI->TellMaster(!urand(0, 2) ? "Hello!" : "Hi!");
             }
             else
             {
