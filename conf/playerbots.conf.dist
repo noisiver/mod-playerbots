@@ -467,10 +467,6 @@ AiPlayerbot.FleeingEnabled = 1
 # Default: 3
 AiPlayerbot.MinBotsForGreaterBuff = 3
 
-# Cooldown (seconds) between reagent-missing RP warnings, per bot & per buff
-# Default: 30
-AiPlayerbot.RPWarningCooldown = 30
-
 #
 #
 #

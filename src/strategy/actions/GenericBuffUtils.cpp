@@ -79,9 +79,7 @@ namespace ai::buff
   std::string UpgradeToGroupIfAppropriate(
       Player* bot,
       PlayerbotAI* botAI,
-      std::string const& baseName,
-      bool announceOnMissing,
-      std::function<void(std::string const&)> announce)
+      std::string const& baseName)
   {
      std::string castName = baseName;		Group* g = bot->GetGroup();
      if (!g || g->GetMembersCount() < static_cast<uint32>(sPlayerbotAIConfig->minBotsForGreaterBuff))
@@ -102,51 +100,6 @@ namespace ai::buff
              // Learned + reagents OK -> switch to greater
              return groupName;
          }
-
-         // Missing reagents -> announce if (a) greater is known, (b) base buff is useful,
-         // (c) announce was requested, (d) a callback is provided.
-         if (announceOnMissing && groupVariantSpellId && usefulBase && announce)
-         {
-           static std::map<std::pair<uint32, std::string>, time_t> s_lastWarn; // par bot & par buff
-           time_t now = std::time(nullptr);
-           uint32 botLow = static_cast<uint32>(bot->GetGUID().GetCounter());
-           time_t& last = s_lastWarn[ std::make_pair(botLow, groupName) ];
-           if (!last || now - last >= sPlayerbotAIConfig->rpWarningCooldown) // Configurable anti-spam
-           {
-             // DB Key choice in regard of the buff
-             std::string key;
-             if (groupName.find("greater blessing") != std::string::npos)
-                 key = "rp_missing_reagent_greater_blessing";
-             else if (groupName == "gift of the wild")
-                 key = "rp_missing_reagent_gift_of_the_wild";
-             else if (groupName == "arcane brilliance")
-                 key = "rp_missing_reagent_arcane_brilliance";
-             else
-                 key = "rp_missing_reagent_generic";
-
-             // Placeholders
-             std::map<std::string, std::string> ph;
-             ph["%group_spell"] = groupName;
-             ph["%base_spell"]  = baseName;
-
-             // Respecte ai_playerbot_texts_chance if present
-             std::string rp;
-             bool got = sPlayerbotTextMgr->GetBotText(key, rp, ph);
-             if (got && !rp.empty())
-             {
-                 announce(rp);
-                 last = now;
-             }
-             else
-             {
-                 // Minimal Fallback
-                 std::ostringstream oss;
-                 oss << "Out of components for " << groupName << ". Using " << baseName << "!";
-                 announce(oss.str());
-                 last = now;
-             }
-           }
-         }   
      }
     return castName;
   }

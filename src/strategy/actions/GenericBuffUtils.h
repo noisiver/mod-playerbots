@@ -32,33 +32,9 @@ namespace ai::buff
 
     // Applies the "switch to group buff" policy if: the bot is in a group of size x+,
     // the group variant is known/useful, and reagents are available. Otherwise, returns baseName.
-    // If announceOnMissing == true and reagents are missing, calls the 'announce' callback
-    // (if provided) to notify the party/raid.
     std::string UpgradeToGroupIfAppropriate(
         Player* bot,
         PlayerbotAI* botAI,
-        std::string const& baseName,
-        bool announceOnMissing = false,
-        std::function<void(std::string const&)> announce = {}
+        std::string const& baseName
     );
-}
-
-namespace ai::chat {
-    inline std::function<void(std::string const&)> MakeGroupAnnouncer(Player* me)
-    {
-        return [me](std::string const& msg)
-        {
-            if (Group* g = me->GetGroup())
-            {
-                WorldPacket data;
-                ChatMsg type = g->isRaidGroup() ? CHAT_MSG_RAID : CHAT_MSG_PARTY;
-                ChatHandler::BuildChatPacket(data, type, LANG_UNIVERSAL, me, /*receiver=*/nullptr, msg.c_str());
-                g->BroadcastPacket(&data, true, -1, me->GetGUID());
-            }
-            else
-            {
-                me->Say(msg, LANG_UNIVERSAL);
-            }
-        };
-    }
 }
