@@ -173,10 +173,9 @@ bool CastBlessingOfMightAction::Execute(Event event)
     if (!target)
         return false;
 
-    std::string castName = GetActualBlessingOfMight(target);	
-    auto RP = ai::chat::MakeGroupAnnouncer(bot);
+    std::string castName = GetActualBlessingOfMight(target);
 
-    castName = ai::buff::UpgradeToGroupIfAppropriate(bot, botAI, castName, /*announceOnMissing=*/true, RP);
+    castName = ai::buff::UpgradeToGroupIfAppropriate(bot, botAI, castName);
     return botAI->CastSpell(castName, target);
 }
 
@@ -195,9 +194,8 @@ bool CastBlessingOfMightOnPartyAction::Execute(Event event)
         return false;
 
     std::string castName = GetActualBlessingOfMight(target);
-    auto RP = ai::chat::MakeGroupAnnouncer(bot);
 
-    castName = ai::buff::UpgradeToGroupIfAppropriate(bot, botAI, castName, /*announceOnMissing=*/true, RP);
+    castName = ai::buff::UpgradeToGroupIfAppropriate(bot, botAI, castName);
     return botAI->CastSpell(castName, target);
 }
 
@@ -208,9 +206,8 @@ bool CastBlessingOfWisdomAction::Execute(Event event)
         return false;
 
     std::string castName = GetActualBlessingOfWisdom(target);	
-    auto RP = ai::chat::MakeGroupAnnouncer(bot);
 
-    castName = ai::buff::UpgradeToGroupIfAppropriate(bot, botAI, castName, /*announceOnMissing=*/true, RP);
+    castName = ai::buff::UpgradeToGroupIfAppropriate(bot, botAI, castName);
     return botAI->CastSpell(castName, target);
 }
 
@@ -245,8 +242,7 @@ bool CastBlessingOfWisdomOnPartyAction::Execute(Event event)
     if (castName.empty())
         return false;
 
-    auto RP = ai::chat::MakeGroupAnnouncer(bot);
-    castName = ai::buff::UpgradeToGroupIfAppropriate(bot, botAI, castName, /*announceOnMissing=*/true, RP);
+    castName = ai::buff::UpgradeToGroupIfAppropriate(bot, botAI, castName);
     return botAI->CastSpell(castName, target);
 }
 
@@ -362,8 +358,7 @@ bool CastBlessingOfSanctuaryOnPartyAction::Execute(Event event)
     }
     if (targetPlayer && !IsTankRole(targetPlayer))
     {
-        auto RP = ai::chat::MakeGroupAnnouncer(bot);
-        castName = ai::buff::UpgradeToGroupIfAppropriate(bot, botAI, castName, /*announceOnMissing=*/true, RP);
+        castName = ai::buff::UpgradeToGroupIfAppropriate(bot, botAI, castName);
     }
     else
     {
@@ -467,8 +462,7 @@ bool CastBlessingOfKingsOnPartyAction::Execute(Event event)
 
     if (allowGreater)
     {
-        auto RP = ai::chat::MakeGroupAnnouncer(bot);
-        castName = ai::buff::UpgradeToGroupIfAppropriate(bot, botAI, castName, /*announceOnMissing=*/true, RP);
+        castName = ai::buff::UpgradeToGroupIfAppropriate(bot, botAI, castName);
     }
 	
     return botAI->CastSpell(castName, target);

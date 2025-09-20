@@ -83,7 +83,6 @@ bool PlayerbotAIConfig::Initialize()
     lootDelay = sConfigMgr->GetOption<int32>("AiPlayerbot.LootDelay", 1000);
     // Buff system
     minBotsForGreaterBuff = sConfigMgr->GetOption<int32>("AiPlayerbot.MinBotsForGreaterBuff", 3);
-    rpWarningCooldown     = sConfigMgr->GetOption<int32>("AiPlayerbot.RPWarningCooldown", 30);
     disabledWithoutRealPlayerLoginDelay = sConfigMgr->GetOption<int32>("AiPlayerbot.DisabledWithoutRealPlayerLoginDelay", 30);
     disabledWithoutRealPlayerLogoutDelay = sConfigMgr->GetOption<int32>("AiPlayerbot.DisabledWithoutRealPlayerLogoutDelay", 300);
 
