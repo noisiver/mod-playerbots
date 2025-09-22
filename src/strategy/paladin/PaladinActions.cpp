@@ -17,7 +17,7 @@
 #include "Config.h"
 #include "Group.h"
 #include "ObjectAccessor.h"
-	
+
 using ai::buff::MakeAuraQualifierForBuff;
 using ai::buff::UpgradeToGroupIfAppropriate;
 
@@ -164,7 +164,7 @@ inline std::string const GetActualBlessingOfSanctuary(Unit* target, Player* bot)
 Value<Unit*>* CastBlessingOnPartyAction::GetTargetValue()
 {
 
-	return context->GetValue<Unit*>("party member without aura", MakeAuraQualifierForBuff(spell));
+    return context->GetValue<Unit*>("party member without aura", MakeAuraQualifierForBuff(spell));
 }
 
 bool CastBlessingOfMightAction::Execute(Event event)
@@ -174,14 +174,13 @@ bool CastBlessingOfMightAction::Execute(Event event)
         return false;
 
     std::string castName = GetActualBlessingOfMight(target);
-
     castName = ai::buff::UpgradeToGroupIfAppropriate(bot, botAI, castName);
     return botAI->CastSpell(castName, target);
 }
 
 Value<Unit*>* CastBlessingOfMightOnPartyAction::GetTargetValue()
 {
-	return context->GetValue<Unit*>(
+    return context->GetValue<Unit*>(
     "party member without aura",
     "blessing of might,greater blessing of might,blessing of wisdom,greater blessing of wisdom,blessing of sanctuary,greater blessing of sanctuary"
     );
@@ -206,14 +205,13 @@ bool CastBlessingOfWisdomAction::Execute(Event event)
         return false;
 
     std::string castName = GetActualBlessingOfWisdom(target);	
-
     castName = ai::buff::UpgradeToGroupIfAppropriate(bot, botAI, castName);
     return botAI->CastSpell(castName, target);
 }
 
 Value<Unit*>* CastBlessingOfWisdomOnPartyAction::GetTargetValue()
 {
-	return context->GetValue<Unit*>(
+    return context->GetValue<Unit*>(
     "party member without aura",
     "blessing of wisdom,greater blessing of wisdom,blessing of might,greater blessing of might,blessing of sanctuary,greater blessing of sanctuary"
     );
@@ -249,7 +247,7 @@ bool CastBlessingOfWisdomOnPartyAction::Execute(Event event)
 
 Value<Unit*>* CastBlessingOfSanctuaryOnPartyAction::GetTargetValue()
 {
-	return context->GetValue<Unit*>(
+    return context->GetValue<Unit*>(
         "party member without aura",
         "blessing of sanctuary,greater blessing of sanctuary"
     );
@@ -402,7 +400,7 @@ bool CastBlessingOfKingsOnPartyAction::Execute(Event event)
     Player* targetPlayer = target->ToPlayer();
     if (targetPlayer && !g->IsMember(targetPlayer->GetGUID()))
         return false;
-		
+
     const bool hasBmana  = botAI->HasStrategy("bmana",  BOT_STATE_NON_COMBAT);
     const bool hasBstats = botAI->HasStrategy("bstats", BOT_STATE_NON_COMBAT);
 
@@ -414,10 +412,10 @@ bool CastBlessingOfKingsOnPartyAction::Execute(Event event)
             return false;
         }
     }
- 
+
     if (targetPlayer)
     {
-		const bool isTank = IsTankRole(targetPlayer);
+        const bool isTank = IsTankRole(targetPlayer);
         const bool hasSanctFromMe =
             target->HasAura(SPELL_BLESSING_OF_SANCTUARY, bot->GetGUID()) ||
             target->HasAura(SPELL_GREATER_BLESSING_OF_SANCTUARY, bot->GetGUID());
@@ -448,7 +446,7 @@ bool CastBlessingOfKingsOnPartyAction::Execute(Event event)
     if (allowGreater && hasBstats && targetPlayer)
     {
         switch (targetPlayer->getClass())
-		{
+        {
             case CLASS_WARRIOR:
             case CLASS_PALADIN:
             case CLASS_DRUID:
@@ -464,7 +462,7 @@ bool CastBlessingOfKingsOnPartyAction::Execute(Event event)
     {
         castName = ai::buff::UpgradeToGroupIfAppropriate(bot, botAI, castName);
     }
-	
+
     return botAI->CastSpell(castName, target);
 }
 
