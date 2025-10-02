@@ -170,30 +170,43 @@ bool MaintenanceAction::Execute(Event event)
 
     botAI->TellMaster("I'm maintaining");
     PlayerbotFactory factory(bot, bot->GetLevel());
-    factory.InitAttunementQuests();
-    factory.InitBags(false);
-    factory.InitAmmo();
-    factory.InitFood();
-    factory.InitReagents();
+    if (sRandomPlayerbotMgr->IsRandomBot(bot))
+    {
+        factory.InitAttunementQuests();
+        factory.InitBags(false);
+        factory.InitAmmo();
+        factory.InitFood();
+    }
+    if (sRandomPlayerbotMgr->IsRandomBot(bot) || bot->getClass() == CLASS_WARLOCK)
+    {
+        factory.InitReagents();
+    }
     factory.InitConsumables();
     factory.InitPotions();
-    factory.InitTalentsTree(true);
-    factory.InitPet();
-    factory.InitPetTalents();
-    factory.InitClassSpells();
-    factory.InitAvailableSpells();
-    factory.InitSkills();
-    factory.InitReputation();
-    factory.InitSpecialSpells();
-    factory.InitMounts();
-    factory.InitGlyphs(false);
-    factory.InitKeyring();
-    if (bot->GetLevel() >= sPlayerbotAIConfig->minEnchantingBotLevel)
-        factory.ApplyEnchantAndGemsNew();
-
-    bot->DurabilityRepairAll(false, 1.0f, false);
-    bot->SendTalentsInfoData(false);
-
+    if (sRandomPlayerbotMgr->IsRandomBot(bot) || sWorld->getIntConfig(CONFIG_EXPANSION) < EXPANSION_WRATH_OF_THE_LICH_KING)
+    {
+        factory.InitTalentsTree(true);
+        factory.InitPet();
+        factory.InitPetTalents();
+    }
+    if (sRandomPlayerbotMgr->IsRandomBot(bot))
+    {
+        factory.InitClassSpells();
+        factory.InitAvailableSpells();
+        factory.InitSkills();
+        factory.InitReputation();
+        factory.InitSpecialSpells();
+        factory.InitMounts();
+        factory.InitGlyphs(false);
+        factory.InitKeyring();
+    }
+    if (sRandomPlayerbotMgr->IsRandomBot(bot) || sWorld->getIntConfig(CONFIG_EXPANSION) < EXPANSION_WRATH_OF_THE_LICH_KING)
+    {
+        if (bot->GetLevel() >= sPlayerbotAIConfig->minEnchantingBotLevel)
+            factory.ApplyEnchantAndGemsNew();
+        bot->DurabilityRepairAll(false, 1.0f, false);
+        bot->SendTalentsInfoData(false);
+    }
     return true;
 }
 
