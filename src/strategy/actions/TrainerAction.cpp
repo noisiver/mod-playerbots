@@ -170,27 +170,19 @@ bool MaintenanceAction::Execute(Event event)
 
     botAI->TellMaster("I'm maintaining");
     PlayerbotFactory factory(bot, bot->GetLevel());
-    if (sRandomPlayerbotMgr->IsRandomBot(bot))
-    {
+
+    if (!botAI->IsAlt())
+    {    
         factory.InitAttunementQuests();
         factory.InitBags(false);
         factory.InitAmmo();
         factory.InitFood();
-    }
-    if (sRandomPlayerbotMgr->IsRandomBot(bot) || bot->getClass() == CLASS_WARLOCK)
-    {
         factory.InitReagents();
-    }
-    factory.InitConsumables();
-    factory.InitPotions();
-    if (sRandomPlayerbotMgr->IsRandomBot(bot) || sWorld->getIntConfig(CONFIG_EXPANSION) < EXPANSION_WRATH_OF_THE_LICH_KING)
-    {
+        factory.InitConsumables();
+        factory.InitPotions();
         factory.InitTalentsTree(true);
         factory.InitPet();
         factory.InitPetTalents();
-    }
-    if (sRandomPlayerbotMgr->IsRandomBot(bot))
-    {
         factory.InitClassSpells();
         factory.InitAvailableSpells();
         factory.InitSkills();
@@ -199,14 +191,72 @@ bool MaintenanceAction::Execute(Event event)
         factory.InitMounts();
         factory.InitGlyphs(false);
         factory.InitKeyring();
-    }
-    if (sRandomPlayerbotMgr->IsRandomBot(bot) || sWorld->getIntConfig(CONFIG_EXPANSION) < EXPANSION_WRATH_OF_THE_LICH_KING)
-    {
         if (bot->GetLevel() >= sPlayerbotAIConfig->minEnchantingBotLevel)
             factory.ApplyEnchantAndGemsNew();
-        bot->DurabilityRepairAll(false, 1.0f, false);
-        bot->SendTalentsInfoData(false);
     }
+    else 
+    {
+        if (sPlayerbotAIConfig->altMaintenanceAttunementQs)
+            factory.InitAttunementQuests();
+
+        if (sPlayerbotAIConfig->altMaintenanceBags)
+            factory.InitBags(false);
+
+        if (sPlayerbotAIConfig->altMaintenanceAmmo)
+            factory.InitAmmo();
+
+        if (sPlayerbotAIConfig->altMaintenanceFood)
+            factory.InitFood();
+
+        if (sPlayerbotAIConfig->altMaintenanceReagents)
+            factory.InitReagents();
+
+        if (sPlayerbotAIConfig->altMaintenanceConsumables)
+            factory.InitConsumables();
+
+        if (sPlayerbotAIConfig->altMaintenancePotions)
+            factory.InitPotions();
+
+        if (sPlayerbotAIConfig->altMaintenanceTalentTree)
+            factory.InitTalentsTree(true);
+
+        if (sPlayerbotAIConfig->altMaintenancePet)
+            factory.InitPet();
+
+        if (sPlayerbotAIConfig->altMaintenancePetTalents)
+            factory.InitPetTalents();
+
+        if (sPlayerbotAIConfig->altMaintenanceClassSpells)
+            factory.InitClassSpells();
+
+        if (sPlayerbotAIConfig->altMaintenanceAvailableSpells)
+            factory.InitAvailableSpells();
+
+        if (sPlayerbotAIConfig->altMaintenanceSkills)
+            factory.InitSkills();
+
+        if (sPlayerbotAIConfig->altMaintenanceReputation)
+            factory.InitReputation();
+
+        if (sPlayerbotAIConfig->altMaintenanceSpecialSpells)
+            factory.InitSpecialSpells();
+
+        if (sPlayerbotAIConfig->altMaintenanceMounts)
+            factory.InitMounts();
+
+        if (sPlayerbotAIConfig->altMaintenanceGlyphs)
+            factory.InitGlyphs(false);
+
+        if (sPlayerbotAIConfig->altMaintenanceKeyring)
+            factory.InitKeyring();
+
+        if (sPlayerbotAIConfig->altMaintenanceGemsEnchants && bot->GetLevel() >= sPlayerbotAIConfig->minEnchantingBotLevel)
+            factory.ApplyEnchantAndGemsNew();
+    }
+
+    bot->DurabilityRepairAll(false, 1.0f, false);
+    bot->SendTalentsInfoData(false);
+
     return true;
 }
 
