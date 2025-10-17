@@ -6,8 +6,8 @@ bool MoveFromWhirlwindAction::Execute(Event event)
 {
     Unit* boss = nullptr;
     uint8 faction = bot->GetTeamId();
-    float targetDist = 10.0f; // Whirlwind has range of 8, add a couple for safety buffer
-    
+    float targetDist = 10.0f; // Whirlwind has a range of 8, adding a safety buffer
+
     switch (bot->GetMap()->GetDifficulty())
     {
         case DUNGEON_DIFFICULTY_NORMAL:
@@ -15,7 +15,7 @@ bool MoveFromWhirlwindAction::Execute(Event event)
             {
                 boss = AI_VALUE2(Unit*, "find target", "horde commander");
             }
-            else //if (faction == TEAM_HORDE)
+            else // TEAM_HORDE
             {
                 boss = AI_VALUE2(Unit*, "find target", "alliance commander");
             }
@@ -25,7 +25,7 @@ bool MoveFromWhirlwindAction::Execute(Event event)
             {
                 boss = AI_VALUE2(Unit*, "find target", "commander kolurg");
             }
-            else //if (faction == TEAM_HORDE)
+            else // TEAM_HORDE
             {
                 boss = AI_VALUE2(Unit*, "find target", "commander stoutbeard");
             }
@@ -33,11 +33,23 @@ bool MoveFromWhirlwindAction::Execute(Event event)
         default:
             break;
     }
-    if (!boss || bot->GetExactDist2d(boss->GetPosition()) > targetDist)
+
+    // Ensure boss is valid before accessing its methods
+    if (!boss)
     {
         return false;
     }
-    return MoveAway(boss, targetDist - bot->GetExactDist2d(boss->GetPosition()));
+
+    float bossDistance = bot->GetExactDist2d(boss->GetPosition());
+
+    // Check if the bot is already at a safe distance
+    if (bossDistance > targetDist)
+    {
+        return false;
+    }
+
+    // Move away from the boss to avoid Whirlwind
+    return MoveAway(boss, targetDist - bossDistance);
 }
 
 bool FirebombSpreadAction::Execute(Event event)
@@ -50,13 +62,12 @@ bool FirebombSpreadAction::Execute(Event event)
     GuidVector members = AI_VALUE(GuidVector, "group members");
     for (auto& member : members)
     {
-        if (bot->GetGUID() == member)
+        Unit* unit = botAI->GetUnit(member);
+        if (!unit || bot->GetGUID() == member) { continue; }
+
+        if (bot->GetExactDist2d(unit) < targetDist)
         {
-            continue;
-        }
-        if (bot->GetExactDist2d(botAI->GetUnit(member)) < targetDist)
-        {
-            return MoveAway(botAI->GetUnit(member), targetDist);
+            return MoveAway(unit, targetDist);
         }
     }
     return false;
@@ -70,24 +81,22 @@ bool TelestraSplitTargetAction::Execute(Event event)
 
     for (auto& attacker : attackers)
     {
-        Unit* npc = botAI->GetUnit(attacker);
-        if (!npc)
-        {
-            continue;
-        }
-        switch (npc->GetEntry())
+        Unit* unit = botAI->GetUnit(attacker);
+        if (!unit) { continue; }
+
+        switch (unit->GetEntry())
         {
             // Focus arcane clone first
             case NPC_ARCANE_MAGUS:
-                splitTargets[0] = npc;
+                splitTargets[0] = unit;
                 break;
             // Then the frost clone
             case NPC_FROST_MAGUS:
-                splitTargets[1] = npc;
+                splitTargets[1] = unit;
                 break;
             // Fire clone last
             case NPC_FIRE_MAGUS:
-                splitTargets[2] = npc;
+                splitTargets[2] = unit;
                 break;
         }
     }
@@ -139,11 +148,15 @@ bool ChaoticRiftTargetAction::Execute(Event event)
 bool DodgeSpikesAction::isUseful()
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "ormorok the tree-shaper");
+    if (!boss) { return false; }
+
     return bot->GetExactDist2d(boss) > 0.5f;
 }
 bool DodgeSpikesAction::Execute(Event event)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "ormorok the tree-shaper");
+    if (!boss) { return false; }
+
     return Move(bot->GetAngle(boss), bot->GetExactDist2d(boss) - 0.3f);
 }
 
@@ -156,51 +169,4 @@ bool IntenseColdJumpAction::Execute(Event event)
     // Probably best to revisit once bot movement is improved
     return JumpTo(bot->GetMap()->GetId(), bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ() + 0.01f);
     // bot->GetMotionMaster()->MoveFall();
-}
-
-bool RearFlankPositionAction::isUseful()
-{
-    Unit* boss = AI_VALUE2(Unit*, "find target", "keristrasza");
-    if (!boss) { return false; }
-
-    // Need to double the front angle check to account for mirrored angle.
-    // Total 180 degrees (whole front half)
-    bool inFront = boss->HasInArc(2.f * DRAGON_MELEE_MIN_ANGLE, bot);
-    // Rear check does not need to double this angle as the logic is inverted
-    // and we are subtracting from 2pi.
-    bool inBack = !boss->HasInArc((2.f * M_PI) - DRAGON_MELEE_MAX_ANGLE, bot);
-
-    return inFront || inBack;
-}
-bool RearFlankPositionAction::Execute(Event event)
-{
-    Unit* boss = AI_VALUE2(Unit*, "find target", "keristrasza");
-    if (!boss) { return false; }
-
-    // float angleToMove = minAngle + rand_norm() * (maxAngle - minAngle);
-    float angle = frand(DRAGON_MELEE_MIN_ANGLE, DRAGON_MELEE_MAX_ANGLE);
-    // Need to reduce this value very slightly, or the bots get the jitters -
-    // may be due to rounding errors. Need to bring them just inside their attack range.
-    // This boss has a big hitbox so we can reduce by 50% and it's still fine and looks better.
-    float distance = bot->GetMeleeRange(boss) * 0.5f;
-    // Alternatively, summing both unit's melee ranges seems to give a fairly natural range.
-    // Use whichever gives the best results..
-    // float distanceOffset = bot->GetMeleeReach() + boss->GetMeleeReach();
-    
-    Position leftFlank = boss->GetPosition();
-    Position rightFlank = boss->GetPosition();
-    Position* destination = nullptr;
-    leftFlank.RelocatePolarOffset(angle, distance);
-    rightFlank.RelocatePolarOffset(-angle, distance);
-
-    if (bot->GetExactDist2d(leftFlank) < bot->GetExactDist2d(rightFlank))
-    {
-        destination = &leftFlank;
-    }
-    else
-    {
-        destination = &rightFlank;
-    }
-
-    return MoveTo(bot->GetMapId(), destination->GetPositionX(), destination->GetPositionY(), destination->GetPositionZ());
 }

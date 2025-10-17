@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #ifndef _PLAYERBOT_ROGUEACTIONS_H
@@ -44,7 +44,7 @@ public:
     CastStealthAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "stealth") {}
 
     std::string const GetTargetName() override { return "self target"; }
-
+    bool isUseful() override;
     bool isPossible() override;
 };
 
@@ -127,10 +127,12 @@ public:
     CastKickOnEnemyHealerAction(PlayerbotAI* botAI) : CastSpellOnEnemyHealerAction(botAI, "kick") {}
 };
 
-class EnvenomAction : public CastMeleeSpellAction
+class CastEnvenomAction : public CastMeleeSpellAction
 {
 public:
-    EnvenomAction(PlayerbotAI* ai) : CastMeleeSpellAction(ai, "envenom") {}
+    CastEnvenomAction(PlayerbotAI* ai) : CastMeleeSpellAction(ai, "envenom") {}
+    bool isUseful() override;
+    bool isPossible() override;
 };
 
 class CastTricksOfTheTradeOnMainTankAction : public BuffOnMainTankAction

@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #include "XpGainAction.h"
@@ -18,21 +18,21 @@ bool XpGainAction::Execute(Event event)
 
     WorldPacket p(event.getPacket());  // (8+4+1+4+8)
     ObjectGuid guid;
-    uint32 xpgain;
-    uint8 type = 0;  // 00-kill_xp type, 01-non_kill_xp type
-    uint32 givenXp = 0;
-    float groupBonus = 0;
+    // uint32 xpgain;
+    // uint8 type = 0;  // 00-kill_xp type, 01-non_kill_xp type
+    // uint32 givenXp = 0;
+    // float groupBonus = 0;
 
     p.rpos(0);
     p >> guid;    // 8 victim
-    p >> xpgain;  // 1 given experience
-    p >> type;    // 1 00-kill_xp type, 01-non_kill_xp type
+    // p >> xpgain;  // 1 given experience
+    // p >> type;    // 1 00-kill_xp type, 01-non_kill_xp type
 
-    if (!type)
-    {
-        p >> givenXp;     // 4 experience without rested bonus
-        p >> groupBonus;  // 8 group bonus
-    }
+    // if (!type)
+    // {
+    //     p >> givenXp;     // 4 experience without rested bonus
+    //     p >> groupBonus;  // 8 group bonus
+    // }
 
     Creature* creature = botAI->GetCreature(guid);
     if (creature && !creature->GetMap()->IsDungeon())
@@ -40,15 +40,16 @@ bool XpGainAction::Execute(Event event)
         BroadcastHelper::BroadcastKill(botAI, bot, creature);
     }
 
-    if (!sRandomPlayerbotMgr->IsRandomBot(bot) || sPlayerbotAIConfig->playerbotsXPrate == 1)
-        return true;
-    
-    Unit* victim = nullptr;
-    if (guid)
-        victim = botAI->GetUnit(guid);
+    // randomBotXPRate is now implemented in OnPlayerGiveXP script
+    // if (!sRandomPlayerbotMgr->IsRandomBot(bot) || sPlayerbotAIConfig->randomBotXPRate == 1)
+    //     return true;
 
-    xpgain = xpgain * (sPlayerbotAIConfig->playerbotsXPrate - 1);
-    GiveXP(xpgain, victim);
+    // Unit* victim = nullptr;
+    // if (guid)
+    //     victim = botAI->GetUnit(guid);
+
+    // xpgain = xpgain * (sPlayerbotAIConfig->randomBotXPRate - 1);
+    // GiveXP(xpgain, victim);
 
     return true;
 }

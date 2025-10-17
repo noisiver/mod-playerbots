@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #include "SeeSpellAction.h"
@@ -11,6 +11,7 @@
 #include "Playerbots.h"
 #include "RTSCValues.h"
 #include "RtscAction.h"
+#include "PositionValue.h"
 
 Creature* SeeSpellAction::CreateWps(Player* wpOwner, float x, float y, float z, float o, uint32 entry, Creature* lastWp,
                                     bool important)
@@ -122,6 +123,15 @@ bool SeeSpellAction::MoveToSpell(WorldPosition& spellPosition, bool inFormation)
 {
     if (inFormation)
         SetFormationOffset(spellPosition);
+
+    if (botAI->HasStrategy("stay", botAI->GetState()))
+    {
+        PositionMap& posMap = AI_VALUE(PositionMap&, "position");
+        PositionInfo stayPosition = posMap["stay"];
+
+        stayPosition.Set(spellPosition.getX(), spellPosition.getY(), spellPosition.getZ(), spellPosition.getMapId());
+        posMap["stay"] = stayPosition;
+    }
 
     if (bot->IsWithinLOS(spellPosition.getX(), spellPosition.getY(), spellPosition.getZ()))
         return MoveNear(spellPosition.getMapId(), spellPosition.getX(), spellPosition.getY(), spellPosition.getZ(), 0);

@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #ifndef _PLAYERBOT_PRIESTTRIGGERS_H
@@ -8,6 +8,8 @@
 
 #include "CureTriggers.h"
 #include "SharedDefines.h"
+#include "Trigger.h"
+#include <set>
 
 class PlayerbotAI;
 
@@ -98,6 +100,21 @@ public:
     BindingHealTrigger(PlayerbotAI* botAI);
 
     bool IsActive() override;
+};
+
+class MindSearChannelCheckTrigger : public Trigger
+{
+public:
+    MindSearChannelCheckTrigger(PlayerbotAI* botAI, uint32 minEnemies = 2)
+        : Trigger(botAI, "mind sear channel check"), minEnemies(minEnemies)
+    {
+    }
+
+    bool IsActive() override;
+
+protected:
+    uint32 minEnemies;
+    static const std::set<uint32> MIND_SEAR_SPELL_IDS;
 };
 
 #endif

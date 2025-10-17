@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #ifndef _PLAYERBOT_PLAYERBOTMGR_H
@@ -28,10 +28,12 @@ public:
     virtual ~PlayerbotHolder(){};
 
     void AddPlayerBot(ObjectGuid guid, uint32 masterAccountId);
+    bool IsAccountLinked(uint32 accountId, uint32 masterAccountId);
     void HandlePlayerBotLoginCallback(PlayerbotLoginQueryHolder const& holder);
 
     void LogoutPlayerBot(ObjectGuid guid);
     void DisablePlayerBot(ObjectGuid guid);
+    void RemoveFromPlayerbotsMap(ObjectGuid guid);
     Player* GetPlayerBot(ObjectGuid guid) const;
     Player* GetPlayerBot(ObjectGuid::LowType lowGuid) const;
     PlayerBotMap::const_iterator GetPlayerBotsBegin() const { return playerBots.begin(); }
@@ -80,6 +82,11 @@ public:
     Player* GetMaster() const { return master; };
 
     void SaveToDB();
+
+    void HandleSetSecurityKeyCommand(Player* player, const std::string& key);
+    void HandleLinkAccountCommand(Player* player, const std::string& accountName, const std::string& key);
+    void HandleViewLinkedAccountsCommand(Player* player);
+    void HandleUnlinkAccountCommand(Player* player, const std::string& accountName);
 
 protected:
     void OnBotLoginInternal(Player* const bot) override;

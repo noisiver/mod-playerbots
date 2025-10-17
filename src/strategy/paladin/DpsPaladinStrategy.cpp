@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #include "DpsPaladinStrategy.h"
@@ -84,8 +84,8 @@ NextAction** DpsPaladinStrategy::getDefaultActions()
 {
     return NextAction::array(0,
                              new NextAction("hammer of wrath", ACTION_DEFAULT + 0.6f),
-                             new NextAction("crusader strike", ACTION_DEFAULT + 0.5f),
-                             new NextAction("judgement of wisdom", ACTION_DEFAULT + 0.4f),
+                             new NextAction("judgement of wisdom", ACTION_DEFAULT + 0.5f),
+                             new NextAction("crusader strike", ACTION_DEFAULT + 0.4f),
                              new NextAction("divine storm", ACTION_DEFAULT + 0.3f),
                              new NextAction("consecration", ACTION_DEFAULT + 0.1f),
                              new NextAction("melee", ACTION_DEFAULT), nullptr);
@@ -105,7 +105,7 @@ void DpsPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     // nullptr)));
     triggers.push_back(
         new TriggerNode("low mana", NextAction::array(0, new NextAction("seal of wisdom", ACTION_HIGH + 5), nullptr)));
-    
+
     triggers.push_back(new TriggerNode(
         "avenging wrath", NextAction::array(0, new NextAction("avenging wrath", ACTION_HIGH + 2), nullptr)));
     // triggers.push_back(new TriggerNode("sanctity aura", NextAction::array(0, new NextAction("sanctity aura", 90.0f),
@@ -131,5 +131,5 @@ void DpsPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     //     NextAction::array(0, new NextAction("set facing", ACTION_NORMAL + 7), NULL)));
 
     triggers.push_back(new TriggerNode("enemy out of melee",
-                                       NextAction::array(0, new NextAction("reach melee", ACTION_NORMAL + 8), NULL)));
+                                       NextAction::array(0, new NextAction("reach melee", ACTION_HIGH + 1), NULL)));
 }

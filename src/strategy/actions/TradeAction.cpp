@@ -1,10 +1,9 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #include "TradeAction.h"
-
 #include "ChatHelper.h"
 #include "Event.h"
 #include "ItemCountValue.h"
@@ -14,6 +13,13 @@
 bool TradeAction::Execute(Event event)
 {
     std::string const text = event.getParam();
+
+    // If text starts with any excluded prefix, don't process it further.
+    for (const auto& prefix : sPlayerbotAIConfig->tradeActionExcludedPrefixes)
+    {
+        if (text.find(prefix) == 0)
+            return false;
+    }
 
     if (!bot->GetTrader())
     {

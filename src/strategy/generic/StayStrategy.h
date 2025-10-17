@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #ifndef _PLAYERBOT_STAYSTRATEGY_H
@@ -10,12 +10,13 @@
 
 class PlayerbotAI;
 
-class StayStrategy : public NonCombatStrategy
+class StayStrategy : public Strategy
 {
 public:
-    StayStrategy(PlayerbotAI* botAI) : NonCombatStrategy(botAI) {}
+    StayStrategy(PlayerbotAI* botAI) : Strategy(botAI) {}
 
     std::string const getName() override { return "stay"; }
+    void InitTriggers(std::vector<TriggerNode*>& triggers) override;
     NextAction** getDefaultActions() override;
 };
 

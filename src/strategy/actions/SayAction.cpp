@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #include "AiFactory.h"
@@ -969,7 +969,7 @@ std::string ChatReplyAction::GenerateReplyMessage(Player* bot, std::string& inco
                 msg = "ya %s but thats in the past";
                 break;
             case 2:
-                msg = word[verb_pos - 1] + " will " + word[verb_pos + 1] + " again though %s";
+                msg = word[verb_pos ? verb_pos - 1 : verb_pos + 1] + " will " + word[verb_pos + 1] + " again though %s";
                 break;
             }
             msg = std::regex_replace(msg, std::regex("%s"), name);
@@ -1013,7 +1013,7 @@ std::string ChatReplyAction::GenerateReplyMessage(Player* bot, std::string& inco
                 msg = "%s, what will happen %s?";
                 break;
             case 2:
-                msg = "are you saying " + word[verb_pos - 1] + " will " + word[verb_pos + 1] + " " + word[verb_pos + 2] + " %s?";
+                msg = "are you saying " + word[verb_pos ? verb_pos - 1 : verb_pos + 1] + " will " + word[verb_pos + 1] + " " + word[verb_pos + 2] + " %s?";
                 break;
             }
             msg = std::regex_replace(msg, std::regex("%s"), name);

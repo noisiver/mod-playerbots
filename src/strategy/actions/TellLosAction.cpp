@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #include "TellLosAction.h"
@@ -140,17 +140,16 @@ bool TellEstimatedDpsAction::Execute(Event event)
 bool TellCalculateItemAction::Execute(Event event)
 {
     std::string const text = event.getParam();
-    ItemIds ids = chat->parseItems(text);
+    ItemWithRandomProperty item = chat->parseItemWithRandomProperty(text);
     StatsWeightCalculator calculator(bot);
-    for (const uint32 &id : ids)
-    {
-        const ItemTemplate* proto = sObjectMgr->GetItemTemplate(id);
-        if (!proto)
-            continue;
-        float score = calculator.CalculateItem(id);
-        std::ostringstream out;
-        out << "Calculated score of " << chat->FormatItem(proto) << " : " << score;
-        botAI->TellMasterNoFacing(out.str());
-    }
+
+    const ItemTemplate* proto = sObjectMgr->GetItemTemplate(item.itemId);
+    if (!proto)
+        return false;
+    float score = calculator.CalculateItem(item.itemId, item.randomPropertyId);
+
+    std::ostringstream out;
+    out << "Calculated score of " << chat->FormatItem(proto) << " : " << score;
+    botAI->TellMasterNoFacing(out.str());
     return true;
 }

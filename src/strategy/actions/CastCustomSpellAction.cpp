@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #include "CastCustomSpellAction.h"
@@ -48,10 +48,40 @@ bool CastCustomSpellAction::Execute(Event event)
             if (!target)
                 target = botAI->GetUnit(go);
 
+            if (!botAI->GetUnit(go) || !botAI->GetUnit(go)->IsInWorld())
+                continue;
+
             chat->eraseAllSubStr(text, chat->FormatWorldobject(botAI->GetUnit(go)));
         }
 
         ltrim(text);
+    }
+
+    uint32 spell = 0;
+    if (!target)
+    {
+        size_t onPos = FindLastSeparator(text, " on ");
+        if (onPos != std::string::npos)
+        {
+            std::string targetName = text.substr(onPos + 4);
+            ltrim(targetName);
+            if (!targetName.empty())
+            {
+                // check if spell still exists after we remove " on PlayerName" part
+                std::string truncatedText = text.substr(0, onPos);
+                ltrim(truncatedText);
+                spell = AI_VALUE2(uint32, "spell id", truncatedText);
+
+                if (spell)
+                {
+                    if (Player* targetPlayer = ObjectAccessor::FindPlayerByName(targetName))
+                    {
+                        target = targetPlayer;
+                        text = truncatedText;
+                    }
+                }
+            }
+        }
     }
 
     if (!target)
@@ -81,7 +111,8 @@ bool CastCustomSpellAction::Execute(Event event)
         }
     }
 
-    uint32 spell = AI_VALUE2(uint32, "spell id", text);
+    if (!spell)
+        spell = AI_VALUE2(uint32, "spell id", text);
 
     std::ostringstream msg;
     if (!spell)
@@ -231,7 +262,7 @@ bool CastRandomSpellAction::Execute(Event event)
     if (spellList.empty())
         return false;
 
-    bool isCast = false;
+    // bool isCast = false; //not used, line marked for removal.
 
     std::sort(spellList.begin(), spellList.end(),
               [](std::pair<uint32, std::pair<uint32, WorldObject*>> i,

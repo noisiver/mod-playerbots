@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #include "AttackersValue.h"
@@ -175,7 +175,7 @@ bool AttackersValue::IsPossibleTarget(Unit* attacker, Player* bot, float range)
            // !((attacker->IsPolymorphed() || botAI->HasAura("sap", attacker) || /*attacker->IsCharmed() ||*/
            // attacker->isFeared()) && !rti) &&
            /*!sServerFacade->IsInRoots(attacker) &&*/
-           !attacker->IsFriendlyTo(bot) && !attacker->HasAuraType(SPELL_AURA_SPIRIT_OF_REDEMPTION) &&
+           !attacker->IsFriendlyTo(bot) && !attacker->HasSpiritOfRedemptionAura() &&
            // !(attacker->GetGUID().IsPet() && enemy) &&
            !(attacker->GetCreatureType() == CREATURE_TYPE_CRITTER && !attacker->IsInCombat()) &&
            !attacker->HasUnitFlag(UNIT_FLAG_IMMUNE_TO_PC) && !attacker->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE) &&

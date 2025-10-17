@@ -5,29 +5,22 @@
 #include "wotlk/utgardekeep/UtgardeKeepStrategy.h"
 #include "wotlk/nexus/NexusStrategy.h"
 #include "wotlk/azjolnerub/AzjolNerubStrategy.h"
+#include "wotlk/oldkingdom/OldKingdomStrategy.h"
+#include "wotlk/draktharonkeep/DrakTharonKeepStrategy.h"
+#include "wotlk/violethold/VioletHoldStrategy.h"
+#include "wotlk/gundrak/GundrakStrategy.h"
+#include "wotlk/hallsofstone/HallsOfStoneStrategy.h"
+#include "wotlk/hallsoflightning/HallsOfLightningStrategy.h"
+#include "wotlk/oculus/OculusStrategy.h"
+#include "wotlk/utgardepinnacle/UtgardePinnacleStrategy.h"
+#include "wotlk/cullingofstratholme/CullingOfStratholmeStrategy.h"
+#include "wotlk/forgeofsouls/ForgeOfSoulsStrategy.h"
+#include "wotlk/pitofsaron/PitOfSaronStrategy.h"
+#include "wotlk/trialofthechampion/TrialOfTheChampionStrategy.h"
 
 /*
 Full list/TODO:
 
-
-Ahn'kahet: The Old Kingdom - OK
-Elder Nadox, Prince Taldaram, Jedoga Shadowseeker, Herald Volazj, Amanitar (Heroic Only)
-Drak'Tharon Keep - DTK
-Trollgore, Novos the Summoner, King Dred, The Prophet Tharon'ja
-The Violet Hold - VH
-Erekem, Moragg, Ichoron, Xevozz, Lavanthor, Zuramat the Obliterator, Cyanigosa
-Gundrak - GD
-Slad'ran, Drakkari Colossus, Moorabi, Gal'darah, Eck the Ferocious (Heroic only)
-Halls of Stone - HoS
-Maiden of Grief, Krystallus, Tribunal of Ages, Sjonnir The Ironshaper
-Halls of Lightning - HoL
-General Bjarngrim, Volkhan, Ionar, Loken
-The Oculus - Occ
-Drakos the Interrogator, Varos Cloudstrider, Mage-Lord Urom, Ley-Guardian Eregos
-Utgarde Pinnacle - UP
-Svala Sorrowgrave, Gortok Palehoof, Skadi the Ruthless, King Ymiron
-The Culling of Stratholme - CoS
-Meathook, Salramm the Fleshcrafter, Chrono-Lord Epoch, Mal'Ganis, Infinite Corruptor (Heroic only)
 Trial of the Champion - ToC
 Alliance Champions: Deathstalker Visceri, Eressea Dawnsinger, Mokra the Skullcrusher, Runok Wildmane, Zul'tore
 Horde Champions: Ambrose Boltspark, Colosos, Jacob Alerius, Jaelyne Evensong, Lana Stouthammer
@@ -54,7 +47,7 @@ class DungeonStrategyContext : public NamedObjectContext<Strategy>
 
             // Burning Crusade
             // ...
-            
+
             // Wrath of the Lich King
             creators["wotlk-uk"] = &DungeonStrategyContext::wotlk_uk;       // Utgarde Keep
             creators["wotlk-nex"] = &DungeonStrategyContext::wotlk_nex;     // The Nexus
@@ -77,20 +70,22 @@ class DungeonStrategyContext : public NamedObjectContext<Strategy>
         static Strategy* wotlk_uk(PlayerbotAI* botAI) { return new WotlkDungeonUKStrategy(botAI); }
         static Strategy* wotlk_nex(PlayerbotAI* botAI) { return new WotlkDungeonNexStrategy(botAI); }
         static Strategy* wotlk_an(PlayerbotAI* botAI) { return new WotlkDungeonANStrategy(botAI); }
-        
-        static Strategy* wotlk_ok(PlayerbotAI* botAI) { return new WotlkDungeonUKStrategy(botAI); }
-        static Strategy* wotlk_dtk(PlayerbotAI* botAI) { return new WotlkDungeonUKStrategy(botAI); }
-        static Strategy* wotlk_vh(PlayerbotAI* botAI) { return new WotlkDungeonUKStrategy(botAI); }
-        static Strategy* wotlk_gd(PlayerbotAI* botAI) { return new WotlkDungeonUKStrategy(botAI); }
-        static Strategy* wotlk_hos(PlayerbotAI* botAI) { return new WotlkDungeonUKStrategy(botAI); }
-        static Strategy* wotlk_hol(PlayerbotAI* botAI) { return new WotlkDungeonUKStrategy(botAI); }
-        static Strategy* wotlk_occ(PlayerbotAI* botAI) { return new WotlkDungeonUKStrategy(botAI); }
-        static Strategy* wotlk_up(PlayerbotAI* botAI) { return new WotlkDungeonUKStrategy(botAI); }
-        static Strategy* wotlk_cos(PlayerbotAI* botAI) { return new WotlkDungeonUKStrategy(botAI); }
-        static Strategy* wotlk_toc(PlayerbotAI* botAI) { return new WotlkDungeonUKStrategy(botAI); }
+        static Strategy* wotlk_ok(PlayerbotAI* botAI) { return new WotlkDungeonOKStrategy(botAI); }
+        static Strategy* wotlk_dtk(PlayerbotAI* botAI) { return new WotlkDungeonDTKStrategy(botAI); }
+        static Strategy* wotlk_vh(PlayerbotAI* botAI) { return new WotlkDungeonVHStrategy(botAI); }
+        static Strategy* wotlk_gd(PlayerbotAI* botAI) { return new WotlkDungeonGDStrategy(botAI); }
+        static Strategy* wotlk_hos(PlayerbotAI* botAI) { return new WotlkDungeonHoSStrategy(botAI); }
+        static Strategy* wotlk_hol(PlayerbotAI* botAI) { return new WotlkDungeonHoLStrategy(botAI); }
+        static Strategy* wotlk_occ(PlayerbotAI* botAI) { return new WotlkDungeonOccStrategy(botAI); }
+        static Strategy* wotlk_up(PlayerbotAI* botAI) { return new WotlkDungeonUPStrategy(botAI); }
+        static Strategy* wotlk_cos(PlayerbotAI* botAI) { return new WotlkDungeonCoSStrategy(botAI); }
+        static Strategy* wotlk_fos(PlayerbotAI* botAI) { return new WotlkDungeonFoSStrategy(botAI); }
+        static Strategy* wotlk_pos(PlayerbotAI* botAI) { return new WotlkDungeonPoSStrategy(botAI); }
+        static Strategy* wotlk_toc(PlayerbotAI* botAI) { return new WotlkDungeonToCStrategy(botAI); }
+        // NYI from here down
         static Strategy* wotlk_hor(PlayerbotAI* botAI) { return new WotlkDungeonUKStrategy(botAI); }
-        static Strategy* wotlk_pos(PlayerbotAI* botAI) { return new WotlkDungeonUKStrategy(botAI); }
-        static Strategy* wotlk_fos(PlayerbotAI* botAI) { return new WotlkDungeonUKStrategy(botAI); }
+
+
 };
 
 #endif

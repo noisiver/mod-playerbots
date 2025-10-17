@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #ifndef _PLAYERBOT_SHAREDVALUECONTEXT_H
@@ -50,9 +50,12 @@ public:
     template <class T>
     Value<T>* getGlobalValue(std::string const name)
     {
-        NamedObjectContextList<UntypedValue> valueContexts;
-        valueContexts.Add(this);
+        // should never reach here
+        SharedNamedObjectContextList<UntypedValue> sValueContexts;
+        sValueContexts.Add(this);
+        NamedObjectContextList<UntypedValue> valueContexts(sValueContexts);
         PlayerbotAI* botAI = new PlayerbotAI();
+
         UntypedValue* value = valueContexts.GetContextObject(name, botAI);
         delete botAI;
         return dynamic_cast<Value<T>*>(value);

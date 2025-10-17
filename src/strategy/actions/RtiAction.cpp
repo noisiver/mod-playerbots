@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #include "RtiAction.h"
@@ -80,7 +80,7 @@ bool MarkRtiAction::Execute(Event event)
         for (uint8 i = 0; i < 8; i++)
         {
             ObjectGuid iconGUID = group->GetTargetIcon(i);
-            if (guid == unit->GetGUID())
+            if (iconGUID == unit->GetGUID())
             {
                 marked = true;
                 break;

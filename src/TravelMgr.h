@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #ifndef _PLAYERBOT_TRAVELMGR_H
@@ -10,6 +10,7 @@
 #include <random>
 
 #include "AiObject.h"
+#include "Corpse.h"
 #include "CreatureData.h"
 #include "GameObject.h"
 #include "GridDefines.h"
@@ -130,6 +131,7 @@ public:
     std::string const print();
 
     std::string const to_string();
+    std::vector<std::string> split(const std::string& s, char delimiter);
 
     void printWKT(std::vector<WorldPosition> points, std::ostringstream& out, uint32 dim = 0, bool loop = false);
     void printWKT(std::ostringstream& out) { printWKT({*this}, out); }

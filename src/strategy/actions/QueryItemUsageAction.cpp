@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #include "QueryItemUsageAction.h"
@@ -12,7 +12,35 @@
 
 bool QueryItemUsageAction::Execute(Event event)
 {
-    return true;
+    std::string param = event.getParam();
+    if (param.empty())
+    {
+        return false;
+    }
+
+    // Use parseItems() to extract item IDs from the input
+    ItemIds itemIds = chat->parseItems(param);
+    if (itemIds.empty())
+    {
+        return false;
+    }
+
+    // Process each extracted item ID (assuming single-item queries for now)
+    for (uint32 itemId : itemIds)
+    {
+        ItemTemplate const* itemTemplate = sObjectMgr->GetItemTemplate(itemId);
+        if (!itemTemplate)
+            continue;
+
+        uint32 count = GetCount(itemTemplate);
+        uint32 total = bot->GetItemCount(itemTemplate->ItemId, true);
+        std::string itemInfo = QueryItem(itemTemplate, count, total);
+
+        botAI->TellMaster(itemInfo);
+        return true; // Only process the first valid item
+    }
+
+    return false;
 }
 
 uint32 QueryItemUsageAction::GetCount(ItemTemplate const* item)

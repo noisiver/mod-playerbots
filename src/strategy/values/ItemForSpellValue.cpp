@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #include "ItemForSpellValue.h"
@@ -69,6 +69,9 @@ Item* ItemForSpellValue::Calculate()
         return nullptr;
 
     if (!strcmpi(spellInfo->SpellName[0], "disenchant"))
+        return nullptr;
+
+    if (!strcmpi(spellInfo->SpellName[0], "pick lock"))
         return nullptr;
 
     for (uint8 slot = EQUIPMENT_SLOT_START; slot < EQUIPMENT_SLOT_END; slot++)

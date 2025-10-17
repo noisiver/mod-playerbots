@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #include "ChatShortcutActions.h"
@@ -10,7 +10,7 @@
 #include "Playerbots.h"
 #include "PositionValue.h"
 
-void ReturnPositionResetAction::ResetReturnPosition()
+void PositionsResetAction::ResetReturnPosition()
 {
     PositionMap& posMap = context->GetValue<PositionMap&>("position")->Get();
     PositionInfo pos = posMap["return"];
@@ -18,12 +18,28 @@ void ReturnPositionResetAction::ResetReturnPosition()
     posMap["return"] = pos;
 }
 
-void ReturnPositionResetAction::SetReturnPosition(float x, float y, float z)
+void PositionsResetAction::SetReturnPosition(float x, float y, float z)
 {
     PositionMap& posMap = context->GetValue<PositionMap&>("position")->Get();
     PositionInfo pos = posMap["return"];
     pos.Set(x, y, z, botAI->GetBot()->GetMapId());
     posMap["return"] = pos;
+}
+
+void PositionsResetAction::ResetStayPosition()
+{
+    PositionMap& posMap = context->GetValue<PositionMap&>("position")->Get();
+    PositionInfo pos = posMap["stay"];
+    pos.Reset();
+    posMap["stay"] = pos;
+}
+
+void PositionsResetAction::SetStayPosition(float x, float y, float z)
+{
+    PositionMap& posMap = context->GetValue<PositionMap&>("position")->Get();
+    PositionInfo pos = posMap["stay"];
+    pos.Set(x, y, z, botAI->GetBot()->GetMapId());
+    posMap["stay"] = pos;
 }
 
 bool FollowChatShortcutAction::Execute(Event event)
@@ -34,13 +50,17 @@ bool FollowChatShortcutAction::Execute(Event event)
 
     // botAI->Reset();
     botAI->ChangeStrategy("+follow,-passive,-grind,-move from group", BOT_STATE_NON_COMBAT);
-    botAI->ChangeStrategy("-follow,-passive,-grind,-move from group", BOT_STATE_COMBAT);
+    botAI->ChangeStrategy("-stay,-follow,-passive,-grind,-move from group", BOT_STATE_COMBAT);
     botAI->GetAiObjectContext()->GetValue<GuidVector>("prioritized targets")->Reset();
 
     PositionMap& posMap = context->GetValue<PositionMap&>("position")->Get();
     PositionInfo pos = posMap["return"];
     pos.Reset();
     posMap["return"] = pos;
+
+    pos = posMap["stay"];
+    pos.Reset();
+    posMap["stay"] = pos;
 
     if (bot->IsInCombat())
     {
@@ -86,6 +106,7 @@ bool FollowChatShortcutAction::Execute(Event event)
         else
             botAI->TellMaster("You are too far away from me! I will there soon.");
 
+        bot->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TELEPORTED | AURA_INTERRUPT_FLAG_CHANGE_MAP);
         bot->TeleportTo(master->GetMapId(), master->GetPositionX(), master->GetPositionY(), master->GetPositionZ(),
     master->GetOrientation()); return true;
     }
@@ -103,9 +124,10 @@ bool StayChatShortcutAction::Execute(Event event)
 
     botAI->Reset();
     botAI->ChangeStrategy("+stay,-passive,-move from group", BOT_STATE_NON_COMBAT);
-    botAI->ChangeStrategy("-follow,-passive,-move from group", BOT_STATE_COMBAT);
+    botAI->ChangeStrategy("+stay,-follow,-passive,-move from group", BOT_STATE_COMBAT);
 
     SetReturnPosition(bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ());
+    SetStayPosition(bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ());
 
     botAI->TellMaster("Staying");
     return true;
@@ -133,10 +155,11 @@ bool FleeChatShortcutAction::Execute(Event event)
         return false;
 
     botAI->Reset();
-    botAI->ChangeStrategy("+follow,+passive", BOT_STATE_NON_COMBAT);
-    botAI->ChangeStrategy("+follow,+passive", BOT_STATE_COMBAT);
+    botAI->ChangeStrategy("+follow,-stay,+passive", BOT_STATE_NON_COMBAT);
+    botAI->ChangeStrategy("+follow,-stay,+passive", BOT_STATE_COMBAT);
 
     ResetReturnPosition();
+    ResetStayPosition();
 
     if (bot->GetMapId() != master->GetMapId() || bot->GetDistance(master) > sPlayerbotAIConfig->sightDistance)
     {
@@ -155,10 +178,11 @@ bool GoawayChatShortcutAction::Execute(Event event)
         return false;
 
     botAI->Reset();
-    botAI->ChangeStrategy("+runaway", BOT_STATE_NON_COMBAT);
-    botAI->ChangeStrategy("+runaway", BOT_STATE_COMBAT);
+    botAI->ChangeStrategy("+runaway,-stay", BOT_STATE_NON_COMBAT);
+    botAI->ChangeStrategy("+runaway,-stay", BOT_STATE_COMBAT);
 
     ResetReturnPosition();
+    ResetStayPosition();
 
     botAI->TellMaster("Running away");
     return true;
@@ -171,9 +195,10 @@ bool GrindChatShortcutAction::Execute(Event event)
         return false;
 
     botAI->Reset();
-    botAI->ChangeStrategy("+grind,-passive", BOT_STATE_NON_COMBAT);
+    botAI->ChangeStrategy("+grind,-passive,-stay", BOT_STATE_NON_COMBAT);
 
     ResetReturnPosition();
+    ResetStayPosition();
 
     botAI->TellMaster("Grinding");
     return true;
@@ -193,6 +218,7 @@ bool TankAttackChatShortcutAction::Execute(Event event)
     botAI->ChangeStrategy("-passive", BOT_STATE_COMBAT);
 
     ResetReturnPosition();
+    ResetStayPosition();
 
     botAI->TellMaster("Attacking");
     return true;

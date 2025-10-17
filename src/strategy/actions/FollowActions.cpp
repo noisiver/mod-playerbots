@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #include "FollowActions.h"
@@ -30,16 +30,19 @@ bool FollowAction::Execute(Event event)
         WorldLocation loc = formation->GetLocation();
         if (Formation::IsNullLocation(loc) || loc.GetMapId() == -1)
             return false;
-        
+
         MovementPriority priority = botAI->GetState() == BOT_STATE_COMBAT ? MovementPriority::MOVEMENT_COMBAT : MovementPriority::MOVEMENT_NORMAL;
         moved = MoveTo(loc.GetMapId(), loc.GetPositionX(), loc.GetPositionY(), loc.GetPositionZ(), false, false, false,
-                       true, priority);
+                       true, priority, true);
     }
 
-    if (Pet* pet = bot->GetPet())
-    {
-        botAI->PetFollow();
-    }
+    // This section has been commented out because it was forcing the pet to
+    // follow the bot on every "follow" action tick, overriding any attack or
+    // stay commands that might have been issued by the player.
+    // if (Pet* pet = bot->GetPet())
+    // {
+    //     botAI->PetFollow();
+    // }
     // if (moved)
     // botAI->SetNextCheckDelay(sPlayerbotAIConfig->reactDelay);
 
@@ -100,6 +103,10 @@ bool FollowAction::isUseful()
 
 bool FollowAction::CanDeadFollow(Unit* target)
 {
+    // In battleground, wait for spirit healer
+    if (bot->InBattleground() && !bot->IsAlive())
+        return false;
+
     // Move to corpse when dead and player is alive or not a ghost.
     if (!bot->IsAlive() && (target->IsAlive() || !target->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_GHOST)))
         return false;

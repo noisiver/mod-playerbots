@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #include "PvpValues.h"
@@ -20,6 +20,9 @@ Unit* FlagCarrierValue::Calculate()
         if (botAI->GetBot()->GetBattlegroundTypeId() == BattlegroundTypeId::BATTLEGROUND_WS)
         {
             BattlegroundWS* bg = (BattlegroundWS*)botAI->GetBot()->GetBattleground();
+
+            if (!bg)
+                return nullptr;
 
             if ((!sameTeam && bot->GetTeamId() == TEAM_HORDE || (sameTeam && bot->GetTeamId() == TEAM_ALLIANCE)) &&
                 !bg->GetFlagPickerGUID(TEAM_HORDE).IsEmpty())
@@ -43,6 +46,9 @@ Unit* FlagCarrierValue::Calculate()
         if (botAI->GetBot()->GetBattlegroundTypeId() == BATTLEGROUND_EY)
         {
             BattlegroundEY* bg = (BattlegroundEY*)botAI->GetBot()->GetBattleground();
+
+            if (!bg)
+                return nullptr;
 
             if (bg->GetFlagPickerGUID().IsEmpty())
                 return nullptr;

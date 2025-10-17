@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #include "CheatAction.h"
@@ -53,6 +53,9 @@ BotCheatMask CheatAction::GetCheatMask(std::string const cheat)
     if (cheat == "power")
         return BotCheatMask::power;
 
+    if (cheat == "raid")
+        return BotCheatMask::raid;
+
     return BotCheatMask::none;
 }
 
@@ -70,6 +73,8 @@ std::string const CheatAction::GetCheatName(BotCheatMask cheatMask)
             return "mana";
         case BotCheatMask::power:
             return "power";
+        case BotCheatMask::raid:
+            return "raid";
         default:
             return "none";
     }

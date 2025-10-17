@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #include "TrainerAction.h"
@@ -33,13 +33,18 @@ void TrainerAction::Learn(uint32 cost, TrainerSpell const* tSpell, std::ostrings
         if (spellInfo->Effects[j].Effect == SPELL_EFFECT_LEARN_SPELL)
         {
             uint32 learnedSpell = spellInfo->Effects[j].TriggerSpell;
-            bot->learnSpell(learnedSpell);
-            learned = true;
+            if (!bot->HasSpell(learnedSpell))
+            {
+                bot->learnSpell(learnedSpell);
+                learned = true;
+            }
         }
     }
 
-    if (!learned)
+    if (!learned && !bot->HasSpell(tSpell->spell))
+    {
         bot->learnSpell(tSpell->spell);
+    }
 
     msg << " - learned";
 }
@@ -162,26 +167,96 @@ bool MaintenanceAction::Execute(Event event)
         botAI->TellError("maintenance command is not allowed, please check the configuration.");
         return false;
     }
+
     botAI->TellMaster("I'm maintaining");
     PlayerbotFactory factory(bot, bot->GetLevel());
-    factory.InitBags(false);
-    factory.InitAmmo();
-    factory.InitFood();
-    factory.InitReagents();
-    factory.InitTalentsTree(true);
-    factory.InitPet();
-    factory.InitPetTalents();
-    factory.InitClassSpells();
-    factory.InitAvailableSpells();
-    factory.InitSkills();
-    factory.InitMounts();
-    factory.InitGlyphs(true);
-    if (bot->GetLevel() >= sPlayerbotAIConfig->minEnchantingBotLevel)
-    {
-        factory.ApplyEnchantAndGemsNew();
+
+    if (!botAI->IsAlt())
+    {    
+        factory.InitAttunementQuests();
+        factory.InitBags(false);
+        factory.InitAmmo();
+        factory.InitFood();
+        factory.InitReagents();
+        factory.InitConsumables();
+        factory.InitPotions();
+        factory.InitTalentsTree(true);
+        factory.InitPet();
+        factory.InitPetTalents();
+        factory.InitClassSpells();
+        factory.InitAvailableSpells();
+        factory.InitSkills();
+        factory.InitReputation();
+        factory.InitSpecialSpells();
+        factory.InitMounts();
+        factory.InitGlyphs(false);
+        factory.InitKeyring();
+        if (bot->GetLevel() >= sPlayerbotAIConfig->minEnchantingBotLevel)
+            factory.ApplyEnchantAndGemsNew();
     }
+    else 
+    {
+        if (sPlayerbotAIConfig->altMaintenanceAttunementQs)
+            factory.InitAttunementQuests();
+
+        if (sPlayerbotAIConfig->altMaintenanceBags)
+            factory.InitBags(false);
+
+        if (sPlayerbotAIConfig->altMaintenanceAmmo)
+            factory.InitAmmo();
+
+        if (sPlayerbotAIConfig->altMaintenanceFood)
+            factory.InitFood();
+
+        if (sPlayerbotAIConfig->altMaintenanceReagents)
+            factory.InitReagents();
+
+        if (sPlayerbotAIConfig->altMaintenanceConsumables)
+            factory.InitConsumables();
+
+        if (sPlayerbotAIConfig->altMaintenancePotions)
+            factory.InitPotions();
+
+        if (sPlayerbotAIConfig->altMaintenanceTalentTree)
+            factory.InitTalentsTree(true);
+
+        if (sPlayerbotAIConfig->altMaintenancePet)
+            factory.InitPet();
+
+        if (sPlayerbotAIConfig->altMaintenancePetTalents)
+            factory.InitPetTalents();
+
+        if (sPlayerbotAIConfig->altMaintenanceClassSpells)
+            factory.InitClassSpells();
+
+        if (sPlayerbotAIConfig->altMaintenanceAvailableSpells)
+            factory.InitAvailableSpells();
+
+        if (sPlayerbotAIConfig->altMaintenanceSkills)
+            factory.InitSkills();
+
+        if (sPlayerbotAIConfig->altMaintenanceReputation)
+            factory.InitReputation();
+
+        if (sPlayerbotAIConfig->altMaintenanceSpecialSpells)
+            factory.InitSpecialSpells();
+
+        if (sPlayerbotAIConfig->altMaintenanceMounts)
+            factory.InitMounts();
+
+        if (sPlayerbotAIConfig->altMaintenanceGlyphs)
+            factory.InitGlyphs(false);
+
+        if (sPlayerbotAIConfig->altMaintenanceKeyring)
+            factory.InitKeyring();
+
+        if (sPlayerbotAIConfig->altMaintenanceGemsEnchants && bot->GetLevel() >= sPlayerbotAIConfig->minEnchantingBotLevel)
+            factory.ApplyEnchantAndGemsNew();
+    }
+
     bot->DurabilityRepairAll(false, 1.0f, false);
     bot->SendTalentsInfoData(false);
+
     return true;
 }
 
@@ -202,6 +277,14 @@ bool AutoGearAction::Execute(Event event)
         botAI->TellError("autogear command is not allowed, please check the configuration.");
         return false;
     }
+
+    if (!sPlayerbotAIConfig->autoGearCommandAltBots &&
+        !sPlayerbotAIConfig->IsInRandomAccountList(bot->GetSession()->GetAccountId()))
+    {
+        botAI->TellError("You cannot use autogear on alt bots.");
+        return false;
+    }
+
     botAI->TellMaster("I'm auto gearing");
     uint32 gs = sPlayerbotAIConfig->autoGearScoreLimit == 0
                     ? 0
