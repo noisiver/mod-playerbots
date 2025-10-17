@@ -12,7 +12,6 @@
 #include "AiFactory.h"
 #include "ArenaTeam.h"
 #include "ArenaTeamMgr.h"
-#include "Config.h"
 #include "DBCStores.h"
 #include "DBCStructure.h"
 #include "GuildMgr.h"
