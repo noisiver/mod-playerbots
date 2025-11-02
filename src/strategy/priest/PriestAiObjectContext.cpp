@@ -1,10 +1,11 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #include "PriestAiObjectContext.h"
 
+#include "GenericPriestStrategy.h"
 #include "HolyPriestStrategy.h"
 #include "NamedObjectContext.h"
 #include "Playerbots.h"
@@ -30,6 +31,7 @@ public:
         creators["boost"] = &PriestStrategyFactoryInternal::boost;
         creators["rshadow"] = &PriestStrategyFactoryInternal::rshadow;
         creators["cc"] = &PriestStrategyFactoryInternal::cc;
+        creators["healer dps"] = &PriestStrategyFactoryInternal::healer_dps;
     }
 
 private:
@@ -42,6 +44,7 @@ private:
     static Strategy* pull(PlayerbotAI* botAI) { return new PullStrategy(botAI, "shoot"); }
     static Strategy* shadow_debuff(PlayerbotAI* botAI) { return new ShadowPriestDebuffStrategy(botAI); }
     static Strategy* cure(PlayerbotAI* botAI) { return new PriestCureStrategy(botAI); }
+    static Strategy* healer_dps(PlayerbotAI* botAI) { return new PriestHealerDpsStrategy(botAI); }
 };
 
 class PriestCombatStrategyFactoryInternal : public NamedObjectContext<Strategy>
@@ -102,6 +105,7 @@ public:
         creators["silence"] = &PriestTriggerFactoryInternal::silence;
         creators["silence on enemy healer"] = &PriestTriggerFactoryInternal::silence_on_enemy_healer;
         creators["shadowfiend"] = &PriestTriggerFactoryInternal::shadowfiend;
+        creators["mind sear channel check"] = &PriestTriggerFactoryInternal::mind_sear_channel_check;
     }
 
 private:
@@ -145,6 +149,7 @@ private:
     static Trigger* silence(PlayerbotAI* botAI) { return new SilenceTrigger(botAI); }
     static Trigger* chastise(PlayerbotAI* botAI) { return new ChastiseTrigger(botAI); }
     static Trigger* binding_heal(PlayerbotAI* botAI) { return new BindingHealTrigger(botAI); }
+    static Trigger* mind_sear_channel_check(PlayerbotAI* botAI) { return new MindSearChannelCheckTrigger(botAI); }
 };
 
 class PriestAiObjectContextInternal : public NamedObjectContext<Action>
@@ -172,6 +177,7 @@ public:
         creators["power word: shield on party"] = &PriestAiObjectContextInternal::power_word_shield_on_party;
         creators["power word: shield on almost full health below"] =
             &PriestAiObjectContextInternal::power_word_shield_on_almost_full_health_below;
+        creators["power word: shield on not full"] = &PriestAiObjectContextInternal::power_word_shield_on_not_full;
         creators["renew"] = &PriestAiObjectContextInternal::renew;
         creators["renew on party"] = &PriestAiObjectContextInternal::renew_on_party;
         creators["greater heal"] = &PriestAiObjectContextInternal::greater_heal;
@@ -192,7 +198,7 @@ public:
         creators["fade"] = &PriestAiObjectContextInternal::fade;
         creators["inner fire"] = &PriestAiObjectContextInternal::inner_fire;
         creators["resurrection"] = &PriestAiObjectContextInternal::resurrection;
-        creators["circle of healing"] = &PriestAiObjectContextInternal::circle_of_healing;
+        creators["circle of healing on party"] = &PriestAiObjectContextInternal::circle_of_healing;
         creators["psychic scream"] = &PriestAiObjectContextInternal::psychic_scream;
         creators["vampiric touch"] = &PriestAiObjectContextInternal::vampiric_touch;
         creators["vampiric touch on attacker"] = &PriestAiObjectContextInternal::vampiric_touch_on_attacker;
@@ -282,8 +288,9 @@ private:
     }
     static Action* power_word_shield_on_almost_full_health_below(PlayerbotAI* ai)
     {
-        return new CastPowerWordShieldOnAlmostFullHealthBelow(ai);
+        return new CastPowerWordShieldOnAlmostFullHealthBelowAction(ai);
     }
+    static Action* power_word_shield_on_not_full(PlayerbotAI* ai) { return new CastPowerWordShieldOnNotFullAction(ai); }
     static Action* renew(PlayerbotAI* botAI) { return new CastRenewAction(botAI); }
     static Action* renew_on_party(PlayerbotAI* botAI) { return new CastRenewOnPartyAction(botAI); }
     static Action* greater_heal(PlayerbotAI* botAI) { return new CastGreaterHealAction(botAI); }
@@ -343,10 +350,44 @@ private:
     static Action* guardian_spirit_on_party(PlayerbotAI* ai) { return new CastGuardianSpiritOnPartyAction(ai); }
 };
 
-PriestAiObjectContext::PriestAiObjectContext(PlayerbotAI* botAI) : AiObjectContext(botAI)
+SharedNamedObjectContextList<Strategy> PriestAiObjectContext::sharedStrategyContexts;
+SharedNamedObjectContextList<Action> PriestAiObjectContext::sharedActionContexts;
+SharedNamedObjectContextList<Trigger> PriestAiObjectContext::sharedTriggerContexts;
+SharedNamedObjectContextList<UntypedValue> PriestAiObjectContext::sharedValueContexts;
+
+PriestAiObjectContext::PriestAiObjectContext(PlayerbotAI* botAI)
+    : AiObjectContext(botAI, sharedStrategyContexts, sharedActionContexts, sharedTriggerContexts, sharedValueContexts)
 {
+}
+
+void PriestAiObjectContext::BuildSharedContexts()
+{
+    BuildSharedStrategyContexts(sharedStrategyContexts);
+    BuildSharedActionContexts(sharedActionContexts);
+    BuildSharedTriggerContexts(sharedTriggerContexts);
+    BuildSharedValueContexts(sharedValueContexts);
+}
+
+void PriestAiObjectContext::BuildSharedStrategyContexts(SharedNamedObjectContextList<Strategy>& strategyContexts)
+{
+    AiObjectContext::BuildSharedStrategyContexts(strategyContexts);
     strategyContexts.Add(new PriestStrategyFactoryInternal());
     strategyContexts.Add(new PriestCombatStrategyFactoryInternal());
+}
+
+void PriestAiObjectContext::BuildSharedActionContexts(SharedNamedObjectContextList<Action>& actionContexts)
+{
+    AiObjectContext::BuildSharedActionContexts(actionContexts);
     actionContexts.Add(new PriestAiObjectContextInternal());
+}
+
+void PriestAiObjectContext::BuildSharedTriggerContexts(SharedNamedObjectContextList<Trigger>& triggerContexts)
+{
+    AiObjectContext::BuildSharedTriggerContexts(triggerContexts);
     triggerContexts.Add(new PriestTriggerFactoryInternal());
+}
+
+void PriestAiObjectContext::BuildSharedValueContexts(SharedNamedObjectContextList<UntypedValue>& valueContexts)
+{
+    AiObjectContext::BuildSharedValueContexts(valueContexts);
 }

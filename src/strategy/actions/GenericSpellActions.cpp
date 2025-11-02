@@ -1,9 +1,11 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #include "GenericSpellActions.h"
+
+#include <ctime>
 
 #include "Event.h"
 #include "ItemTemplate.h"
@@ -13,6 +15,14 @@
 #include "Playerbots.h"
 #include "ServerFacade.h"
 #include "WorldPacket.h"
+#include "Group.h"
+#include "Chat.h"
+#include "Language.h"
+#include "GenericBuffUtils.h"
+#include "PlayerbotAI.h"
+
+using ai::buff::MakeAuraQualifierForBuff;
+using ai::buff::UpgradeToGroupIfAppropriate;
 
 CastSpellAction::CastSpellAction(PlayerbotAI* botAI, std::string const spell)
     : Action(botAI, spell), range(botAI->GetRange("spell")), spell(spell)
@@ -92,7 +102,7 @@ bool CastSpellAction::isPossible()
         return false;
     }
 
-    Spell* currentSpell = bot->GetCurrentSpell(CURRENT_GENERIC_SPELL);
+    // Spell* currentSpell = bot->GetCurrentSpell(CURRENT_GENERIC_SPELL); //not used, line marked for removal.
     return botAI->CanCastSpell(spell, GetTarget());
 }
 
@@ -162,8 +172,14 @@ bool CastMeleeDebuffSpellAction::isUseful()
 
 bool CastAuraSpellAction::isUseful()
 {
-    return GetTarget() && (GetTarget() != nullptr) && CastSpellAction::isUseful() &&
-           !botAI->HasAura(spell, GetTarget(), false, isOwner);
+    if (!GetTarget() || !CastSpellAction::isUseful())
+        return false;
+    Aura* aura = botAI->GetAura(spell, GetTarget(), isOwner, checkDuration);
+    if (!aura)
+        return true;
+    if (beforeDuration && aura->GetDuration() < beforeDuration)
+        return true;
+    return false;
 }
 
 CastEnchantItemAction::CastEnchantItemAction(PlayerbotAI* botAI, std::string const spell)
@@ -190,8 +206,8 @@ bool CastEnchantItemAction::isPossible()
 }
 
 CastHealingSpellAction::CastHealingSpellAction(PlayerbotAI* botAI, std::string const spell, uint8 estAmount,
-                                               HealingManaEfficiency manaEfficiency)
-    : CastAuraSpellAction(botAI, spell, true), estAmount(estAmount), manaEfficiency(manaEfficiency)
+                                               HealingManaEfficiency manaEfficiency, bool isOwner)
+    : CastAuraSpellAction(botAI, spell, isOwner), estAmount(estAmount), manaEfficiency(manaEfficiency)
 {
     range = botAI->GetRange("heal");
 }
@@ -210,10 +226,23 @@ Value<Unit*>* CurePartyMemberAction::GetTargetValue()
     return context->GetValue<Unit*>("party member to dispel", dispelType);
 }
 
+// Make Bots Paladin, druid, mage use the greater buff rank spell
+// TODO Priest doen't verify il he have components
 Value<Unit*>* BuffOnPartyAction::GetTargetValue()
 {
-    return context->GetValue<Unit*>("party member without aura", spell);
+    return context->GetValue<Unit*>("party member without aura", MakeAuraQualifierForBuff(spell));
 }
+
+bool BuffOnPartyAction::Execute(Event event)
+{
+    std::string castName = spell; // default = mono
+
+    auto SendGroupRP = ai::chat::MakeGroupAnnouncer(bot);
+    castName = ai::buff::UpgradeToGroupIfAppropriate(bot, botAI, castName, /*announceOnMissing=*/true, SendGroupRP);
+
+    return botAI->CastSpell(castName, GetTarget());
+}
+// End greater buff fix
 
 CastShootAction::CastShootAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "shoot")
 {
@@ -251,8 +280,8 @@ Value<Unit*>* CastDebuffSpellOnMeleeAttackerAction::GetTargetValue()
     return context->GetValue<Unit*>("melee attacker without aura", spell);
 }
 
-CastBuffSpellAction::CastBuffSpellAction(PlayerbotAI* botAI, std::string const spell, bool checkIsOwner)
-    : CastAuraSpellAction(botAI, spell, checkIsOwner)
+CastBuffSpellAction::CastBuffSpellAction(PlayerbotAI* botAI, std::string const spell, bool checkIsOwner, uint32 beforeDuration)
+    : CastAuraSpellAction(botAI, spell, checkIsOwner, false, beforeDuration)
 {
     range = botAI->GetRange("spell");
 }
@@ -293,15 +322,14 @@ bool CastVehicleSpellAction::Execute(Event event)
 bool UseTrinketAction::Execute(Event event)
 {
     Item* trinket1 = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_TRINKET1);
-    
+
     if (trinket1 && UseTrinket(trinket1))
         return true;
 
     Item* trinket2 = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_TRINKET2);
-    
     if (trinket2 && UseTrinket(trinket2))
         return true;
-    
+
     return false;
 }
 
@@ -315,7 +343,7 @@ bool UseTrinketAction::UseTrinket(Item* item)
 
     uint8 bagIndex = item->GetBagSlot();
     uint8 slot = item->GetSlot();
-    uint8 spell_index = 0;
+    // uint8 spell_index = 0; //not used, line marked for removal.
     uint8 cast_count = 1;
     ObjectGuid item_guid = item->GetGUID();
     uint32 glyphIndex = 0;
@@ -327,6 +355,33 @@ bool UseTrinketAction::UseTrinket(Item* item)
         if (item->GetTemplate()->Spells[i].SpellId > 0 && item->GetTemplate()->Spells[i].SpellTrigger == ITEM_SPELLTRIGGER_ON_USE)
         {
             spellId = item->GetTemplate()->Spells[i].SpellId;
+            const SpellInfo* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+
+            if (!spellInfo || !spellInfo->IsPositive())
+                return false;
+
+            bool applyAura = false;
+            for (int i = 0; i < MAX_SPELL_EFFECTS; i++)
+            {
+                const SpellEffectInfo& effectInfo = spellInfo->Effects[i];
+                if (effectInfo.Effect == SPELL_EFFECT_APPLY_AURA) {
+                    applyAura = true;
+                    break;
+                }
+            }
+
+            if (!applyAura)
+                return false;
+
+            uint32 spellProcFlag = spellInfo->ProcFlags;
+
+            // Handle items with procflag "if you kill a target that grants honor or experience"
+            // Bots will "learn" the trinket proc, so CanCastSpell() will be true
+            // e.g. on Item https://www.wowhead.com/wotlk/item=44074/oracle-talisman-of-ablution leading to
+            // constant casting of the proc spell onto themselfes https://www.wowhead.com/wotlk/spell=59787/oracle-ablutions
+            // This will lead to multiple hundreds of entries in m_appliedAuras -> Once killing an enemy -> Big diff time spikes
+            if (spellProcFlag != 0) return false;
+
             if (!botAI->CanCastSpell(spellId, bot, false))
             {
                 return false;
@@ -339,17 +394,8 @@ bool UseTrinketAction::UseTrinket(Item* item)
     WorldPacket packet(CMSG_USE_ITEM);
     packet << bagIndex << slot << cast_count << spellId << item_guid << glyphIndex << castFlags;
 
-    Unit* target = AI_VALUE(Unit*, "current target");
-    if (target)
-    {
-        targetFlag = TARGET_FLAG_UNIT;
-        packet << targetFlag << target->GetGUID().WriteAsPacked();
-    }
-    else 
-    {
-        targetFlag = TARGET_FLAG_NONE;
-        packet << targetFlag << bot->GetPackGUID();
-    }
+    targetFlag = TARGET_FLAG_NONE;
+    packet << targetFlag << bot->GetPackGUID();
     bot->GetSession()->HandleUseItemOpcode(packet);
     return true;
 }

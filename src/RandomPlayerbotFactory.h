@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #ifndef _PLAYERBOT_RANDOMPLAYERBOTFACTORY_H
@@ -54,6 +54,8 @@ public:
     static void CreateRandomGuilds();
     static void CreateRandomArenaTeams(ArenaType slot, uint32 count);
     static std::string const CreateRandomGuildName();
+    static uint32 CalculateTotalAccountCount();
+    static uint32 CalculateAvailableCharsPerAccount();
 
 private:
     std::string const CreateRandomBotName(NameRaceAndGender raceAndGender);

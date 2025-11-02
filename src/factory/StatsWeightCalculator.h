@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #ifndef _PLAYERBOT_GEARSCORECALCULATOR_H
@@ -15,7 +15,7 @@
 
 enum StatsOverflowThreshold
 {
-    SPELL_HIT_OVERFLOW = 17,
+    SPELL_HIT_OVERFLOW = 14,
     MELEE_HIT_OVERFLOW = 8,
     RANGED_HIT_OVERFLOW = 8,
     EXPERTISE_OVERFLOW = 26,
@@ -28,19 +28,20 @@ class StatsWeightCalculator
 public:
     StatsWeightCalculator(Player* player);
     void Reset();
-    float CalculateItem(uint32 itemId);
+    float CalculateItem(uint32 itemId, int32 randomPropertyId = 0);
     float CalculateEnchant(uint32 enchantId);
 
     void SetOverflowPenalty(bool apply) { enable_overflow_penalty_ = apply; }
     void SetItemSetBonus(bool apply) { enable_item_set_bonus_ = apply; }
     void SetQualityBlend(bool apply) { enable_quality_blend_ = apply; }
 
-private:
+    private:
     void GenerateWeights(Player* player);
     void GenerateBasicWeights(Player* player);
     void GenerateAdditionalWeights(Player* player);
 
-    void CalculateItemSetBonus(Player* player, ItemTemplate const* proto);
+    void CalculateRandomProperty(int32 randomPropertyId, uint32 itemId);
+    void CalculateItemSetMod(Player* player, ItemTemplate const* proto);
     void CalculateSocketBonus(Player* player, ItemTemplate const* proto);
 
     void CalculateItemTypePenalty(ItemTemplate const* proto);
@@ -48,12 +49,15 @@ private:
     bool NotBestArmorType(uint32 item_subclass_armor);
 
     void ApplyOverflowPenalty(Player* player);
+    void ApplyWeightFinetune(Player* player);
 
 private:
     Player* player_;
     CollectorType type_;
+    CollectorType hitOverflowType_;
     std::unique_ptr<StatsCollector> collector_;
     uint8 cls;
+    uint8 lvl;
     int tab;
     bool enable_overflow_penalty_;
     bool enable_item_set_bonus_;

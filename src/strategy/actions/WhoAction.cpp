@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #include "WhoAction.h"
@@ -117,7 +117,7 @@ std::string const WhoAction::QuerySpec(std::string const text)
     out << "|h|cffffffff" << chat->FormatRace(bot->getRace()) << " [" << (bot->getGender() == GENDER_MALE ? "M" : "F")
         << "] " << chat->FormatClass(bot, spec);
     out << " (|h|cff00ff00" << (uint32)bot->GetLevel() << "|h|cffffffff lvl), ";
-    out << "|h|cff00ff00" << botAI->GetEquipGearScore(bot, false, false) << "|h|cffffffff GS (";
+    out << "|h|cff00ff00" << botAI->GetEquipGearScore(bot/*, false, false*/) << "|h|cffffffff GS (";
 
     ItemCountByQuality visitor;
     IterateItems(&visitor, ITERATE_ITEMS_IN_EQUIP);

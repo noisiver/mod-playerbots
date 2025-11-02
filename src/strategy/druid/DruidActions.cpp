@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #include "DruidActions.h"
@@ -47,4 +47,35 @@ bool CastRebirthAction::isUseful()
 {
     return CastSpellAction::isUseful() &&
            AI_VALUE2(float, "distance", GetTargetName()) <= sPlayerbotAIConfig->spellDistance;
+}
+
+Unit* CastRejuvenationOnNotFullAction::GetTarget()
+{
+    Group* group = bot->GetGroup();
+    MinValueCalculator calc(100);
+    for (GroupReference* gref = group->GetFirstMember(); gref; gref = gref->next())
+    {
+        Player* player = gref->GetSource();
+        if (!player)
+            continue;
+        if (player->isDead() || player->IsFullHealth())
+        {
+            continue;
+        }
+        if (player->GetDistance2d(bot) > sPlayerbotAIConfig->spellDistance)
+        {
+            continue;
+        }
+        if (botAI->HasAura("rejuvenation", player))
+        {
+            continue;
+        }
+        calc.probe(player->GetHealthPct(), player);
+    }
+    return (Unit*)calc.param;
+}
+
+bool CastRejuvenationOnNotFullAction::isUseful()
+{
+    return GetTarget();
 }

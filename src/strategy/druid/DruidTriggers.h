@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #ifndef _PLAYERBOT_DRUIDTRIGGERS_H
@@ -12,6 +12,8 @@
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
 #include "SharedDefines.h"
+#include "Trigger.h"
+#include <set>
 
 class PlayerbotAI;
 
@@ -75,8 +77,6 @@ class MoonfireTrigger : public DebuffTrigger
 {
 public:
     MoonfireTrigger(PlayerbotAI* botAI) : DebuffTrigger(botAI, "moonfire", 1, true) {}
-
-    bool IsActive() override;
 };
 
 class FaerieFireTrigger : public DebuffTrigger
@@ -115,10 +115,10 @@ public:
     SavageRoarTrigger(PlayerbotAI* botAI) : BuffTrigger(botAI, "savage roar") {}
 };
 
-class NaturesGraspTrigger : public BoostTrigger
+class NaturesGraspTrigger : public BuffTrigger
 {
 public:
-    NaturesGraspTrigger(PlayerbotAI* botAI) : BoostTrigger(botAI, "nature's grasp") {}
+    NaturesGraspTrigger(PlayerbotAI* botAI) : BuffTrigger(botAI, "nature's grasp") {}
 };
 
 class EntanglingRootsTrigger : public HasCcTargetTrigger
@@ -252,17 +252,32 @@ public:
             return false;
 
         Aura* roar = botAI->GetAura("savage roar", bot);
-        bool roarCheck = !roar || roar->GetDuration() > 8000;
+        bool roarCheck = !roar || roar->GetDuration() > 10000;
         if (!roarCheck)
             return false;
 
         Aura* rip = botAI->GetAura("rip", target, true);
-        bool ripCheck = !rip || rip->GetDuration() > 8000;
+        bool ripCheck = !rip || rip->GetDuration() > 10000;
         if (!ripCheck)
             return false;
 
         return true;
     }
+};
+
+class HurricaneChannelCheckTrigger : public Trigger
+{
+public:
+    HurricaneChannelCheckTrigger(PlayerbotAI* botAI, uint32 minEnemies = 2)
+        : Trigger(botAI, "hurricane channel check"), minEnemies(minEnemies)
+    {
+    }
+
+    bool IsActive() override;
+
+protected:
+    uint32 minEnemies;
+    static const std::set<uint32> HURRICANE_SPELL_IDS;
 };
 
 #endif

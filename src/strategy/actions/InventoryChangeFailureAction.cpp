@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #include "InventoryChangeFailureAction.h"
@@ -75,7 +75,7 @@ bool InventoryChangeFailureAction::Execute(Event event)
         messages[EQUIP_ERR_BAG_FULL4] = messages[EQUIP_ERR_BAG_FULL];
         messages[EQUIP_ERR_ITEM_SOLD_OUT] = messages[EQUIP_ERR_ITEM_IS_CURRENTLY_SOLD_OUT];
         messages[EQUIP_ERR_OBJECT_IS_BUSY] = "This object is busy";
-        messages[EQUIP_ERR_NOT_IN_COMBAT] = "I am not in combat";
+        messages[EQUIP_ERR_NOT_IN_COMBAT] = "I am in combat";
         messages[EQUIP_ERR_NOT_WHILE_DISARMED] = "Cannot do while disarmed";
         messages[EQUIP_ERR_BAG_FULL6] = messages[EQUIP_ERR_BAG_FULL];
         messages[EQUIP_ERR_CANT_EQUIP_RANK] = "Not enough rank";

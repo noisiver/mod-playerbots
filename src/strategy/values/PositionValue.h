@@ -1,11 +1,12 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #ifndef _PLAYERBOT_POSITIONVALUE_H
 #define _PLAYERBOT_POSITIONVALUE_H
 
+#include "NamedObjectContext.h"
 #include "TravelMgr.h"
 #include "Value.h"
 
@@ -14,9 +15,13 @@ class PlayerbotAI;
 class PositionInfo
 {
 public:
-    PositionInfo() : valueSet(false), x(0), y(0), z(0), mapId(0) {}
+    PositionInfo() : x(0), y(0), z(0), mapId(0), valueSet(false) {}
+    PositionInfo(float x, float y, float z, uint32 mapId, bool valueSet = true)
+        : x(x), y(y), z(z), mapId(mapId), valueSet(valueSet)
+    {
+    }
     PositionInfo(PositionInfo const& other)
-        : valueSet(other.valueSet), x(other.x), y(other.y), z(other.z), mapId(other.mapId)
+        : x(other.x), y(other.y), z(other.z), mapId(other.mapId), valueSet(other.valueSet)
     {
     }
 
@@ -36,8 +41,8 @@ public:
     float x;
     float y;
     float z;
-    bool valueSet;
     uint32 mapId;
+    bool valueSet;
 };
 
 typedef std::map<std::string, PositionInfo> PositionMap;
@@ -70,6 +75,15 @@ public:
     }
 
     WorldPosition Calculate() override;
+};
+
+class SinglePositionValue : public CalculatedValue<PositionInfo>, public Qualified
+{
+public:
+    SinglePositionValue(PlayerbotAI* ai, std::string name = "pos") : CalculatedValue(ai, name), Qualified() {};
+    virtual PositionInfo Calculate() override;
+    virtual void Set(PositionInfo value) override;
+    virtual void Reset() override;
 };
 
 #endif

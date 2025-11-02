@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #ifndef _PLAYERBOT_GENERICSPELLACTIONS_H
@@ -28,6 +28,7 @@ public:
     ActionThreatType getThreatType() override { return ActionThreatType::Single; }
 
     NextAction** getPrerequisites() override;
+    std::string const getSpell() { return spell; }
 
 protected:
     std::string spell;
@@ -37,16 +38,20 @@ protected:
 class CastAuraSpellAction : public CastSpellAction
 {
 public:
-    CastAuraSpellAction(PlayerbotAI* botAI, std::string const spell, bool isOwner = false)
+    CastAuraSpellAction(PlayerbotAI* botAI, std::string const spell, bool isOwner = false, bool checkDuration = false, uint32 beforeDuration = 0)
         : CastSpellAction(botAI, spell)
     {
         this->isOwner = isOwner;
+        this->beforeDuration = beforeDuration;
+        this->checkDuration = checkDuration;
     }
 
     bool isUseful() override;
 
 protected:
     bool isOwner;
+    bool checkDuration;
+    uint32 beforeDuration;
 };
 
 class CastMeleeSpellAction : public CastSpellAction
@@ -107,7 +112,7 @@ public:
 class CastBuffSpellAction : public CastAuraSpellAction
 {
 public:
-    CastBuffSpellAction(PlayerbotAI* botAI, std::string const spell, bool checkIsOwner = false);
+    CastBuffSpellAction(PlayerbotAI* botAI, std::string const spell, bool checkIsOwner = false, uint32 beforeDuration = 0);
 
     std::string const GetTargetName() override { return "self target"; }
 };
@@ -125,7 +130,7 @@ class CastHealingSpellAction : public CastAuraSpellAction
 {
 public:
     CastHealingSpellAction(PlayerbotAI* botAI, std::string const spell, uint8 estAmount = 15.0f,
-                           HealingManaEfficiency manaEfficiency = HealingManaEfficiency::MEDIUM);
+                           HealingManaEfficiency manaEfficiency = HealingManaEfficiency::MEDIUM, bool isOwner = true);
 
     std::string const GetTargetName() override { return "self target"; }
     bool isUseful() override;
@@ -173,8 +178,8 @@ class HealPartyMemberAction : public CastHealingSpellAction, public PartyMemberA
 {
 public:
     HealPartyMemberAction(PlayerbotAI* botAI, std::string const spell, uint8 estAmount = 15.0f,
-                          HealingManaEfficiency manaEfficiency = HealingManaEfficiency::MEDIUM)
-        : CastHealingSpellAction(botAI, spell, estAmount, manaEfficiency), PartyMemberActionNameSupport(spell)
+                          HealingManaEfficiency manaEfficiency = HealingManaEfficiency::MEDIUM, bool isOwner = true)
+        : CastHealingSpellAction(botAI, spell, estAmount, manaEfficiency, isOwner), PartyMemberActionNameSupport(spell)
     {
     }
 
@@ -210,17 +215,18 @@ protected:
     uint32 dispelType;
 };
 
+// Make Bots Paladin, druid, mage use the greater buff rank spell
 class BuffOnPartyAction : public CastBuffSpellAction, public PartyMemberActionNameSupport
 {
 public:
     BuffOnPartyAction(PlayerbotAI* botAI, std::string const spell)
-        : CastBuffSpellAction(botAI, spell), PartyMemberActionNameSupport(spell)
-    {
-    }
+        : CastBuffSpellAction(botAI, spell), PartyMemberActionNameSupport(spell) { }
 
     Value<Unit*>* GetTargetValue() override;
+    bool Execute(Event event) override;
     std::string const getName() override { return PartyMemberActionNameSupport::getName(); }
 };
+// End Fix
 
 class CastShootAction : public CastSpellAction
 {

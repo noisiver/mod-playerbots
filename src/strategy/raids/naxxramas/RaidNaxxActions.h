@@ -64,7 +64,8 @@ public:
         this->prev_phase = 0;
         this->prev_erupt = 0;
         this->prev_timer = 0;
-        waypoints.push_back(std::make_pair(2793.58f, -3665.93f));
+        ResetSafe();
+        waypoints.push_back(std::make_pair(2794.88f, -3668.12f));
         waypoints.push_back(std::make_pair(2775.49f, -3674.43f));
         waypoints.push_back(std::make_pair(2762.30f, -3684.59f));
         waypoints.push_back(std::make_pair(2755.99f, -3703.96f));

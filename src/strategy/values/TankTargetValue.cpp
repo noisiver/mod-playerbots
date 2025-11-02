@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #include "TankTargetValue.h"
@@ -73,17 +73,26 @@ public:
     bool IsBetter(Unit* new_unit, Unit* old_unit)
     {
         Player* bot = botAI->GetBot();
+        // if group has multiple tanks, main tank just focus on the current target
+        Unit* currentTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("current target")->Get();
+        if (currentTarget && botAI->IsMainTank(bot) && botAI->GetGroupTankNum(bot) > 1)
+        {
+            if (old_unit == currentTarget)
+                return false;
+            if (new_unit == currentTarget)
+                return true;
+        }
         float new_threat = new_unit->GetThreatMgr().GetThreat(bot);
         float old_threat = old_unit->GetThreatMgr().GetThreat(bot);
         float new_dis = bot->GetDistance(new_unit);
         float old_dis = bot->GetDistance(old_unit);
         // hasAggro? -> withinMelee? -> threat
-        if (GetIntervalLevel(new_unit) > GetIntervalLevel(old_unit))
+        if (GetIntervalLevel(new_unit) != GetIntervalLevel(old_unit))
         {
-            return true;
+            return GetIntervalLevel(new_unit) > GetIntervalLevel(old_unit);
         }
         int32_t interval = GetIntervalLevel(new_unit);
-        if (interval == 1)
+        if (interval == 2)
         {
             return new_dis < old_dis;
         }
@@ -92,6 +101,10 @@ public:
     int32_t GetIntervalLevel(Unit* unit)
     {
         if (!botAI->HasAggro(unit))
+        {
+            return 2;
+        }
+        if (botAI->GetBot()->IsWithinMeleeRange(unit))
         {
             return 1;
         }

@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #include "UseMeetingStoneAction.h"
@@ -11,6 +11,7 @@
 #include "GridNotifiersImpl.h"
 #include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
+#include "PositionValue.h"
 
 bool UseMeetingStoneAction::Execute(Event event)
 {
@@ -47,7 +48,7 @@ bool UseMeetingStoneAction::Execute(Event event)
         return false;
 
     GameObjectTemplate const* goInfo = gameObject->GetGOInfo();
-    if (!goInfo || goInfo->type != GAMEOBJECT_TYPE_SUMMONING_RITUAL)
+    if (!goInfo || goInfo->entry != 179944)
         return false;
 
     return Teleport(master, bot);
@@ -109,7 +110,7 @@ bool SummonAction::SummonUsingGos(Player* summoner, Player* player)
     std::list<GameObject*> targets;
     AnyGameObjectInObjectRangeCheck u_check(summoner, sPlayerbotAIConfig->sightDistance);
     Acore::GameObjectListSearcher<AnyGameObjectInObjectRangeCheck> searcher(summoner, targets, u_check);
-    Cell::VisitAllObjects(summoner, searcher, sPlayerbotAIConfig->sightDistance);
+    Cell::VisitObjects(summoner, searcher, sPlayerbotAIConfig->sightDistance);
 
     for (GameObject* go : targets)
     {
@@ -129,7 +130,7 @@ bool SummonAction::SummonUsingNpcs(Player* summoner, Player* player)
     std::list<Unit*> targets;
     Acore::AnyUnitInObjectRangeCheck u_check(summoner, sPlayerbotAIConfig->sightDistance);
     Acore::UnitListSearcher<Acore::AnyUnitInObjectRangeCheck> searcher(summoner, targets, u_check);
-    Cell::VisitAllObjects(summoner, searcher, sPlayerbotAIConfig->sightDistance);
+    Cell::VisitObjects(summoner, searcher, sPlayerbotAIConfig->sightDistance);
 
     for (Unit* unit : targets)
     {
@@ -165,16 +166,10 @@ bool SummonAction::SummonUsingNpcs(Player* summoner, Player* player)
 
 bool SummonAction::Teleport(Player* summoner, Player* player)
 {
-    Player* master = GetMaster();
-    // if (master->GetMap() && master->GetMap()->IsDungeon()) {
-    //     InstanceMap* map = master->GetMap()->ToInstanceMap();
-    //     if (map) {
-    //         if (map->CannotEnter(player, true) == Map::CANNOT_ENTER_MAX_PLAYERS) {
-    //             botAI->TellError("I can not enter this dungeon");
-    //                 return false;
-    //         }
-    //     }
-    // }
+    // Player* master = GetMaster();
+    if (!summoner)
+        return false;
+
     if (player->GetVehicle())
     {
         botAI->TellError("You cannot summon me while I'm on a vehicle");
@@ -197,13 +192,13 @@ bool SummonAction::Teleport(Player* summoner, Player* player)
                         ->botRepairWhenSummon)  // .conf option to repair bot gear when summoned 0 = off, 1 = on
                     bot->DurabilityRepairAll(false, 1.0f, false);
 
-                if (master->IsInCombat() && !sPlayerbotAIConfig->allowSummonInCombat)
+                if (summoner->IsInCombat() && !sPlayerbotAIConfig->allowSummonInCombat)
                 {
                     botAI->TellError("You cannot summon me while you're in combat");
                     return false;
                 }
 
-                if (!master->IsAlive() && !sPlayerbotAIConfig->allowSummonWhenMasterIsDead)
+                if (!summoner->IsAlive() && !sPlayerbotAIConfig->allowSummonWhenMasterIsDead)
                 {
                     botAI->TellError("You cannot summon me while you're dead");
                     return false;
@@ -218,23 +213,36 @@ bool SummonAction::Teleport(Player* summoner, Player* player)
 
                 bool revive =
                     sPlayerbotAIConfig->reviveBotWhenSummoned == 2 ||
-                    (sPlayerbotAIConfig->reviveBotWhenSummoned == 1 && !master->IsInCombat() && master->IsAlive());
+                    (sPlayerbotAIConfig->reviveBotWhenSummoned == 1 && !summoner->IsInCombat() && summoner->IsAlive());
 
                 if (bot->isDead() && revive)
                 {
                     bot->ResurrectPlayer(1.0f, false);
+                    bot->SpawnCorpseBones();
                     botAI->TellMasterNoFacing("I live, again!");
-                    botAI->GetAiObjectContext()->GetValue<GuidVector>("prioritized targets")->Set({});
+                    botAI->GetAiObjectContext()->GetValue<GuidVector>("prioritized targets")->Reset();
                 }
 
                 player->GetMotionMaster()->Clear();
                 AI_VALUE(LastMovement&, "last movement").clear();
+                player->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TELEPORTED | AURA_INTERRUPT_FLAG_CHANGE_MAP);
                 player->TeleportTo(mapId, x, y, z, 0);
+
+                if (botAI->HasStrategy("stay", botAI->GetState()))
+                {
+                    PositionMap& posMap = AI_VALUE(PositionMap&, "position");
+                    PositionInfo stayPosition = posMap["stay"];
+
+                    stayPosition.Set(x,y, z, mapId);
+                    posMap["stay"] = stayPosition;
+                }
+
                 return true;
             }
         }
     }
 
-    botAI->TellError("Not enough place to summon");
+    if(summoner != player)
+         botAI->TellError("Not enough place to summon");
     return false;
 }

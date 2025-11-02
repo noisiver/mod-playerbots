@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #include "DKAiObjectContext.h"
@@ -10,6 +10,7 @@
 #include "DKTriggers.h"
 #include "FrostDKStrategy.h"
 #include "GenericDKNonCombatStrategy.h"
+#include "GenericTriggers.h"
 #include "Playerbots.h"
 #include "PullStrategy.h"
 #include "UnholyDKStrategy.h"
@@ -73,10 +74,14 @@ public:
         creators["plague strike"] = &DeathKnightTriggerFactoryInternal::plague_strike;
         creators["plague strike on attacker"] = &DeathKnightTriggerFactoryInternal::plague_strike_on_attacker;
         creators["icy touch"] = &DeathKnightTriggerFactoryInternal::icy_touch;
+        creators["icy touch 3s"] = &DeathKnightTriggerFactoryInternal::icy_touch_3s;
+        creators["dd cd and icy touch 3s"] = &DeathKnightTriggerFactoryInternal::dd_cd_and_icy_touch_3s;
         creators["death coil"] = &DeathKnightTriggerFactoryInternal::death_coil;
         creators["icy touch on attacker"] = &DeathKnightTriggerFactoryInternal::icy_touch_on_attacker;
         creators["improved icy talons"] = &DeathKnightTriggerFactoryInternal::improved_icy_talons;
         creators["plague strike"] = &DeathKnightTriggerFactoryInternal::plague_strike;
+        creators["plague strike 3s"] = &DeathKnightTriggerFactoryInternal::plague_strike_3s;
+        creators["dd cd and plague strike 3s"] = &DeathKnightTriggerFactoryInternal::dd_cd_and_plague_strike_3s;
         creators["horn of winter"] = &DeathKnightTriggerFactoryInternal::horn_of_winter;
         creators["mind freeze"] = &DeathKnightTriggerFactoryInternal::mind_freeze;
         creators["mind freeze on enemy healer"] = &DeathKnightTriggerFactoryInternal::mind_freeze_on_enemy_healer;
@@ -87,8 +92,12 @@ public:
         creators["chains of ice"] = &DeathKnightTriggerFactoryInternal::chains_of_ice;
         creators["unbreakable armor"] = &DeathKnightTriggerFactoryInternal::unbreakable_armor;
         creators["high blood rune"] = &DeathKnightTriggerFactoryInternal::high_blood_rune;
+        creators["high frost rune"] = &DeathKnightTriggerFactoryInternal::high_frost_rune;
+        creators["high unholy rune"] = &DeathKnightTriggerFactoryInternal::high_unholy_rune;
+        creators["no rune"] = &DeathKnightTriggerFactoryInternal::no_rune;
         creators["freezing fog"] = &DeathKnightTriggerFactoryInternal::freezing_fog;
         creators["no desolation"] = &DeathKnightTriggerFactoryInternal::no_desolation;
+        creators["dd cd and no desolation"] = &DeathKnightTriggerFactoryInternal::dd_cd_and_no_desolation;
         creators["death and decay cooldown"] = &DeathKnightTriggerFactoryInternal::death_and_decay_cooldown;
         creators["army of the dead"] = &DeathKnightTriggerFactoryInternal::army_of_the_dead;
     }
@@ -98,11 +107,21 @@ private:
     static Trigger* pestilence_glyph(PlayerbotAI* botAI) { return new PestilenceGlyphTrigger(botAI); }
     static Trigger* blood_strike(PlayerbotAI* botAI) { return new BloodStrikeTrigger(botAI); }
     static Trigger* plague_strike(PlayerbotAI* botAI) { return new PlagueStrikeDebuffTrigger(botAI); }
+    static Trigger* plague_strike_3s(PlayerbotAI* botAI) { return new PlagueStrike3sDebuffTrigger(botAI); }
+    static Trigger* dd_cd_and_plague_strike_3s(PlayerbotAI* botAI)
+    {
+        return new TwoTriggers(botAI, "death and decay cooldown", "plague strike 3s");
+    }
     static Trigger* plague_strike_on_attacker(PlayerbotAI* botAI)
     {
         return new PlagueStrikeDebuffOnAttackerTrigger(botAI);
     }
     static Trigger* icy_touch(PlayerbotAI* botAI) { return new IcyTouchDebuffTrigger(botAI); }
+    static Trigger* icy_touch_3s(PlayerbotAI* botAI) { return new IcyTouch3sDebuffTrigger(botAI); }
+    static Trigger* dd_cd_and_icy_touch_3s(PlayerbotAI* botAI)
+    {
+        return new TwoTriggers(botAI, "death and decay cooldown", "icy touch 3s");
+    }
     static Trigger* death_coil(PlayerbotAI* botAI) { return new DeathCoilTrigger(botAI); }
     static Trigger* icy_touch_on_attacker(PlayerbotAI* botAI) { return new IcyTouchDebuffOnAttackerTrigger(botAI); }
     static Trigger* improved_icy_talons(PlayerbotAI* botAI) { return new ImprovedIcyTalonsTrigger(botAI); }
@@ -122,8 +141,15 @@ private:
     static Trigger* chains_of_ice(PlayerbotAI* botAI) { return new ChainsOfIceSnareTrigger(botAI); }
     static Trigger* unbreakable_armor(PlayerbotAI* botAI) { return new UnbreakableArmorTrigger(botAI); }
     static Trigger* high_blood_rune(PlayerbotAI* botAI) { return new HighBloodRuneTrigger(botAI); }
+    static Trigger* high_frost_rune(PlayerbotAI* botAI) { return new HighFrostRuneTrigger(botAI); }
+    static Trigger* high_unholy_rune(PlayerbotAI* botAI) { return new HighUnholyRuneTrigger(botAI); }
+    static Trigger* no_rune(PlayerbotAI* botAI) { return new NoRuneTrigger(botAI); }
     static Trigger* freezing_fog(PlayerbotAI* botAI) { return new FreezingFogTrigger(botAI); }
     static Trigger* no_desolation(PlayerbotAI* botAI) { return new DesolationTrigger(botAI); }
+    static Trigger* dd_cd_and_no_desolation(PlayerbotAI* botAI)
+    {
+        return new TwoTriggers(botAI, "death and decay cooldown", "no desolation");
+    }
     static Trigger* death_and_decay_cooldown(PlayerbotAI* botAI) { return new DeathAndDecayCooldownTrigger(botAI); }
     static Trigger* army_of_the_dead(PlayerbotAI* botAI) { return new ArmyOfTheDeadTrigger(botAI); }
 };
@@ -248,11 +274,45 @@ private:
     }
 };
 
-DKAiObjectContext::DKAiObjectContext(PlayerbotAI* botAI) : AiObjectContext(botAI)
+SharedNamedObjectContextList<Strategy> DKAiObjectContext::sharedStrategyContexts;
+SharedNamedObjectContextList<Action> DKAiObjectContext::sharedActionContexts;
+SharedNamedObjectContextList<Trigger> DKAiObjectContext::sharedTriggerContexts;
+SharedNamedObjectContextList<UntypedValue> DKAiObjectContext::sharedValueContexts;
+
+DKAiObjectContext::DKAiObjectContext(PlayerbotAI* botAI)
+    : AiObjectContext(botAI, sharedStrategyContexts, sharedActionContexts, sharedTriggerContexts, sharedValueContexts)
 {
+}
+
+void DKAiObjectContext::BuildSharedContexts()
+{
+    BuildSharedStrategyContexts(sharedStrategyContexts);
+    BuildSharedActionContexts(sharedActionContexts);
+    BuildSharedTriggerContexts(sharedTriggerContexts);
+    BuildSharedValueContexts(sharedValueContexts);
+}
+
+void DKAiObjectContext::BuildSharedStrategyContexts(SharedNamedObjectContextList<Strategy>& strategyContexts)
+{
+    AiObjectContext::BuildSharedStrategyContexts(strategyContexts);
     strategyContexts.Add(new DeathKnightStrategyFactoryInternal());
     strategyContexts.Add(new DeathKnightCombatStrategyFactoryInternal());
     strategyContexts.Add(new DeathKnightDKBuffStrategyFactoryInternal());
+}
+
+void DKAiObjectContext::BuildSharedActionContexts(SharedNamedObjectContextList<Action>& actionContexts)
+{
+    AiObjectContext::BuildSharedActionContexts(actionContexts);
     actionContexts.Add(new DeathKnightAiObjectContextInternal());
+}
+
+void DKAiObjectContext::BuildSharedTriggerContexts(SharedNamedObjectContextList<Trigger>& triggerContexts)
+{
+    AiObjectContext::BuildSharedTriggerContexts(triggerContexts);
     triggerContexts.Add(new DeathKnightTriggerFactoryInternal());
+}
+
+void DKAiObjectContext::BuildSharedValueContexts(SharedNamedObjectContextList<UntypedValue>& valueContexts)
+{
+    AiObjectContext::BuildSharedValueContexts(valueContexts);
 }

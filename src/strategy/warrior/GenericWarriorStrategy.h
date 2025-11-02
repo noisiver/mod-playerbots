@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #ifndef _PLAYERBOT_GENERICWARRIORSTRATEGY_H
@@ -20,6 +20,8 @@ public:
         creators["charge"] = &charge;
         creators["mocking blow"] = &mocking_blow;
         creators["overpower"] = &overpower;
+        creators["retaliation"] = &retaliation;
+        creators["shattering throw"] = &shattering_throw;
 
         // temp
         creators["mortal strike"] = &mortal_strike;
@@ -57,6 +59,8 @@ private:
     ACTION_NODE_P(intervene, "intervene", "defensive stance");
     // temp
     ACTION_NODE_P(mortal_strike, "mortal strike", "battle stance");
+    ACTION_NODE_P(retaliation, "retaliation", "battle stance");
+    ACTION_NODE_P(shattering_throw, "shattering throw", "battle stance");
 };
 
 class GenericWarriorStrategy : public CombatStrategy

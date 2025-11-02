@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #include "TankPaladinStrategy.h"
@@ -73,7 +73,7 @@ void TankPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     GenericPaladinStrategy::InitTriggers(triggers);
 
     triggers.push_back(
-        new TriggerNode("seal", NextAction::array(0, new NextAction("seal of command", ACTION_HIGH), nullptr)));
+        new TriggerNode("seal", NextAction::array(0, new NextAction("seal of corruption", ACTION_HIGH), nullptr)));
     triggers.push_back(
         new TriggerNode("low mana", NextAction::array(0, new NextAction("seal of wisdom", ACTION_HIGH + 9), nullptr)));
     // triggers.push_back(new TriggerNode("devotion aura", NextAction::array(0, new NextAction("devotion aura", 90.0f),
@@ -98,18 +98,20 @@ void TankPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
                                        NextAction::array(0, new NextAction("holy shield", ACTION_HIGH + 4), nullptr)));
     // triggers.push_back(new TriggerNode("blessing", NextAction::array(0, new NextAction("blessing of sanctuary",
     // ACTION_HIGH + 9), nullptr)));
+    triggers.push_back(new TriggerNode(
+        "avenging wrath", NextAction::array(0, new NextAction("avenging wrath", ACTION_HIGH + 2), nullptr)));
     triggers.push_back(
         new TriggerNode("target critical health",
                         NextAction::array(0, new NextAction("hammer of wrath", ACTION_CRITICAL_HEAL), nullptr)));
     triggers.push_back(new TriggerNode(
         "righteous fury", NextAction::array(0, new NextAction("righteous fury", ACTION_HIGH + 8), nullptr)));
     triggers.push_back(
-        new TriggerNode("medium group heal occasion",
+        new TriggerNode("medium group heal setting",
                         NextAction::array(0, new NextAction("divine sacrifice", ACTION_HIGH + 5), nullptr)));
     triggers.push_back(new TriggerNode(
         "enough mana", NextAction::array(0, new NextAction("consecration", ACTION_HIGH + 4), nullptr)));
     triggers.push_back(new TriggerNode("not facing target",
                                        NextAction::array(0, new NextAction("set facing", ACTION_NORMAL + 7), nullptr)));
     triggers.push_back(new TriggerNode(
-        "enemy out of melee", NextAction::array(0, new NextAction("reach melee", ACTION_NORMAL + 8), nullptr)));
+        "enemy out of melee", NextAction::array(0, new NextAction("reach melee", ACTION_HIGH + 1), nullptr)));
 }

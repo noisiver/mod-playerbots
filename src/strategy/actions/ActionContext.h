@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #ifndef _PLAYERBOT_ACTIONCONTEXT_H
@@ -38,6 +38,7 @@
 #include "InviteToGroupAction.h"
 #include "LeaveGroupAction.h"
 #include "LootAction.h"
+#include "LootRollAction.h"
 #include "MoveToRpgTargetAction.h"
 #include "MoveToTravelTargetAction.h"
 #include "MovementActions.h"
@@ -62,6 +63,8 @@
 #include "VehicleActions.h"
 #include "WorldBuffAction.h"
 #include "XpGainAction.h"
+#include "NewRpgAction.h"
+#include "CancelChannelAction.h"
 
 class PlayerbotAI;
 
@@ -91,8 +94,10 @@ public:
         creators["reach party member to resurrect"] = &ActionContext::reach_party_member_to_resurrect;
         creators["flee"] = &ActionContext::flee;
         creators["flee with pet"] = &ActionContext::flee_with_pet;
-        creators["aaoe"] = &ActionContext::avoid_aoe;
+        creators["avoid aoe"] = &ActionContext::avoid_aoe;
         creators["combat formation move"] = &ActionContext::combat_formation_move;
+        creators["tank face"] = &ActionContext::tank_face;
+        creators["rear flank"] = &ActionContext::rear_flank;
         creators["disperse set"] = &ActionContext::disperse_set;
         creators["gift of the naaru"] = &ActionContext::gift_of_the_naaru;
         creators["shoot"] = &ActionContext::shoot;
@@ -132,6 +137,7 @@ public:
         creators["move to loot"] = &ActionContext::move_to_loot;
         creators["open loot"] = &ActionContext::open_loot;
         creators["guard"] = &ActionContext::guard;
+        creators["return to stay position"] = &ActionContext::return_to_stay_position;
         creators["move out of enemy contact"] = &ActionContext::move_out_of_enemy_contact;
         creators["set facing"] = &ActionContext::set_facing;
         creators["set behind"] = &ActionContext::set_behind;
@@ -185,10 +191,13 @@ public:
         creators["buy tabard"] = &ActionContext::buy_tabard;
         creators["guild manage nearby"] = &ActionContext::guild_manage_nearby;
         creators["clean quest log"] = &ActionContext::clean_quest_log;
+        creators["roll"] = &ActionContext::roll_action;
+        creators["cancel channel"] = &ActionContext::cancel_channel;
 
         // BG Tactics
         creators["bg tactics"] = &ActionContext::bg_tactics;
         creators["bg move to start"] = &ActionContext::bg_move_to_start;
+        creators["bg reset objective force"] = &ActionContext::bg_reset_objective_force;
         creators["bg move to objective"] = &ActionContext::bg_move_to_objective;
         creators["bg select objective"] = &ActionContext::bg_select_objective;
         creators["bg check objective"] = &ActionContext::bg_check_objective;
@@ -237,7 +246,16 @@ public:
         creators["rpg mount anim"] = &ActionContext::rpg_mount_anim;
 
         creators["toggle pet spell"] = &ActionContext::toggle_pet_spell;
-        creators["pet attack"] = &ActionContext::pet_attack; 
+        creators["pet attack"] = &ActionContext::pet_attack;
+        creators["set pet stance"] = &ActionContext::set_pet_stance;
+
+        creators["new rpg status update"] = &ActionContext::new_rpg_status_update;
+        creators["new rpg go grind"] = &ActionContext::new_rpg_go_grind;
+        creators["new rpg go camp"] = &ActionContext::new_rpg_go_camp;
+        creators["new rpg wander random"] = &ActionContext::new_rpg_wander_random;
+        creators["new rpg wander npc"] = &ActionContext::new_rpg_wander_npc;
+        creators["new rpg do quest"] = &ActionContext::new_rpg_do_quest;
+        creators["new rpg travel flight"] = &ActionContext::new_rpg_travel_flight;
     }
 
 private:
@@ -261,6 +279,7 @@ private:
     static Action* drop_target(PlayerbotAI* botAI) { return new DropTargetAction(botAI); }
     static Action* attack_duel_opponent(PlayerbotAI* botAI) { return new AttackDuelOpponentAction(botAI); }
     static Action* guard(PlayerbotAI* botAI) { return new GuardAction(botAI); }
+    static Action* return_to_stay_position(PlayerbotAI* botAI) { return new ReturnToStayPositionAction(botAI); }
     static Action* open_loot(PlayerbotAI* botAI) { return new OpenLootAction(botAI); }
     static Action* move_to_loot(PlayerbotAI* botAI) { return new MoveToLootAction(botAI); }
     static Action* _return(PlayerbotAI* botAI) { return new ReturnAction(botAI); }
@@ -276,12 +295,15 @@ private:
     static Action* flee_with_pet(PlayerbotAI* botAI) { return new FleeWithPetAction(botAI); }
     static Action* avoid_aoe(PlayerbotAI* botAI) { return new AvoidAoeAction(botAI); }
     static Action* combat_formation_move(PlayerbotAI* botAI) { return new CombatFormationMoveAction(botAI); }
+    static Action* tank_face(PlayerbotAI* botAI) { return new TankFaceAction(botAI); }
+    static Action* rear_flank(PlayerbotAI* botAI) { return new RearFlankAction(botAI); }
     static Action* disperse_set(PlayerbotAI* botAI) { return new DisperseSetAction(botAI); }
     static Action* gift_of_the_naaru(PlayerbotAI* botAI) { return new CastGiftOfTheNaaruAction(botAI); }
     static Action* lifeblood(PlayerbotAI* botAI) { return new CastLifeBloodAction(botAI); }
     static Action* arcane_torrent(PlayerbotAI* botAI) { return new CastArcaneTorrentAction(botAI); }
     static Action* mana_tap(PlayerbotAI* botAI) { return new CastManaTapAction(botAI); }
     static Action* end_pull(PlayerbotAI* botAI) { return new ChangeCombatStrategyAction(botAI, "-pull"); }
+    static Action* cancel_channel(PlayerbotAI* botAI) { return new CancelChannelAction(botAI); }
 
     static Action* emote(PlayerbotAI* botAI) { return new EmoteAction(botAI); }
     static Action* talk(PlayerbotAI* botAI) { return new TalkAction(botAI); }
@@ -358,10 +380,12 @@ private:
     static Action* buy_tabard(PlayerbotAI* botAI) { return new BuyTabardAction(botAI); }
     static Action* guild_manage_nearby(PlayerbotAI* botAI) { return new GuildManageNearbyAction(botAI); }
     static Action* clean_quest_log(PlayerbotAI* botAI) { return new CleanQuestLogAction(botAI); }
+    static Action* roll_action(PlayerbotAI* botAI) { return new RollAction(botAI); }
 
     // BG Tactics
     static Action* bg_tactics(PlayerbotAI* botAI) { return new BGTactics(botAI); }
     static Action* bg_move_to_start(PlayerbotAI* botAI) { return new BGTactics(botAI, "move to start"); }
+    static Action* bg_reset_objective_force(PlayerbotAI* botAI) { return new BGTactics(botAI, "reset objective force"); }
     static Action* bg_move_to_objective(PlayerbotAI* botAI) { return new BGTactics(botAI, "move to objective"); }
     static Action* bg_select_objective(PlayerbotAI* botAI) { return new BGTactics(botAI, "select objective"); }
     static Action* bg_check_objective(PlayerbotAI* botAI) { return new BGTactics(botAI, "check objective"); }
@@ -411,6 +435,15 @@ private:
 
     static Action* toggle_pet_spell(PlayerbotAI* ai) { return new TogglePetSpellAutoCastAction(ai); }
     static Action* pet_attack(PlayerbotAI* ai) { return new PetAttackAction(ai); }
+    static Action* set_pet_stance(PlayerbotAI* ai) { return new SetPetStanceAction(ai); }
+
+    static Action* new_rpg_status_update(PlayerbotAI* ai) { return new NewRpgStatusUpdateAction(ai); }
+    static Action* new_rpg_go_grind(PlayerbotAI* ai) { return new NewRpgGoGrindAction(ai); }
+    static Action* new_rpg_go_camp(PlayerbotAI* ai) { return new NewRpgGoCampAction(ai); }
+    static Action* new_rpg_wander_random(PlayerbotAI* ai) { return new NewRpgWanderRandomAction(ai); }
+    static Action* new_rpg_wander_npc(PlayerbotAI* ai) { return new NewRpgWanderNpcAction(ai); }
+    static Action* new_rpg_do_quest(PlayerbotAI* ai) { return new NewRpgDoQuestAction(ai); }
+    static Action* new_rpg_travel_flight(PlayerbotAI* ai) { return new NewRpgTravelFlightAction(ai); }
 };
 
 #endif

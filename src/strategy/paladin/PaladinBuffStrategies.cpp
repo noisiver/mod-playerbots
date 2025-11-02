@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #include "PaladinBuffStrategies.h"
@@ -9,18 +9,18 @@
 
 void PaladinBuffManaStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(
-        new TriggerNode("blessing of wisdom on party",
-                        NextAction::array(0, new NextAction("blessing of wisdom on party", 11.0f), nullptr)));
-    // triggers.push_back(new TriggerNode("blessing", NextAction::array(0, new NextAction("blessing of wisdom",
-    // ACTION_HIGH + 8), nullptr)));
+    triggers.push_back(new TriggerNode("blessing of wisdom on party",
+        NextAction::array(0, new NextAction("blessing of wisdom on party", 11.0f), NULL)));
+
+    triggers.push_back(new TriggerNode("blessing of kings on party",
+        NextAction::array(0, new NextAction("blessing of kings on party", 10.5f), NULL)));
 }
 
 void PaladinBuffHealthStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(
-        new TriggerNode("blessing of kings on party",
-                        NextAction::array(0, new NextAction("blessing of kings on party", 11.0f), nullptr)));
+        new TriggerNode("blessing of sanctuary on party",
+                        NextAction::array(0, new NextAction("blessing of sanctuary on party", 11.0f), nullptr)));
     // triggers.push_back(new TriggerNode("blessing", NextAction::array(0, new NextAction("blessing of kings",
     // ACTION_HIGH + 8), nullptr)));
 }
@@ -72,6 +72,12 @@ void PaladinBuffCastStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         "concentration aura", NextAction::array(0, new NextAction("concentration aura", ACTION_NORMAL), nullptr)));
 }
 
+void PaladinBuffSpeedStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
+{
+    triggers.push_back(new TriggerNode(
+        "crusader aura", NextAction::array(0, new NextAction("crusader aura", ACTION_NORMAL), nullptr)));
+}
+
 void PaladinBuffThreatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(new TriggerNode(
@@ -80,9 +86,13 @@ void PaladinBuffThreatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers
 
 void PaladinBuffStatsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
+    // First Sanctuary (prio > Kings)
+    triggers.push_back(
+        new TriggerNode("blessing of sanctuary on party",
+                        NextAction::array(0, new NextAction("blessing of sanctuary on party", 12.0f), nullptr)));
+
+    // After Kings
     triggers.push_back(
         new TriggerNode("blessing of kings on party",
                         NextAction::array(0, new NextAction("blessing of kings on party", 11.0f), nullptr)));
-    // triggers.push_back(new TriggerNode("blessing", NextAction::array(0, new NextAction("blessing of kings",
-    // ACTION_HIGH + 8), nullptr)));
 }

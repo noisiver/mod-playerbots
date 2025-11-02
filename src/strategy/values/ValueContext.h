@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #ifndef _PLAYERBOT_VALUECONTEXT_H
@@ -104,6 +104,7 @@ public:
         creators["nearest game objects no los"] = &ValueContext::nearest_game_objects_no_los;
         creators["closest game objects"] = &ValueContext::closest_game_objects;
         creators["nearest npcs"] = &ValueContext::nearest_npcs;
+        creators["nearest hostile npcs"] = &ValueContext::nearest_hostile_npcs;
         creators["nearest totems"] = &ValueContext::nearest_totems;
         creators["nearest vehicles"] = &ValueContext::nearest_vehicles;
         creators["nearest vehicles far"] = &ValueContext::nearest_vehicles_far;
@@ -117,6 +118,8 @@ public:
         creators["prioritized targets"] = &ValueContext::prioritized_targets;
         creators["all targets"] = &ValueContext::all_targets;
         creators["possible rpg targets"] = &ValueContext::possible_rpg_targets;
+        creators["possible new rpg targets"] = &ValueContext::possible_new_rpg_targets;
+        creators["possible new rpg game objects"] = &ValueContext::possible_new_rpg_game_objects;
         creators["nearest adds"] = &ValueContext::nearest_adds;
         creators["nearest corpses"] = &ValueContext::nearest_corpses;
         creators["log level"] = &ValueContext::log_level;
@@ -157,6 +160,7 @@ public:
         creators["my attacker count"] = &ValueContext::my_attacker_count;
         creators["has aggro"] = &ValueContext::has_aggro;
         creators["mounted"] = &ValueContext::mounted;
+        creators["custom_glyphs"] = &ValueContext::custom_glyphs;   // Added for custom glyphs
 
         creators["can loot"] = &ValueContext::can_loot;
         creators["loot target"] = &ValueContext::loot_target;
@@ -191,6 +195,7 @@ public:
         creators["rti cc"] = &ValueContext::rti_cc;
         creators["rti"] = &ValueContext::rti;
         creators["position"] = &ValueContext::position;
+        creators["pos"] = &ValueContext::pos;
         creators["current position"] = &ValueContext::current_position;
         creators["threat"] = &ValueContext::threat;
 
@@ -339,6 +344,7 @@ private:
     static UntypedValue* attackers(PlayerbotAI* botAI) { return new AttackersValue(botAI); }
 
     static UntypedValue* position(PlayerbotAI* botAI) { return new PositionValue(botAI); }
+    static UntypedValue* pos(PlayerbotAI* ai) { return new SinglePositionValue(ai); }
     static UntypedValue* current_position(PlayerbotAI* botAI) { return new CurrentPositionValue(botAI); }
     static UntypedValue* rti(PlayerbotAI* botAI) { return new RtiValue(botAI); }
     static UntypedValue* rti_cc(PlayerbotAI* botAI) { return new RtiCcValue(botAI); }
@@ -393,6 +399,7 @@ private:
     }
     static UntypedValue* log_level(PlayerbotAI* botAI) { return new LogLevelValue(botAI); }
     static UntypedValue* nearest_npcs(PlayerbotAI* botAI) { return new NearestNpcsValue(botAI); }
+    static UntypedValue* nearest_hostile_npcs(PlayerbotAI* botAI) { return new NearestHostileNpcsValue(botAI); }
     static UntypedValue* nearest_totems(PlayerbotAI* botAI) { return new NearestTotemsValue(botAI); }
     static UntypedValue* nearest_vehicles(PlayerbotAI* botAI) { return new NearestVehiclesValue(botAI); }
     static UntypedValue* nearest_vehicles_far(PlayerbotAI* botAI) { return new NearestVehiclesValue(botAI, 200.0f); }
@@ -404,6 +411,8 @@ private:
     static UntypedValue* nearest_enemy_players(PlayerbotAI* botAI) { return new NearestEnemyPlayersValue(botAI); }
     static UntypedValue* nearest_corpses(PlayerbotAI* botAI) { return new NearestCorpsesValue(botAI); }
     static UntypedValue* possible_rpg_targets(PlayerbotAI* botAI) { return new PossibleRpgTargetsValue(botAI); }
+    static UntypedValue* possible_new_rpg_targets(PlayerbotAI* botAI) { return new PossibleNewRpgTargetsValue(botAI); }
+    static UntypedValue* possible_new_rpg_game_objects(PlayerbotAI* botAI) { return new PossibleNewRpgGameObjectsValue(botAI); }
     static UntypedValue* possible_targets(PlayerbotAI* botAI) { return new PossibleTargetsValue(botAI); }
     static UntypedValue* possible_triggers(PlayerbotAI* botAI) { return new PossibleTriggersValue(botAI); }
     static UntypedValue* possible_targets_no_los(PlayerbotAI* botAI)
@@ -546,6 +555,13 @@ private:
     static UntypedValue* last_flee_angle(PlayerbotAI* ai) { return new LastFleeAngleValue(ai); }
     static UntypedValue* last_flee_timestamp(PlayerbotAI* ai) { return new LastFleeTimestampValue(ai); }
     static UntypedValue* recently_flee_info(PlayerbotAI* ai) { return new RecentlyFleeInfo(ai); }
+    // -------------------------------------------------------
+    // Flag for cutom glyphs : true when /w bot glyph equip
+    // -------------------------------------------------------
+    static UntypedValue* custom_glyphs(PlayerbotAI* ai)
+    {
+        return new ManualSetValue<bool>(ai, false, "custom_glyphs");
+    }
 };
 
 #endif

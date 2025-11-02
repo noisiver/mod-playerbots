@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #ifndef _PLAYERBOT_WORLDPACKETTRIGGERCONTEXT_H
@@ -29,6 +29,7 @@ public:
         creators["check mount state"] = &WorldPacketTriggerContext::check_mount_state;
         creators["activate taxi"] = &WorldPacketTriggerContext::taxi;
         creators["trade status"] = &WorldPacketTriggerContext::trade_status;
+        creators["trade status extended"] = &WorldPacketTriggerContext::trade_status_extended;
         creators["loot response"] = &WorldPacketTriggerContext::loot_response;
         creators["out of react range"] = &WorldPacketTriggerContext::out_of_react_range;
 
@@ -108,6 +109,7 @@ private:
     static Trigger* out_of_react_range(PlayerbotAI* botAI) { return new OutOfReactRangeTrigger(botAI); }
     static Trigger* loot_response(PlayerbotAI* botAI) { return new WorldPacketTrigger(botAI, "loot response"); }
     static Trigger* trade_status(PlayerbotAI* botAI) { return new WorldPacketTrigger(botAI, "trade status"); }
+    static Trigger* trade_status_extended(PlayerbotAI* botAI) { return new WorldPacketTrigger(botAI, "trade status extended"); }
     static Trigger* cannot_equip(PlayerbotAI* botAI) { return new WorldPacketTrigger(botAI, "cannot equip"); }
     static Trigger* check_mount_state(PlayerbotAI* botAI) { return new WorldPacketTrigger(botAI, "check mount state"); }
     static Trigger* area_trigger(PlayerbotAI* botAI) { return new WorldPacketTrigger(botAI, "area trigger"); }

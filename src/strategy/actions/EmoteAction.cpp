@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #include "EmoteAction.h"
@@ -734,7 +734,7 @@ bool EmoteAction::Execute(Event event)
     std::string param = event.getParam();
     if ((!isReact && param.empty()) || emote)
     {
-        time_t lastEmote = AI_VALUE2(time_t, "last emote", qualifier);
+        // time_t lastEmote = AI_VALUE2(time_t, "last emote", qualifier); //not used, line marked for removal.
         botAI->GetAiObjectContext()
             ->GetValue<time_t>("last emote", qualifier)
             ->Set(time(nullptr) + urand(1000, sPlayerbotAIConfig->repeatDelay) / 1000);

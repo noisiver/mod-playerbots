@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #include "DKTriggers.h"
@@ -37,16 +37,35 @@ bool PestilenceGlyphTrigger::IsActive()
     return false;
 }
 
+// Based on runeSlotTypes
 bool HighBloodRuneTrigger::IsActive()
 {
-    // bot->Say(std::to_string(bot->GetBaseRune(0)) + "_" + std::to_string(bot->GetRuneCooldown(0)) + " " +
-    // std::to_string(bot->GetBaseRune(1)) + "_" + std::to_string(bot->GetRuneCooldown(1)), LANG_UNIVERSAL);
-    return !bot->GetRuneCooldown(0) && !bot->GetRuneCooldown(1);
+    return bot->GetRuneCooldown(0) <= 2000 && bot->GetRuneCooldown(1) <= 2000;
+}
+
+bool HighFrostRuneTrigger::IsActive()
+{
+    return bot->GetRuneCooldown(4) <= 2000 && bot->GetRuneCooldown(5) <= 2000;
+}
+
+bool HighUnholyRuneTrigger::IsActive()
+{
+    return bot->GetRuneCooldown(2) <= 2000 && bot->GetRuneCooldown(3) <= 2000;
+}
+
+bool NoRuneTrigger::IsActive()
+{
+    for (uint32 i = 0; i < MAX_RUNES; ++i)
+    {
+        if (!bot->GetRuneCooldown(i))
+            return false;
+    }
+    return true;
 }
 
 bool DesolationTrigger::IsActive()
 {
-    return bot->HasAura(66817) && !botAI->HasAura("desolation", GetTarget(), false, true, -1, true);
+    return bot->HasAura(66817) && BuffTrigger::IsActive();
 }
 
 bool DeathAndDecayCooldownTrigger::IsActive()
@@ -55,5 +74,5 @@ bool DeathAndDecayCooldownTrigger::IsActive()
     if (!spellId)
         return true;
 
-    return bot->HasSpellCooldown(spellId);
+    return bot->GetSpellCooldownDelay(spellId) >= 2000;
 }

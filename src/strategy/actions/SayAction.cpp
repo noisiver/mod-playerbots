@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #include "AiFactory.h"
@@ -205,21 +205,20 @@ void ChatReplyAction::ChatReplyDo(Player* bot, uint32& type, uint32& guid1, uint
         return;
     }
 
-    // Disable since ExtractAllItemIds bad performance
-    // //toxic links
-    // if (msg.starts_with(sPlayerbotAIConfig->toxicLinksPrefix)
-    //     && (GET_PLAYERBOT_AI(bot)->GetChatHelper()->ExtractAllItemIds(msg).size() > 0 || GET_PLAYERBOT_AI(bot)->GetChatHelper()->ExtractAllQuestIds(msg).size() > 0))
-    // {
-    //     HandleToxicLinksReply(bot, chatChannelSource, msg, name);
-    //     return;
-    // }
+    //toxic links
+    if (msg.starts_with(sPlayerbotAIConfig->toxicLinksPrefix)
+        && (GET_PLAYERBOT_AI(bot)->GetChatHelper()->ExtractAllItemIds(msg).size() > 0 || GET_PLAYERBOT_AI(bot)->GetChatHelper()->ExtractAllQuestIds(msg).size() > 0))
+    {
+        HandleToxicLinksReply(bot, chatChannelSource, msg, name);
+        return;
+    }
 
-    // //thunderfury
-    // if (GET_PLAYERBOT_AI(bot)->GetChatHelper()->ExtractAllItemIds(msg).count(19019))
-    // {
-    //     HandleThunderfuryReply(bot, chatChannelSource, msg, name);
-    //     return;
-    // }
+    //thunderfury
+    if (GET_PLAYERBOT_AI(bot)->GetChatHelper()->ExtractAllItemIds(msg).count(19019))
+    {
+        HandleThunderfuryReply(bot, chatChannelSource, msg, name);
+        return;
+    }
 
     auto messageRepy = GenerateReplyMessage(bot, msg, guid1, name);
     SendGeneralResponse(bot, chatChannelSource, messageRepy, name);
@@ -245,6 +244,8 @@ bool ChatReplyAction::HandleThunderfuryReply(Player* bot, ChatChannelSource chat
             GET_PLAYERBOT_AI(bot)->SayToChannel(responseMessage, ChatChannelId::GENERAL);
             break;
         }
+        default:
+            break;
     }
 
     GET_PLAYERBOT_AI(bot)->GetAiObjectContext()->GetValue<time_t>("last said", "chat")->Set(time(0) + urand(5, 25));
@@ -309,6 +310,8 @@ bool ChatReplyAction::HandleToxicLinksReply(Player* bot, ChatChannelSource chatC
             GET_PLAYERBOT_AI(bot)->SayToGuild(BOT_TEXT2("suggest_toxic_links", placeholders));
             break;
         }
+        default:
+            break;
     }
 
     GET_PLAYERBOT_AI(bot)->GetAiObjectContext()->GetValue<time_t>("last said", "chat")->Set(time(0) + urand(5, 60));
@@ -317,8 +320,6 @@ bool ChatReplyAction::HandleToxicLinksReply(Player* bot, ChatChannelSource chatC
 }
 bool ChatReplyAction::HandleWTBItemsReply(Player* bot, ChatChannelSource chatChannelSource, std::string& msg, std::string& name)
 {
-    // Disable since ExtractAllItemIds bad performance
-    return false;
     auto messageItemIds = GET_PLAYERBOT_AI(bot)->GetChatHelper()->ExtractAllItemIds(msg);
 
     if (messageItemIds.empty())
@@ -404,6 +405,8 @@ bool ChatReplyAction::HandleWTBItemsReply(Player* bot, ChatChannelSource chatCha
                 }
                 break;
             }
+            default:
+            break;
         }
         GET_PLAYERBOT_AI(bot)->GetAiObjectContext()->GetValue<time_t>("last said", "chat")->Set(time(0) + urand(5, 60));
     }
@@ -412,8 +415,6 @@ bool ChatReplyAction::HandleWTBItemsReply(Player* bot, ChatChannelSource chatCha
 }
 bool ChatReplyAction::HandleLFGQuestsReply(Player* bot, ChatChannelSource chatChannelSource, std::string& msg, std::string& name)
 {
-    // Disable since ExtractAllQuestIds bad performance
-    return false;
     auto messageQuestIds = GET_PLAYERBOT_AI(bot)->GetChatHelper()->ExtractAllQuestIds(msg);
 
     if (messageQuestIds.empty())
@@ -490,6 +491,8 @@ bool ChatReplyAction::HandleLFGQuestsReply(Player* bot, ChatChannelSource chatCh
                 GET_PLAYERBOT_AI(bot)->Whisper(responseMessage, name);
                 break;
             }
+            default:
+            break;
         }
         GET_PLAYERBOT_AI(bot)->GetAiObjectContext()->GetValue<time_t>("last said", "chat")->Set(time(0) + urand(5, 25));
     }
@@ -966,7 +969,7 @@ std::string ChatReplyAction::GenerateReplyMessage(Player* bot, std::string& inco
                 msg = "ya %s but thats in the past";
                 break;
             case 2:
-                msg = word[verb_pos - 1] + " will " + word[verb_pos + 1] + " again though %s";
+                msg = word[verb_pos ? verb_pos - 1 : verb_pos + 1] + " will " + word[verb_pos + 1] + " again though %s";
                 break;
             }
             msg = std::regex_replace(msg, std::regex("%s"), name);
@@ -1010,7 +1013,7 @@ std::string ChatReplyAction::GenerateReplyMessage(Player* bot, std::string& inco
                 msg = "%s, what will happen %s?";
                 break;
             case 2:
-                msg = "are you saying " + word[verb_pos - 1] + " will " + word[verb_pos + 1] + " " + word[verb_pos + 2] + " %s?";
+                msg = "are you saying " + word[verb_pos ? verb_pos - 1 : verb_pos + 1] + " will " + word[verb_pos + 1] + " " + word[verb_pos + 2] + " %s?";
                 break;
             }
             msg = std::regex_replace(msg, std::regex("%s"), name);

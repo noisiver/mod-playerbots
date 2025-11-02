@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #include "BloodDKStrategy.h"
@@ -100,9 +100,12 @@ void BloodDKStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(
         new TriggerNode("lose aggro", NextAction::array(0, new NextAction("dark command", ACTION_HIGH + 3), nullptr)));
     triggers.push_back(
-        new TriggerNode("low health", NextAction::array(0, new NextAction("army of the dead", ACTION_HIGH + 5),
-                                                        new NextAction("vampiric blood", ACTION_HIGH + 4),
+        new TriggerNode("low health", NextAction::array(0, new NextAction("army of the dead", ACTION_HIGH + 4),
                                                         new NextAction("death strike", ACTION_HIGH + 3), nullptr)));
-    // triggers.push_back(new TriggerNode("army of the dead", NextAction::array(0, new NextAction("army of the dead",
-    // ACTION_HIGH + 6), nullptr)));
+    triggers.push_back(
+        new TriggerNode("critical health", NextAction::array(0, new NextAction("vampiric blood", ACTION_HIGH + 5), nullptr)));
+    triggers.push_back(
+        new TriggerNode("icy touch", NextAction::array(0, new NextAction("icy touch", ACTION_HIGH + 2), nullptr)));
+    triggers.push_back(new TriggerNode(
+        "plague strike", NextAction::array(0, new NextAction("plague strike", ACTION_HIGH + 2), nullptr)));
 }

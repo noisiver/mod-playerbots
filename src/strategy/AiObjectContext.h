@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #ifndef _PLAYERBOT_AIOBJECTCONTEXT_H
@@ -10,6 +10,7 @@
 #include <string>
 
 #include "Common.h"
+#include "DynamicObject.h"
 #include "NamedObjectContext.h"
 #include "PlayerbotAIAware.h"
 #include "Strategy.h"
@@ -18,10 +19,20 @@
 
 class PlayerbotAI;
 
+typedef Strategy* (*StrategyCreator)(PlayerbotAI* botAI);
+typedef Action* (*ActionCreator)(PlayerbotAI* botAI);
+typedef Trigger* (*TriggerCreator)(PlayerbotAI* botAI);
+typedef UntypedValue* (*ValueCreator)(PlayerbotAI* botAI);
+
 class AiObjectContext : public PlayerbotAIAware
 {
 public:
-    AiObjectContext(PlayerbotAI* botAI);
+    static BoolCalculatedValue* custom_glyphs(PlayerbotAI* ai); // Added for cutom glyphs
+    AiObjectContext(PlayerbotAI* botAI,
+                    SharedNamedObjectContextList<Strategy>& sharedStrategyContext = sharedStrategyContexts,
+                    SharedNamedObjectContextList<Action>& sharedActionContext = sharedActionContexts,
+                    SharedNamedObjectContextList<Trigger>& sharedTriggerContext = sharedTriggerContexts,
+                    SharedNamedObjectContextList<UntypedValue>& sharedValueContext = sharedValueContexts);
     virtual ~AiObjectContext() {}
 
     virtual Strategy* GetStrategy(std::string const name);
@@ -55,20 +66,30 @@ public:
     std::set<std::string> GetSupportedActions();
     std::string const FormatValues();
 
-    virtual void Update();
-    virtual void Reset();
-    virtual void AddShared(NamedObjectContext<UntypedValue>* sharedValues);
-
     std::vector<std::string> Save();
     void Load(std::vector<std::string> data);
 
     std::vector<std::string> performanceStack;
+
+    static void BuildAllSharedContexts();
+
+    static void BuildSharedContexts();
+    static void BuildSharedStrategyContexts(SharedNamedObjectContextList<Strategy>& strategyContexts);
+    static void BuildSharedActionContexts(SharedNamedObjectContextList<Action>& actionContexts);
+    static void BuildSharedTriggerContexts(SharedNamedObjectContextList<Trigger>& triggerContexts);
+    static void BuildSharedValueContexts(SharedNamedObjectContextList<UntypedValue>& valueContexts);
 
 protected:
     NamedObjectContextList<Strategy> strategyContexts;
     NamedObjectContextList<Action> actionContexts;
     NamedObjectContextList<Trigger> triggerContexts;
     NamedObjectContextList<UntypedValue> valueContexts;
+
+private:
+    static SharedNamedObjectContextList<Strategy> sharedStrategyContexts;
+    static SharedNamedObjectContextList<Action> sharedActionContexts;
+    static SharedNamedObjectContextList<Trigger> sharedTriggerContexts;
+    static SharedNamedObjectContextList<UntypedValue> sharedValueContexts;
 };
 
 #endif

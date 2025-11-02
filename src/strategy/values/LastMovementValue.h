@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #ifndef _PLAYERBOT_LASTMOVEMENTVALUE_H
@@ -17,6 +17,7 @@ class Unit;
 enum class MovementPriority
 {
     MOVEMENT_IDLE,
+    MOVEMENT_WANDER,
     MOVEMENT_NORMAL,
     MOVEMENT_COMBAT,
     MOVEMENT_FORCED

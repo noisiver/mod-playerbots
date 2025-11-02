@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #include "ChooseTravelTargetAction.h"
@@ -11,12 +11,12 @@
 
 bool ChooseTravelTargetAction::Execute(Event event)
 {
-    Player* requester = event.getOwner() ? event.getOwner() : GetMaster();
+    // Player* requester = event.getOwner() ? event.getOwner() : GetMaster(); //not used, line marked for removal.
 
     //Get the current travel target. This target is no longer active.
     TravelTarget* oldTarget = context->GetValue<TravelTarget*>("travel target")->Get();
 
-    //Select a new target to travel to. 
+    //Select a new target to travel to.
     TravelTarget newTarget = TravelTarget(botAI);
 
     if (!oldTarget) return false;
@@ -146,7 +146,7 @@ void ChooseTravelTargetAction::getNewTarget(TravelTarget* newTarget, TravelTarge
             foundTarget = SetBossTarget(newTarget);
         }
     }
-    
+
     //Do quests (start, do, end) 95% chance
     if (!foundTarget && urand(1, 100) > 5)
     {
@@ -501,7 +501,7 @@ bool ChooseTravelTargetAction::SetQuestTarget(TravelTarget* target, bool onlyCom
                 continue;
 
             uint32 questId = quest.first;
-            QuestStatusData* questStatus = &quest.second;
+            // QuestStatusData* questStatus = &quest.second; //not used, line marked for removal.
             const auto questTemplate = sObjectMgr->GetQuestTemplate(questId);
 
             if (!activeQuests && !bot->CanRewardQuest(questTemplate, false))
@@ -826,7 +826,7 @@ TravelDestination* ChooseTravelTargetAction::FindDestination(Player* bot, std::s
 {
     PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
 
-    AiObjectContext* context = botAI->GetAiObjectContext();
+    // AiObjectContext* context = botAI->GetAiObjectContext(); //not used, line marked for removal.
 
     std::vector<TravelDestination*> dests;
 

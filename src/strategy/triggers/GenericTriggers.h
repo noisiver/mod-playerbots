@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #ifndef _PLAYERBOT_GENERICTRIGGERS_H
@@ -10,6 +10,8 @@
 
 #include "HealthTriggers.h"
 #include "RangeTriggers.h"
+#include "Trigger.h"
+#include "Player.h"
 
 class PlayerbotAI;
 class Unit;
@@ -126,6 +128,17 @@ private:
     float lifeTime;
 };
 
+class ComboPointsNotFullTrigger : public StatAvailable
+{
+public:
+    ComboPointsNotFullTrigger(PlayerbotAI* botAI, int32 amount = 5, std::string const name = "combo points not full")
+        : StatAvailable(botAI, amount, name)
+    {
+    }
+
+    bool IsActive() override;
+};
+
 class LoseAggroTrigger : public Trigger
 {
 public:
@@ -231,10 +244,25 @@ public:
     std::string const getName() override { return "my attacker count"; }
 };
 
+class BeingAttackedTrigger : public MyAttackerCountTrigger
+{
+public:
+    BeingAttackedTrigger(PlayerbotAI* botAI) : MyAttackerCountTrigger(botAI, 1) {}
+    std::string const getName() override { return "being attacked"; }
+};
+
 class MediumThreatTrigger : public MyAttackerCountTrigger
 {
 public:
     MediumThreatTrigger(PlayerbotAI* botAI) : MyAttackerCountTrigger(botAI, 2) {}
+    bool IsActive() override;
+};
+
+class LowTankThreatTrigger : public Trigger
+{
+public:
+    LowTankThreatTrigger(PlayerbotAI* botAI) : Trigger(botAI, "low tank threat") {}
+    bool IsActive() override;
 };
 
 class AoeTrigger : public AttackerCountTrigger
@@ -289,10 +317,12 @@ public:
 class BuffTrigger : public SpellTrigger
 {
 public:
-    BuffTrigger(PlayerbotAI* botAI, std::string const spell, int32 checkInterval = 1, bool checkIsOwner = false)
+    BuffTrigger(PlayerbotAI* botAI, std::string const spell, int32 checkInterval = 1, bool checkIsOwner = false, bool checkDuration = false, uint32 beforeDuration = 0)
         : SpellTrigger(botAI, spell, checkInterval)
     {
         this->checkIsOwner = checkIsOwner;
+        this->checkDuration = checkDuration;
+        this->beforeDuration = beforeDuration;
     }
 
 public:
@@ -301,6 +331,8 @@ public:
 
 protected:
     bool checkIsOwner;
+    bool checkDuration;
+    uint32 beforeDuration;
 };
 
 class BuffOnPartyTrigger : public BuffTrigger
@@ -360,8 +392,8 @@ class DebuffTrigger : public BuffTrigger
 {
 public:
     DebuffTrigger(PlayerbotAI* botAI, std::string const spell, int32 checkInterval = 1, bool checkIsOwner = false,
-                  float needLifeTime = 8.0f)
-        : BuffTrigger(botAI, spell, checkInterval, checkIsOwner), needLifeTime(needLifeTime)
+                  float needLifeTime = 8.0f, uint32 beforeDuration = 0)
+        : BuffTrigger(botAI, spell, checkInterval, checkIsOwner, false, beforeDuration), needLifeTime(needLifeTime)
     {
     }
 
@@ -436,6 +468,16 @@ protected:
     float balance;
 };
 
+class HealerShouldAttackTrigger : public Trigger
+{
+public:
+    HealerShouldAttackTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "healer should attack", 1)
+    {
+    }
+
+    bool IsActive() override;
+};
 
 class RandomTrigger : public Trigger
 {
@@ -563,6 +605,7 @@ public:
         : ItemCountTrigger(botAI, item, count, interval)
     {
     }
+    bool IsActive() override;
 };
 
 class HasAuraTrigger : public Trigger
@@ -585,8 +628,8 @@ public:
     {
     }
 
-    std::string const GetTargetName() { return "self target"; }
-    virtual bool IsActive();
+    std::string const GetTargetName() override { return "self target"; }
+    bool IsActive() override;
 
 private:
     int stack;
@@ -605,6 +648,17 @@ class TimerTrigger : public Trigger
 {
 public:
     TimerTrigger(PlayerbotAI* botAI) : Trigger(botAI, "timer"), lastCheck(0) {}
+
+    bool IsActive() override;
+
+private:
+    time_t lastCheck;
+};
+
+class TimerBGTrigger : public Trigger
+{
+public:
+    TimerBGTrigger(PlayerbotAI* botAI) : Trigger(botAI, "timer bg"), lastCheck(0) {}
 
     bool IsActive() override;
 
@@ -785,6 +839,14 @@ public:
     SitTrigger(PlayerbotAI* botAI) : StayTimeTrigger(botAI, sPlayerbotAIConfig->sitDelay, "sit") {}
 };
 
+class ReturnToStayPositionTrigger : public Trigger
+{
+public:
+    ReturnToStayPositionTrigger(PlayerbotAI* ai) : Trigger(ai, "return to stay position", 2) {}
+
+    virtual bool IsActive() override;
+};
+
 class ReturnTrigger : public StayTimeTrigger
 {
 public:
@@ -872,4 +934,25 @@ public:
 public:
     virtual Value<Unit*>* GetTargetValue();
 };
+
+class SelfResurrectTrigger : public Trigger
+{
+public:
+    SelfResurrectTrigger(PlayerbotAI* ai) : Trigger(ai, "can self resurrect") {}
+
+    bool IsActive() override { return !bot->IsAlive() && bot->GetUInt32Value(PLAYER_SELF_RES_SPELL); }
+};
+
+class NewPetTrigger : public Trigger
+{
+public:
+    NewPetTrigger(PlayerbotAI* ai) : Trigger(ai, "new pet"), lastPetGuid(ObjectGuid::Empty), triggered(false) {}
+
+    bool IsActive() override;
+
+private:
+    ObjectGuid lastPetGuid;
+    bool triggered;
+};
+
 #endif

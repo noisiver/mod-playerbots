@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #include "GenericTriggers.h"
@@ -9,11 +9,19 @@
 
 #include "BattlegroundWS.h"
 #include "CreatureAI.h"
+#include "GameTime.h"
+#include "ItemVisitors.h"
+#include "LastSpellCastValue.h"
 #include "ObjectGuid.h"
+#include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
+#include "PositionValue.h"
 #include "SharedDefines.h"
 #include "TemporarySummon.h"
+#include "ThreatMgr.h"
 #include "Timer.h"
+#include "PlayerbotAI.h"
+#include "Player.h"
 
 bool LowManaTrigger::IsActive()
 {
@@ -64,7 +72,7 @@ bool PetAttackTrigger::IsActive()
 
 bool HighManaTrigger::IsActive()
 {
-    return AI_VALUE2(bool, "has mana", "self target") && AI_VALUE2(uint8, "mana", "self target") < 65;
+    return AI_VALUE2(bool, "has mana", "self target") && AI_VALUE2(uint8, "mana", "self target") < sPlayerbotAIConfig->highMana;
 }
 
 bool AlmostFullManaTrigger::IsActive()
@@ -74,7 +82,7 @@ bool AlmostFullManaTrigger::IsActive()
 
 bool EnoughManaTrigger::IsActive()
 {
-    return AI_VALUE2(bool, "has mana", "self target") && AI_VALUE2(uint8, "mana", "self target") > 65;
+    return AI_VALUE2(bool, "has mana", "self target") && AI_VALUE2(uint8, "mana", "self target") > sPlayerbotAIConfig->highMana;
 }
 
 bool RageAvailable::IsActive() { return AI_VALUE2(uint8, "rage", "self target") >= amount; }
@@ -82,6 +90,8 @@ bool RageAvailable::IsActive() { return AI_VALUE2(uint8, "rage", "self target") 
 bool EnergyAvailable::IsActive() { return AI_VALUE2(uint8, "energy", "self target") >= amount; }
 
 bool ComboPointsAvailableTrigger::IsActive() { return AI_VALUE2(uint8, "combo", "current target") >= amount; }
+
+bool ComboPointsNotFullTrigger::IsActive() { return AI_VALUE2(uint8, "combo", "current target") < amount; }
 
 bool TargetWithComboPointsLowerHealTrigger::IsActive()
 {
@@ -148,7 +158,16 @@ bool OutNumberedTrigger::IsActive()
 bool BuffTrigger::IsActive()
 {
     Unit* target = GetTarget();
-    return SpellTrigger::IsActive() && !botAI->HasAura(spell, target, false, checkIsOwner);
+    if (!target)
+        return false;
+    if (!SpellTrigger::IsActive())
+        return false;
+    Aura* aura = botAI->GetAura(spell, target, checkIsOwner, checkDuration);
+    if (!aura)
+        return true;
+    if (beforeDuration && aura->GetDuration() < beforeDuration)
+        return true;
+    return false;
 }
 
 Value<Unit*>* BuffOnPartyTrigger::GetTargetValue()
@@ -182,6 +201,29 @@ bool MyAttackerCountTrigger::IsActive()
     return AI_VALUE2(bool, "combat", "self target") && AI_VALUE(uint8, "my attacker count") >= amount;
 }
 
+bool MediumThreatTrigger::IsActive()
+{
+    if (!AI_VALUE(Unit*, "main tank"))
+        return false;
+    return MyAttackerCountTrigger::IsActive();
+}
+
+bool LowTankThreatTrigger::IsActive()
+{
+    Unit* mt = AI_VALUE(Unit*, "main tank");
+    if (!mt)
+        return false;
+
+    Unit* current_target = AI_VALUE(Unit*, "current target");
+    if (!current_target)
+        return false;
+
+    ThreatMgr& mgr = current_target->GetThreatMgr();
+    float threat = mgr.GetThreat(bot);
+    float tankThreat = mgr.GetThreat(mt);
+    return tankThreat == 0.0f || threat > tankThreat * 0.5f;
+}
+
 bool AoeTrigger::IsActive()
 {
     Unit* current_target = AI_VALUE(Unit*, "current target");
@@ -196,8 +238,7 @@ bool AoeTrigger::IsActive()
         Unit* unit = botAI->GetUnit(guid);
         if (!unit || !unit->IsAlive())
             continue;
-
-        if (unit->GetExactDist2d(current_target) <= range)
+        if (unit->GetDistance(current_target->GetPosition()) <= range)
         {
             attackers_count++;
         }
@@ -208,7 +249,7 @@ bool AoeTrigger::IsActive()
 bool NoFoodTrigger::IsActive()
 {
     bool isRandomBot = sRandomPlayerbotMgr->IsRandomBot(bot);
-    if (isRandomBot && sPlayerbotAIConfig->freeFood)
+    if (isRandomBot && botAI->HasCheat(BotCheatMask::food))
         return false;
 
     return AI_VALUE2(std::vector<Item*>, "inventory items", "conjured food").empty();
@@ -217,7 +258,7 @@ bool NoFoodTrigger::IsActive()
 bool NoDrinkTrigger::IsActive()
 {
     bool isRandomBot = sRandomPlayerbotMgr->IsRandomBot(bot);
-    if (isRandomBot && sPlayerbotAIConfig->freeFood)
+    if (isRandomBot && botAI->HasCheat(BotCheatMask::food))
         return false;
 
     return AI_VALUE2(std::vector<Item*>, "inventory items", "conjured water").empty();
@@ -329,12 +370,45 @@ bool BoostTrigger::IsActive()
     return AI_VALUE(uint8, "balance") <= balance;
 }
 
-bool GenericBoostTrigger::IsActive() 
+bool GenericBoostTrigger::IsActive()
 {
     Unit* target = AI_VALUE(Unit*, "current target");
     if (target && target->ToPlayer())
         return true;
     return AI_VALUE(uint8, "balance") <= balance;
+}
+
+bool HealerShouldAttackTrigger::IsActive()
+{
+    // nobody can help me
+    if (botAI->GetNearGroupMemberCount(sPlayerbotAIConfig->sightDistance) <= 1)
+        return true;
+
+    if (AI_VALUE2(uint8, "health", "party member to heal") < sPlayerbotAIConfig->almostFullHealth)
+        return false;
+
+    // special check for resto druid (dont remove tree of life frequently)
+    if (bot->GetAura(33891))
+    {
+        LastSpellCast& lastSpell = botAI->GetAiObjectContext()->GetValue<LastSpellCast&>("last spell cast")->Get();
+        if (lastSpell.timer + 5 > time(nullptr))
+            return false;
+    }
+
+    int manaThreshold;
+    int balance = AI_VALUE(uint8, "balance");
+    // higher threshold in higher pressure
+    if (balance <= 50)
+        manaThreshold = 85;
+    else if (balance <= 100)
+        manaThreshold = sPlayerbotAIConfig->highMana;
+    else
+        manaThreshold = sPlayerbotAIConfig->mediumMana;
+
+    if (AI_VALUE2(bool, "has mana", "self target") && AI_VALUE2(uint8, "mana", "self target") < manaThreshold)
+        return false;
+
+    return true;
 }
 
 bool ItemCountTrigger::IsActive() { return AI_VALUE2(uint32, "item count", item) < count; }
@@ -410,6 +484,19 @@ bool TimerTrigger::IsActive()
     return false;
 }
 
+bool TimerBGTrigger::IsActive()
+{
+    time_t now = time(nullptr);
+
+    if (now - lastCheck >= 60)
+    {
+        lastCheck = now;
+        return true;
+    }
+
+    return false;
+}
+
 bool HasNoAuraTrigger::IsActive() { return !botAI->HasAura(getName(), GetTarget()); }
 
 bool TankAssistTrigger::IsActive()
@@ -436,11 +523,22 @@ bool IsBehindTargetTrigger::IsActive()
 
 bool IsNotBehindTargetTrigger::IsActive()
 {
+    if (botAI->HasStrategy("stay", botAI->GetState()))
+    {
+        return false;
+    }
     Unit* target = AI_VALUE(Unit*, "current target");
     return target && !AI_VALUE2(bool, "behind", "current target");
 }
 
-bool IsNotFacingTargetTrigger::IsActive() { return !AI_VALUE2(bool, "facing", "current target"); }
+bool IsNotFacingTargetTrigger::IsActive()
+{
+    if (botAI->HasStrategy("stay", botAI->GetState()))
+    {
+        return false;
+    }
+    return !AI_VALUE2(bool, "facing", "current target");
+}
 
 bool HasCcTargetTrigger::IsActive()
 {
@@ -528,6 +626,18 @@ bool NewPlayerNearbyTrigger::IsActive() { return AI_VALUE(ObjectGuid, "new playe
 
 bool CollisionTrigger::IsActive() { return AI_VALUE2(bool, "collision", "self target"); }
 
+bool ReturnToStayPositionTrigger::IsActive()
+{
+    PositionInfo stayPosition = AI_VALUE(PositionMap&, "position")["stay"];
+    if (stayPosition.isSet())
+    {
+        const float distance = bot->GetDistance(stayPosition.x, stayPosition.y, stayPosition.z);
+        return distance > sPlayerbotAIConfig->followDistance;
+    }
+
+    return false;
+}
+
 bool GiveItemTrigger::IsActive()
 {
     return AI_VALUE2(Unit*, "party member without item", item) && AI_VALUE2(uint32, "item count", item);
@@ -566,3 +676,57 @@ bool IsFallingFarTrigger::IsActive() { return bot->HasUnitMovementFlag(MOVEMENTF
 bool HasAreaDebuffTrigger::IsActive() { return AI_VALUE2(bool, "has area debuff", "self target"); }
 
 Value<Unit*>* BuffOnMainTankTrigger::GetTargetValue() { return context->GetValue<Unit*>("main tank", spell); }
+
+bool AmmoCountTrigger::IsActive()
+{
+    if (bot->GetUInt32Value(PLAYER_AMMO_ID) != 0)
+        return ItemCountTrigger::IsActive();  // Ammo already equipped
+
+    if (botAI->FindAmmo())
+        return true;  // Found ammo in inventory but not equipped
+
+    return ItemCountTrigger::IsActive();
+}
+
+bool NewPetTrigger::IsActive()
+{
+    // Get the bot player object from the AI
+    Player* bot = botAI->GetBot();
+    if (!bot)
+        return false;
+
+    // Try to get the current pet; initialize guardian and GUID to null/empty
+    Pet* pet = bot->GetPet();
+    Guardian* guardian = nullptr;
+    ObjectGuid currentPetGuid = ObjectGuid::Empty;
+
+    // If bot has a pet, get its GUID
+    if (pet)
+    {
+        currentPetGuid = pet->GetGUID();
+    }
+    else
+    {
+        // If no pet, try to get a guardian pet and its GUID
+        guardian = bot->GetGuardianPet();
+        if (guardian)
+            currentPetGuid = guardian->GetGUID();
+    }
+
+    // If the current pet or guardian GUID has changed (including becoming empty), reset the trigger state
+    if (currentPetGuid != lastPetGuid)
+    {
+        triggered = false;
+        lastPetGuid = currentPetGuid;
+    }
+
+    // If there's a valid current pet/guardian (non-empty GUID) and we haven't triggered yet, activate trigger
+    if (currentPetGuid != ObjectGuid::Empty && !triggered)
+    {
+        triggered = true;
+        return true;
+    }
+
+    // Otherwise, do not activate
+    return false;
+}

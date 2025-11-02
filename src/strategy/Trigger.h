@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #ifndef _PLAYERBOT_TRIGGER_H
@@ -30,7 +30,7 @@ public:
     virtual Value<Unit*>* GetTargetValue();
     virtual std::string const GetTargetName() { return "self target"; }
 
-    bool needCheck();
+    bool needCheck(uint32 now);
 
 protected:
     int32 checkInterval;
