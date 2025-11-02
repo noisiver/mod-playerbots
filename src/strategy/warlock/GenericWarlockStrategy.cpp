@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #include "GenericWarlockStrategy.h"
@@ -58,6 +58,9 @@ void AoEWarlockStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
                                                  new NextAction("seed of corruption on attacker", 22.0f),
                                                  new NextAction("seed of corruption", 21.5f),
                                                  new NextAction("rain of fire", 21.0f), nullptr)));
+
+    triggers.push_back(
+        new TriggerNode("rain of fire channel check", NextAction::array(0, new NextAction("cancel channel", 21.5f), nullptr)));
 }
 
 void WarlockBoostStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)

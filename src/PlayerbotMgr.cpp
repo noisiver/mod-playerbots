@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #include "PlayerbotMgr.h"
@@ -36,6 +36,8 @@
 #include "BroadcastHelper.h"
 #include "PlayerbotDbStore.h"
 #include "WorldSessionMgr.h"
+#include "DatabaseEnv.h"        // Added for gender choice
+#include <algorithm>            // Added for gender choice
 
 class BotInitGuard
 {
@@ -166,7 +168,7 @@ void PlayerbotHolder::HandlePlayerBotLoginCallback(PlayerbotLoginQueryHolder con
     uint32 botAccountId = holder.GetAccountId();
     // At login DBC locale should be what the server is set to use by default (as spells etc are hardcoded to ENUS this
     // allows channels to work as intended)
-    WorldSession* botSession = new WorldSession(botAccountId, "", nullptr, SEC_PLAYER, EXPANSION_WRATH_OF_THE_LICH_KING,
+    WorldSession* botSession = new WorldSession(botAccountId, "", 0x0, nullptr, SEC_PLAYER, EXPANSION_WRATH_OF_THE_LICH_KING,
                                                 time_t(0), sWorld->GetDefaultDbcLocale(), 0, false, false, 0, true);
 
     botSession->HandlePlayerLoginFromDB(holder);  // will delete lqh
@@ -225,6 +227,12 @@ void PlayerbotHolder::HandleBotPackets(WorldSession* session)
     {
         OpcodeClient opcode = static_cast<OpcodeClient>(packet->GetOpcode());
         ClientOpcodeHandler const* opHandle = opcodeTable[opcode];
+        if (!opHandle)
+        {
+            LOG_ERROR("playerbots", "Unhandled opcode {} queued for bot session {}. Packet dropped.", static_cast<uint32>(opcode), session->GetAccountId());
+            delete packet;
+            continue;
+        }
         opHandle->Call(session, *packet);
         delete packet;
     }
@@ -473,7 +481,7 @@ void PlayerbotHolder::OnBotLogin(Player* const bot)
     }
 
     Player* master = botAI->GetMaster();
-	if (master)
+    if (master)
     {
         ObjectGuid masterGuid = master->GetGUID();
         if (master->GetGroup() && !master->GetGroup()->IsLeader(masterGuid))
@@ -497,7 +505,7 @@ void PlayerbotHolder::OnBotLogin(Player* const bot)
                 }
             }
 
-			// Don't disband alt groups when master goes away
+            // Don't disband alt groups when master goes away
             // Controlled by config
             if (sPlayerbotAIConfig->KeepAltsInGroup())
             {
@@ -512,7 +520,7 @@ void PlayerbotHolder::OnBotLogin(Player* const bot)
 
         if (!groupValid)
         {
-            bot->RemoveFromGroup();
+            botAI->LeaveOrDisbandGroup();
         }
     }
 
@@ -837,6 +845,18 @@ std::string const PlayerbotHolder::ProcessBotCommand(std::string const cmd, Obje
     return "unknown command";
 }
 
+// Added for gender choice : Returns the gender of an offline character: 0 = male, 1 = female.
+static uint8 GetOfflinePlayerGender(ObjectGuid guid)
+{
+    QueryResult result = CharacterDatabase.Query(
+        "SELECT gender FROM characters WHERE guid = {}", guid.GetCounter());
+
+    if (result)
+        return (*result)[0].Get<uint8>();       // 0 = male, 1 = female
+
+    return GENDER_MALE;                         // fallback value
+}
+
 bool PlayerbotMgr::HandlePlayerbotMgrCommand(ChatHandler* handler, char const* args)
 {
     if (!sPlayerbotAIConfig->enabled)
@@ -879,15 +899,17 @@ std::vector<std::string> PlayerbotHolder::HandlePlayerbotCommand(char const* arg
     if (!*args)
     {
         messages.push_back("usage: list/reload/tweak/self or add/addaccount/init/remove PLAYERNAME\n");
-        messages.push_back("usage: addclass CLASSNAME");
+        messages.push_back("usage: addclass CLASSNAME [male|female|0|1]");
         return messages;
     }
 
     char* cmd = strtok((char*)args, " ");
     char* charname = strtok(nullptr, " ");
+    char* genderArg = strtok(nullptr, " ");    // Added for gender choice [male|female|0|1] optionnel
+
     if (!cmd)
     {
-        messages.push_back("usage: list/reload/tweak/self or add/init/remove PLAYERNAME or addclass CLASSNAME");
+        messages.push_back("usage: list/reload/tweak/self or add/init/remove PLAYERNAME or addclass CLASSNAME [male|female]");
         return messages;
     }
 
@@ -1110,6 +1132,24 @@ std::vector<std::string> PlayerbotHolder::HandlePlayerbotCommand(char const* arg
             messages.push_back("Error: Invalid Class. Try again.");
             return messages;
         }
+        //  Added for gender choice : Parsing gender
+        int8 gender = -1; // -1 = gender will be random
+        if (genderArg)
+        {
+            std::string g = genderArg;
+            std::transform(g.begin(), g.end(), g.begin(), ::tolower);
+
+            if (g == "male" || g == "0")
+                gender = GENDER_MALE; // 0
+            else if (g == "female" || g == "1")
+                gender = GENDER_FEMALE; // 1
+            else
+            {
+                messages.push_back("Unknown gender : " + g + " (male/female/0/1)");
+                return messages;
+            }
+        } //end
+
         if (claz == 6 && master->GetLevel() < sWorld->getIntConfig(CONFIG_START_HEROIC_PLAYER_LEVEL))
         {
             messages.push_back("Your level is too low to summon Deathknight");
@@ -1119,6 +1159,9 @@ std::vector<std::string> PlayerbotHolder::HandlePlayerbotCommand(char const* arg
         const std::unordered_set<ObjectGuid> &guidCache = sRandomPlayerbotMgr->addclassCache[RandomPlayerbotMgr::GetTeamClassIdx(teamId == TEAM_ALLIANCE, claz)];
         for (const ObjectGuid &guid: guidCache)
         {
+            // If the user requested a specific gender, skip any character that doesn't match.
+            if (gender != -1 && GetOfflinePlayerGender(guid) != gender)
+                continue;
             if (botLoading.find(guid) != botLoading.end())
                 continue;
             if (ObjectAccessor::FindConnectedPlayer(guid))

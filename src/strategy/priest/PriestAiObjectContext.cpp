@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #include "PriestAiObjectContext.h"
@@ -105,6 +105,7 @@ public:
         creators["silence"] = &PriestTriggerFactoryInternal::silence;
         creators["silence on enemy healer"] = &PriestTriggerFactoryInternal::silence_on_enemy_healer;
         creators["shadowfiend"] = &PriestTriggerFactoryInternal::shadowfiend;
+        creators["mind sear channel check"] = &PriestTriggerFactoryInternal::mind_sear_channel_check;
     }
 
 private:
@@ -148,6 +149,7 @@ private:
     static Trigger* silence(PlayerbotAI* botAI) { return new SilenceTrigger(botAI); }
     static Trigger* chastise(PlayerbotAI* botAI) { return new ChastiseTrigger(botAI); }
     static Trigger* binding_heal(PlayerbotAI* botAI) { return new BindingHealTrigger(botAI); }
+    static Trigger* mind_sear_channel_check(PlayerbotAI* botAI) { return new MindSearChannelCheckTrigger(botAI); }
 };
 
 class PriestAiObjectContextInternal : public NamedObjectContext<Action>

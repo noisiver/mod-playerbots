@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #include "MageAiObjectContext.h"
@@ -237,7 +237,6 @@ public:
         creators["use mana citrine"] = &MageAiObjectContextInternal::use_mana_citrine;
         creators["use mana jade"] = &MageAiObjectContextInternal::use_mana_jade;
         creators["use mana agate"] = &MageAiObjectContextInternal::use_mana_agate;
-        creators["cancel channel"] = &MageAiObjectContextInternal::cancel_channel;
         creators["mana shield"] = &MageAiObjectContextInternal::mana_shield;
     }
 
@@ -299,7 +298,6 @@ private:
     static Action* use_mana_citrine(PlayerbotAI* botAI) { return new UseManaCitrineAction(botAI); }
     static Action* use_mana_jade(PlayerbotAI* botAI) { return new UseManaJadeAction(botAI); }
     static Action* use_mana_agate(PlayerbotAI* botAI) { return new UseManaAgateAction(botAI); }
-    static Action* cancel_channel(PlayerbotAI* botAI) { return new CancelChannelAction(botAI); }
     static Action* mana_shield(PlayerbotAI* botAI) { return new CastManaShieldAction(botAI); }
 };
 

@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #include "PlayerbotAI.h"
@@ -378,10 +378,7 @@ void PlayerbotAI::UpdateAIGroupMembership()
             PlayerbotAI* leaderAI = GET_PLAYERBOT_AI(leader);
             if (leaderAI && !leaderAI->IsRealPlayer())
             {
-                WorldPacket* packet = new WorldPacket(CMSG_GROUP_DISBAND);
-                bot->GetSession()->QueuePacket(packet);
-                // bot->RemoveFromGroup();
-                ResetStrategies();
+                LeaveOrDisbandGroup();
             }
         }
     }
@@ -405,10 +402,7 @@ void PlayerbotAI::UpdateAIGroupMembership()
         }
         if (!hasRealPlayer)
         {
-            WorldPacket* packet = new WorldPacket(CMSG_GROUP_DISBAND);
-            bot->GetSession()->QueuePacket(packet);
-            // bot->RemoveFromGroup();
-            ResetStrategies();
+            LeaveOrDisbandGroup();
         }
     }
 }
@@ -722,6 +716,8 @@ void PlayerbotAI::HandleTeleportAck()
         // SetNextCheckDelay(urand(2000, 5000));
         if (sPlayerbotAIConfig->applyInstanceStrategies)
             ApplyInstanceStrategies(bot->GetMapId(), true);
+        if (sPlayerbotAIConfig->restrictHealerDPS)
+            EvaluateHealerDpsStrategy();
         Reset(true);
     }
 
@@ -787,6 +783,16 @@ void PlayerbotAI::Reset(bool full)
             engines[i]->Init();
         }
     }
+}
+
+void PlayerbotAI::LeaveOrDisbandGroup()
+{
+    if (!bot || !bot->GetGroup() || IsRealPlayer())
+        return;
+
+    WorldPacket* packet = new WorldPacket(CMSG_GROUP_DISBAND);
+    bot->GetSession()->QueuePacket(packet);
+    ResetStrategies();
 }
 
 bool PlayerbotAI::IsAllowedCommand(std::string const text)
@@ -1049,7 +1055,7 @@ void PlayerbotAI::HandleBotOutgoingPacket(WorldPacket const& packet)
                     default:
                         return;
                 }
-                
+
                 if (chanName == "World")
                     return;
 
@@ -1511,19 +1517,22 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
     switch (mapId)
     {
         case 249:
-            strategyName = "onyxia";
+			strategyName = "onyxia";  // Onyxia's Lair
             break;
         case 409:
-            strategyName = "mc";
+			strategyName = "mc";  // Molten Core
             break;
         case 469:
-            strategyName = "bwl";
+			strategyName = "bwl";  // Blackwing Lair
             break;
         case 509:
-            strategyName = "aq20";
+			strategyName = "aq20";  // Ruins of Ahn'Qiraj
+            break;
+        case 532:
+            strategyName = "karazhan";  // Karazhan
             break;
         case 533:
-            strategyName = "naxx";
+			strategyName = "naxx";  // Naxxramas
             break;
         case 574:
             strategyName = "wotlk-uk";  // Utgarde Keep
@@ -1764,7 +1773,7 @@ bool PlayerbotAI::IsRangedDps(Player* player, bool bySpec) { return IsRanged(pla
 
 bool PlayerbotAI::IsHealAssistantOfIndex(Player* player, int index)
 {
-    Group* group = bot->GetGroup();
+    Group* group = player->GetGroup();
     if (!group)
     {
         return false;
@@ -1775,6 +1784,11 @@ bool PlayerbotAI::IsHealAssistantOfIndex(Player* player, int index)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
+
+        if (!member)
+        {
+            continue;
+        }
 
         if (IsHeal(member))  // Check if the member is a healer
         {
@@ -1795,7 +1809,7 @@ bool PlayerbotAI::IsHealAssistantOfIndex(Player* player, int index)
 
 bool PlayerbotAI::IsRangedDpsAssistantOfIndex(Player* player, int index)
 {
-    Group* group = bot->GetGroup();
+    Group* group = player->GetGroup();
     if (!group)
     {
         return false;
@@ -1806,6 +1820,11 @@ bool PlayerbotAI::IsRangedDpsAssistantOfIndex(Player* player, int index)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
+
+        if (!member)
+        {
+            continue;
+        }
 
         if (IsRangedDps(member))  // Check if the member is a ranged DPS
         {
@@ -1839,6 +1858,35 @@ bool PlayerbotAI::HasAggro(Unit* unit)
     return false;
 }
 
+int32 PlayerbotAI::GetAssistTankIndex(Player* player)
+{
+    Group* group = player->GetGroup();
+    if (!group)
+    {
+        return -1;
+    }
+    int counter = 0;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+
+        if (!member)
+        {
+            continue;
+        }
+
+        if (player == member)
+        {
+            return counter;
+        }
+        if (IsTank(member, true) && group->IsAssistant(member->GetGUID()))
+        {
+            counter++;
+        }
+    }
+    return 0;
+}
+
 int32 PlayerbotAI::GetGroupSlotIndex(Player* player)
 {
     Group* group = bot->GetGroup();
@@ -1850,6 +1898,12 @@ int32 PlayerbotAI::GetGroupSlotIndex(Player* player)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
+
+        if (!member)
+        {
+            continue;
+        }
+
         if (player == member)
         {
             return counter;
@@ -1874,6 +1928,12 @@ int32 PlayerbotAI::GetRangedIndex(Player* player)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
+
+        if (!member)
+        {
+            continue;
+        }
+
         if (player == member)
         {
             return counter;
@@ -1901,6 +1961,12 @@ int32 PlayerbotAI::GetClassIndex(Player* player, uint8 cls)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
+
+        if (!member)
+        {
+            continue;
+        }
+
         if (player == member)
         {
             return counter;
@@ -1927,6 +1993,12 @@ int32 PlayerbotAI::GetRangedDpsIndex(Player* player)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
+
+        if (!member)
+        {
+            continue;
+        }
+
         if (player == member)
         {
             return counter;
@@ -1954,6 +2026,12 @@ int32 PlayerbotAI::GetMeleeIndex(Player* player)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
+
+        if (!member)
+        {
+            continue;
+        }
+
         if (player == member)
         {
             return counter;
@@ -2014,7 +2092,7 @@ bool PlayerbotAI::IsHeal(Player* player, bool bySpec)
     switch (player->getClass())
     {
         case CLASS_PRIEST:
-            if (tab == PRIEST_TAB_DISIPLINE || tab == PRIEST_TAB_HOLY)
+            if (tab == PRIEST_TAB_DISCIPLINE || tab == PRIEST_TAB_HOLY)
             {
                 return true;
             }
@@ -2125,11 +2203,73 @@ bool PlayerbotAI::IsMainTank(Player* player)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
+
+        if (!member)
+        {
+            continue;
+        }
+
         if (IsTank(member) && member->IsAlive())
         {
             return player->GetGUID() == member->GetGUID();
         }
     }
+    return false;
+}
+
+bool PlayerbotAI::IsBotMainTank(Player* player)
+{
+    if (!player->GetSession()->IsBot() || !IsTank(player))
+    {
+        return false;
+    }
+
+    if (IsMainTank(player))
+    {
+        return true;
+    }
+
+    Group* group = player->GetGroup();
+    if (!group)
+    {
+        return true;  // If no group, consider the bot as main tank
+    }
+
+    uint32 botAssistTankIndex = GetAssistTankIndex(player);
+
+    if (botAssistTankIndex == -1)
+    {
+        return false;
+    }
+
+    for (GroupReference* gref = group->GetFirstMember(); gref; gref = gref->next())
+    {
+        Player* member = gref->GetSource();
+        if (!member)
+        {
+            continue;
+        }
+
+        uint32 memberAssistTankIndex = GetAssistTankIndex(member);
+
+        if (memberAssistTankIndex == -1)
+        {
+            continue;
+        }
+
+        if (memberAssistTankIndex == botAssistTankIndex && player == member)
+        {
+            return true;
+        }
+
+        if (memberAssistTankIndex < botAssistTankIndex && member->GetSession()->IsBot())
+        {
+            return false;
+        }
+
+        return false;
+    }
+
     return false;
 }
 
@@ -2144,6 +2284,12 @@ uint32 PlayerbotAI::GetGroupTankNum(Player* player)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
+
+        if (!member)
+        {
+            continue;
+        }
+
         if (IsTank(member) && member->IsAlive())
         {
             result++;
@@ -2156,7 +2302,7 @@ bool PlayerbotAI::IsAssistTank(Player* player) { return IsTank(player) && !IsMai
 
 bool PlayerbotAI::IsAssistTankOfIndex(Player* player, int index)
 {
-    Group* group = bot->GetGroup();
+    Group* group = player->GetGroup();
     if (!group)
     {
         return false;
@@ -2165,6 +2311,12 @@ bool PlayerbotAI::IsAssistTankOfIndex(Player* player, int index)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
+
+        if (!member)
+        {
+            continue;
+        }
+
         if (group->IsAssistant(member->GetGUID()) && IsAssistTank(member))
         {
             if (index == counter)
@@ -2178,6 +2330,12 @@ bool PlayerbotAI::IsAssistTankOfIndex(Player* player, int index)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
+
+        if (!member)
+        {
+            continue;
+        }
+
         if (!group->IsAssistant(member->GetGUID()) && IsAssistTank(member))
         {
             if (index == counter)
@@ -2384,6 +2542,11 @@ std::vector<Player*> PlayerbotAI::GetPlayersInGroup()
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
+
+        if (!member)
+        {
+            continue;
+        }
 
         if (GET_PLAYERBOT_AI(member) && !GET_PLAYERBOT_AI(member)->IsRealPlayer())
             continue;
@@ -2778,9 +2941,9 @@ bool PlayerbotAI::HasAura(uint32 spellId, Unit const* unit)
     return unit->HasAura(spellId);
     // for (uint8 effect = EFFECT_0; effect <= EFFECT_2; effect++)
     // {
-    // 	AuraEffect const* aurEff = unit->GetAuraEffect(spellId, effect);
-    // 	if (IsRealAura(bot, aurEff, unit))
-    // 		return true;
+    //     AuraEffect const* aurEff = unit->GetAuraEffect(spellId, effect);
+    //     if (IsRealAura(bot, aurEff, unit))
+    //         return true;
     // }
 
     // return false;
@@ -2931,6 +3094,18 @@ bool PlayerbotAI::CanCastSpell(uint32 spellid, Unit* target, bool checkHasSpell,
         {
             LOG_DEBUG("playerbots", "Can cast spell failed. No spellInfo. - target name: {}, spellid: {}, bot name: {}",
                       target->GetName(), spellid, bot->GetName());
+        }
+        return false;
+    }
+
+    if ((bot->GetShapeshiftForm() == FORM_FLIGHT || bot->GetShapeshiftForm() == FORM_FLIGHT_EPIC) && !bot->IsInCombat())
+    {
+        if (!sPlayerbotAIConfig->logInGroupOnly || (bot->GetGroup() && HasRealPlayerMaster()))
+        {
+            LOG_DEBUG(
+                "playerbots",
+                "Can cast spell failed. In flight form (not in combat). - target name: {}, spellid: {}, bot name: {}",
+                target->GetName(), spellid, bot->GetName());
         }
         return false;
     }
@@ -5092,13 +5267,13 @@ Item* PlayerbotAI::FindAmmo() const
 }
 
 // Find Consumable
-Item* PlayerbotAI::FindConsumable(uint32 displayId) const
+Item* PlayerbotAI::FindConsumable(uint32 itemId) const
 {
     return FindItemInInventory(
-        [displayId](ItemTemplate const* pItemProto) -> bool
+        [itemId](ItemTemplate const* pItemProto) -> bool
         {
             return (pItemProto->Class == ITEM_CLASS_CONSUMABLE || pItemProto->Class == ITEM_CLASS_TRADE_GOODS) &&
-                   pItemProto->DisplayInfoID == displayId;
+                   pItemProto->ItemId == itemId;
         });
 }
 
@@ -5158,36 +5333,34 @@ Item* PlayerbotAI::FindLockedItem() const
         });
 }
 
-static const uint32 uPriorizedSharpStoneIds[8] = {ADAMANTITE_SHARPENING_DISPLAYID, FEL_SHARPENING_DISPLAYID,
-                                                  ELEMENTAL_SHARPENING_DISPLAYID,  DENSE_SHARPENING_DISPLAYID,
-                                                  SOLID_SHARPENING_DISPLAYID,      HEAVY_SHARPENING_DISPLAYID,
-                                                  COARSE_SHARPENING_DISPLAYID,     ROUGH_SHARPENING_DISPLAYID};
-
-static const uint32 uPriorizedWeightStoneIds[7] = {ADAMANTITE_WEIGHTSTONE_DISPLAYID, FEL_WEIGHTSTONE_DISPLAYID,
-                                                   DENSE_WEIGHTSTONE_DISPLAYID,      SOLID_WEIGHTSTONE_DISPLAYID,
-                                                   HEAVY_WEIGHTSTONE_DISPLAYID,      COARSE_WEIGHTSTONE_DISPLAYID,
-                                                   ROUGH_WEIGHTSTONE_DISPLAYID};
-
-/**
- * FindStoneFor()
- * return Item* Returns sharpening/weight stone item eligible to enchant a bot weapon
- *
- * params:weapon Item* the weap�n the function should search and return a enchanting item for
- * return nullptr if no relevant item is found in bot inventory, else return a sharpening or weight
- * stone based on the weapon subclass
- *
- */
 Item* PlayerbotAI::FindStoneFor(Item* weapon) const
 {
+    if (!weapon)
+        return nullptr;
+
+    const ItemTemplate* item_template = weapon->GetTemplate();
+    if (!item_template)
+        return nullptr;
+
+static const std::vector<uint32_t> uPrioritizedSharpStoneIds = {
+    ADAMANTITE_SHARPENING_STONE, FEL_SHARPENING_STONE, ELEMENTAL_SHARPENING_STONE, DENSE_SHARPENING_STONE,
+    SOLID_SHARPENING_STONE, HEAVY_SHARPENING_STONE, COARSE_SHARPENING_STONE, ROUGH_SHARPENING_STONE
+};
+
+static const std::vector<uint32_t> uPrioritizedWeightStoneIds = {
+    ADAMANTITE_WEIGHTSTONE, FEL_WEIGHTSTONE, DENSE_WEIGHTSTONE, SOLID_WEIGHTSTONE,
+    HEAVY_WEIGHTSTONE, COARSE_WEIGHTSTONE, ROUGH_WEIGHTSTONE
+};
+
     Item* stone = nullptr;
     ItemTemplate const* pProto = weapon->GetTemplate();
     if (pProto && (pProto->SubClass == ITEM_SUBCLASS_WEAPON_SWORD || pProto->SubClass == ITEM_SUBCLASS_WEAPON_SWORD2 ||
                    pProto->SubClass == ITEM_SUBCLASS_WEAPON_AXE || pProto->SubClass == ITEM_SUBCLASS_WEAPON_AXE2 ||
-                   pProto->SubClass == ITEM_SUBCLASS_WEAPON_DAGGER))
+                   pProto->SubClass == ITEM_SUBCLASS_WEAPON_DAGGER || pProto->SubClass == ITEM_SUBCLASS_WEAPON_POLEARM))
     {
-        for (uint8 i = 0; i < std::size(uPriorizedSharpStoneIds); ++i)
+        for (uint8 i = 0; i < std::size(uPrioritizedSharpStoneIds); ++i)
         {
-            stone = FindConsumable(uPriorizedSharpStoneIds[i]);
+            stone = FindConsumable(uPrioritizedSharpStoneIds[i]);
             if (stone)
             {
                 return stone;
@@ -5195,11 +5368,12 @@ Item* PlayerbotAI::FindStoneFor(Item* weapon) const
         }
     }
     else if (pProto &&
-             (pProto->SubClass == ITEM_SUBCLASS_WEAPON_MACE || pProto->SubClass == ITEM_SUBCLASS_WEAPON_MACE2))
+             (pProto->SubClass == ITEM_SUBCLASS_WEAPON_MACE || pProto->SubClass == ITEM_SUBCLASS_WEAPON_MACE2 ||
+              pProto->SubClass == ITEM_SUBCLASS_WEAPON_STAFF || pProto->SubClass == ITEM_SUBCLASS_WEAPON_FIST))
     {
-        for (uint8 i = 0; i < std::size(uPriorizedWeightStoneIds); ++i)
+        for (uint8 i = 0; i < std::size(uPrioritizedWeightStoneIds); ++i)
         {
-            stone = FindConsumable(uPriorizedWeightStoneIds[i]);
+            stone = FindConsumable(uPrioritizedWeightStoneIds[i]);
             if (stone)
             {
                 return stone;
@@ -5212,6 +5386,7 @@ Item* PlayerbotAI::FindStoneFor(Item* weapon) const
 
 Item* PlayerbotAI::FindOilFor(Item* weapon) const
 {
+
     if (!weapon)
         return nullptr;
 
@@ -5219,35 +5394,60 @@ Item* PlayerbotAI::FindOilFor(Item* weapon) const
     if (!item_template)
         return nullptr;
 
-    // static const will only get created once whatever the call amout
-    static const std::vector<uint32_t> uPriorizedWizardOilIds = {
-        MINOR_WIZARD_OIL,   MINOR_MANA_OIL, LESSER_WIZARD_OIL, LESSER_MANA_OIL,    BRILLIANT_WIZARD_OIL,
-        BRILLIANT_MANA_OIL, WIZARD_OIL,     SUPERIOR_MANA_OIL, SUPERIOR_WIZARD_OIL};
+    static const std::vector<uint32_t> uPrioritizedWizardOilIds = {
+        BRILLIANT_WIZARD_OIL, SUPERIOR_WIZARD_OIL, WIZARD_OIL, LESSER_WIZARD_OIL, MINOR_WIZARD_OIL,
+        BRILLIANT_MANA_OIL, SUPERIOR_MANA_OIL, LESSER_MANA_OIL, MINOR_MANA_OIL};
 
-    // static const will only get created once whatever the call amout
-    static const std::vector<uint32_t> uPriorizedManaOilIds = {
-        MINOR_MANA_OIL,       MINOR_WIZARD_OIL,  LESSER_MANA_OIL, LESSER_WIZARD_OIL,  BRILLIANT_MANA_OIL,
-        BRILLIANT_WIZARD_OIL, SUPERIOR_MANA_OIL, WIZARD_OIL,      SUPERIOR_WIZARD_OIL};
+    static const std::vector<uint32_t> uPrioritizedManaOilIds = {
+        BRILLIANT_MANA_OIL, SUPERIOR_MANA_OIL, LESSER_MANA_OIL, MINOR_MANA_OIL,
+        BRILLIANT_WIZARD_OIL, SUPERIOR_WIZARD_OIL, WIZARD_OIL, LESSER_WIZARD_OIL, MINOR_WIZARD_OIL};
 
     Item* oil = nullptr;
-    if (item_template->SubClass == ITEM_SUBCLASS_WEAPON_SWORD ||
-        item_template->SubClass == ITEM_SUBCLASS_WEAPON_STAFF || item_template->SubClass == ITEM_SUBCLASS_WEAPON_DAGGER)
+    int botClass = bot->getClass();
+    int specTab = AiFactory::GetPlayerSpecTab(bot);
+
+    const std::vector<uint32_t>* prioritizedOils = nullptr;
+    switch (botClass)
     {
-        for (const auto& id : uPriorizedWizardOilIds)
-        {
-            oil = FindConsumable(id);
-            if (oil)
-                return oil;
-        }
+        case CLASS_PRIEST:
+            prioritizedOils = (specTab == 2) ? &uPrioritizedWizardOilIds : &uPrioritizedManaOilIds;
+            break;
+        case CLASS_MAGE:
+            prioritizedOils = &uPrioritizedWizardOilIds;
+            break;
+        case CLASS_DRUID:
+            if (specTab == 0) // Balance
+                prioritizedOils = &uPrioritizedWizardOilIds;
+            else if (specTab == 1) // Feral
+                prioritizedOils = nullptr;
+            else // Restoration (specTab == 2) or any other/unspecified spec
+                prioritizedOils = &uPrioritizedManaOilIds;
+            break;
+        case CLASS_HUNTER:
+            prioritizedOils = &uPrioritizedManaOilIds;
+            break;
+        case CLASS_PALADIN:
+            if (specTab == 1) // Protection
+                prioritizedOils = &uPrioritizedWizardOilIds;
+            else if (specTab == 2) // Retribution
+                prioritizedOils = nullptr;
+            else // Holy (specTab == 0) or any other/unspecified spec
+                prioritizedOils = &uPrioritizedManaOilIds;
+            break;
+        default:
+            prioritizedOils = &uPrioritizedManaOilIds;
+            break;
     }
-    else if (item_template->SubClass == ITEM_SUBCLASS_WEAPON_MACE ||
-             item_template->SubClass == ITEM_SUBCLASS_WEAPON_MACE2)
+
+    if (prioritizedOils)
     {
-        for (const auto& id : uPriorizedManaOilIds)
+        for (const auto& id : *prioritizedOils)
         {
             oil = FindConsumable(id);
             if (oil)
+            {
                 return oil;
+            }
         }
     }
 
@@ -6394,4 +6594,15 @@ void PlayerbotAI::AddTimedEvent(std::function<void()> callback, uint32 delayMs)
 
     // Every Player already owns an EventMap called m_Events
     bot->m_Events.AddEvent(new LambdaEvent(std::move(callback)), bot->m_Events.CalculateTime(delayMs));
+}
+
+void PlayerbotAI::EvaluateHealerDpsStrategy()
+{
+    if (!IsHeal(bot, true))
+        return;
+
+    if (sPlayerbotAIConfig->IsRestrictedHealerDPSMap(bot->GetMapId()))
+        ChangeStrategy("-healer dps", BOT_STATE_COMBAT);
+    else
+        ChangeStrategy("+healer dps", BOT_STATE_COMBAT);
 }

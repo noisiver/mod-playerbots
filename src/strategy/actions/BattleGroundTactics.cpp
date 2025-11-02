@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #include "BattleGroundTactics.h"
@@ -26,6 +26,7 @@
 #include "Playerbots.h"
 #include "PositionValue.h"
 #include "PvpTriggers.h"
+#include "PathGenerator.h"
 #include "ServerFacade.h"
 #include "Vehicle.h"
 
@@ -2902,7 +2903,7 @@ bool BGTactics::selectObjective(bool reset)
                         {
                             // just make bot stay where it is if already close
                             // (stops them shifting around between the random spots)
-                            if (bot->GetDistance(IC_GATE_ATTACK_POS_HORDE) < 8.0f)  
+                            if (bot->GetDistance(IC_GATE_ATTACK_POS_HORDE) < 8.0f)
                                 pos.Set(bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), bot->GetMapId());
                             else
                                 pos.Set(IC_GATE_ATTACK_POS_HORDE.GetPositionX() + frand(-5.0f, +5.0f),
@@ -3212,7 +3213,7 @@ bool BGTactics::moveToObjective(bool ignoreDist)
         // sServerFacade->GetDistance2d(bot, pos.x, pos.y); bot->Say(out.str(), LANG_UNIVERSAL);
 
         // dont increase from 1.5 will cause bugs with horde capping AV towers
-        return MoveNear(bot->GetMapId(), pos.x, pos.y, pos.z, 1.5f);  
+        return MoveNear(bot->GetMapId(), pos.x, pos.y, pos.z, 1.5f);
     }
     return false;
 }
@@ -3548,14 +3549,14 @@ bool BGTactics::startNewPathFree(std::vector<BattleBotPath*> const& vPaths)
 
 /**
  * @brief Handles flag/base capturing gameplay in battlegrounds
- * 
+ *
  * This function manages the logic for capturing flags and bases in various battlegrounds.
  * It handles:
  * - Enemy detection and combat near objectives
  * - Coordination with friendly players who are capturing
  * - Different capture mechanics for each battleground type
  * - Proper positioning and movement
- * 
+ *
  * @param vPaths Vector of possible paths the bot can take
  * @param vFlagIds Vector of flag/base GameObjects that can be captured
  * @return true if handling a flag/base action, false otherwise
@@ -3686,7 +3687,7 @@ bool BGTactics::atFlag(std::vector<BattleBotPath*> const& vPaths, std::vector<ui
                 float y = bot->GetPositionY() + 5.0f * sin(angle);
                 MoveTo(bot->GetMapId(), x, y, bot->GetPositionZ());
             }
-            
+
             // Reset objective and take new path for defending
             resetObjective();
             if (!startNewPathBegin(vPaths))
@@ -3894,7 +3895,7 @@ bool BGTactics::protectFC()
         float fcY = teamFC->GetPositionY();
         float fcZ = teamFC->GetPositionZ();
         uint32 mapId = bot->GetMapId();
-        
+
         return MoveNear(mapId, fcX, fcY, fcZ, 5.0f, MovementPriority::MOVEMENT_NORMAL);
     }
 
@@ -4152,7 +4153,6 @@ bool ArenaTactics::Execute(Event event)
     if (bot->isMoving())
         return false;
 
-
     // startup phase
     if (bg->GetStartDelayTime() > 0)
         return false;
@@ -4163,12 +4163,29 @@ bool ArenaTactics::Execute(Event event)
     if (botAI->HasStrategy("buff", BOT_STATE_NON_COMBAT))
         botAI->ChangeStrategy("-buff", BOT_STATE_NON_COMBAT);
 
-    // this causes bot to reset constantly in arena
-    //    if (sBattlegroundMgr->IsArenaType(bg->GetBgTypeID()))
-    //    {
-    //        botAI->ResetStrategies(false);
-    //        botAI->SetMaster(nullptr);
-    //    }
+    Unit* target = bot->GetVictim();
+    if (target)
+    {
+        bool losBlocked = !bot->IsWithinLOSInMap(target) || fabs(bot->GetPositionZ() - target->GetPositionZ()) > 5.0f;
+
+        if (losBlocked)
+        {
+            PathGenerator path(bot);
+            path.CalculatePath(target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), false);
+
+            if (path.GetPathType() != PATHFIND_NOPATH)
+            {
+                // If you are casting a spell and lost your target due to LoS, interrupt the cast and move
+                if (bot->IsNonMeleeSpellCast(false, true, true, false, true))
+                    bot->InterruptNonMeleeSpells(true);
+
+                float x, y, z;
+                target->GetPosition(x, y, z);
+                botAI->TellMasterNoFacing("Repositioning to exit the LoS target!");
+                return MoveTo(target->GetMapId(), x + frand(-1, +1), y + frand(-1, +1), z, false, true);
+            }
+        }
+    }
 
     if (!bot->IsInCombat())
         return moveToCenter(bg);
@@ -4272,9 +4289,15 @@ bool ArenaTactics::moveToCenter(Battleground* bg)
             {
                 // they like to hang around at the tip of the pipes doing nothing, so we just teleport them down
                 if (bot->GetDistance(1333.07f, 817.18f, 13.35f) < 4)
+                {
+                    bot->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TELEPORTED | AURA_INTERRUPT_FLAG_CHANGE_MAP);
                     bot->TeleportTo(bg->GetMapId(), 1330.96f, 816.75f, 3.2f, bot->GetOrientation());
+                }
                 if (bot->GetDistance(1250.13f, 764.79f, 13.34f) < 4)
+                {
+                    bot->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TELEPORTED | AURA_INTERRUPT_FLAG_CHANGE_MAP);
                     bot->TeleportTo(bg->GetMapId(), 1252.19f, 765.41f, 3.2f, bot->GetOrientation());
+                }
             }
             break;
         case BATTLEGROUND_RV:

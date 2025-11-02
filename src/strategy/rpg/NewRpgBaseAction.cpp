@@ -67,6 +67,7 @@ bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
             bot->GetName(), bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), bot->GetMapId(),
             dest.GetPositionX(), dest.GetPositionY(), dest.GetPositionZ(), dest.getMapId(), bot->GetZoneId(),
             zone_name);
+        bot->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TELEPORTED | AURA_INTERRUPT_FLAG_CHANGE_MAP);
         return bot->TeleportTo(dest);
     }
 
@@ -1059,6 +1060,13 @@ bool NewRpgBaseAction::RandomChangeStatus(std::vector<NewRpgStatus> candidateSta
             availableStatus.push_back(status);
             probSum += sPlayerbotAIConfig->RpgStatusProbWeight[status];
         }
+    }
+    // Safety check. Default to "rest" if all RPG weights = 0
+    if (availableStatus.empty() || probSum == 0)
+    {
+        botAI->rpgInfo.ChangeToRest();
+        bot->SetStandState(UNIT_STAND_STATE_SIT);
+        return true;
     }
     uint32 rand = urand(1, probSum);
     uint32 accumulate = 0;

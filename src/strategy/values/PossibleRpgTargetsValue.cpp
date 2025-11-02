@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #include "PossibleRpgTargetsValue.h"
@@ -49,7 +49,7 @@ void PossibleRpgTargetsValue::FindUnits(std::list<Unit*>& targets)
 {
     Acore::AnyUnitInObjectRangeCheck u_check(bot, range);
     Acore::UnitListSearcher<Acore::AnyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
-    Cell::VisitAllObjects(bot, searcher, range);
+    Cell::VisitObjects(bot, searcher, range);
 }
 
 bool PossibleRpgTargetsValue::AcceptUnit(Unit* unit)
@@ -130,7 +130,7 @@ GuidVector PossibleNewRpgTargetsValue::Calculate()
     std::sort(guidDistancePairs.begin(), guidDistancePairs.end(), [](const auto& a, const auto& b) {
         return a.second < b.second;
     });
-    
+
     for (const auto& pair : guidDistancePairs) {
         results.push_back(pair.first);
     }
@@ -141,7 +141,7 @@ void PossibleNewRpgTargetsValue::FindUnits(std::list<Unit*>& targets)
 {
     Acore::AnyUnitInObjectRangeCheck u_check(bot, range);
     Acore::UnitListSearcher<Acore::AnyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
-    Cell::VisitAllObjects(bot, searcher, range);
+    Cell::VisitObjects(bot, searcher, range);
 }
 
 bool PossibleNewRpgTargetsValue::AcceptUnit(Unit* unit)
@@ -168,9 +168,9 @@ GuidVector PossibleNewRpgGameObjectsValue::Calculate()
     std::list<GameObject*> targets;
     AnyGameObjectInObjectRangeCheck u_check(bot, range);
     Acore::GameObjectListSearcher<AnyGameObjectInObjectRangeCheck> searcher(bot, targets, u_check);
-    Cell::VisitAllObjects(bot, searcher, range);
+    Cell::VisitObjects(bot, searcher, range);
 
-    
+
     std::vector<std::pair<ObjectGuid, float>> guidDistancePairs;
     for (GameObject* go : targets)
     {
@@ -185,10 +185,10 @@ GuidVector PossibleNewRpgGameObjectsValue::Calculate()
         }
         if (!flagCheck)
             continue;
-        
+
         if (!ignoreLos && !bot->IsWithinLOSInMap(go))
             continue;
-        
+
         guidDistancePairs.push_back({go->GetGUID(), bot->GetExactDist(go)});
     }
     GuidVector results;
@@ -197,7 +197,7 @@ GuidVector PossibleNewRpgGameObjectsValue::Calculate()
     std::sort(guidDistancePairs.begin(), guidDistancePairs.end(), [](const auto& a, const auto& b) {
         return a.second < b.second;
     });
-    
+
     for (const auto& pair : guidDistancePairs) {
         results.push_back(pair.first);
     }
