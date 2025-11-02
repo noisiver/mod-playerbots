@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #include "WarlockActions.h"
@@ -21,8 +21,8 @@
 
 const int ITEM_SOUL_SHARD = 6265;
 
-// Checks if the bot has less than 20 soul shards, and if so, allows casting Drain Soul
-bool CastDrainSoulAction::isUseful() { return AI_VALUE2(uint32, "item count", "soul shard") < 20; }
+// Checks if the bot has less than 26 soul shards, and if so, allows casting Drain Soul
+bool CastDrainSoulAction::isUseful() { return AI_VALUE2(uint32, "item count", "soul shard") < 26; }
 
 // Checks if the bot's health is above a certain threshold, and if so, allows casting Life Tap
 bool CastLifeTapAction::isUseful() { return AI_VALUE2(uint8, "health", "self target") > sPlayerbotAIConfig->lowHealth; }
@@ -173,7 +173,7 @@ bool CastCreateSoulstoneAction::isUseful()
     // Check if the bot already has any soulstone
     for (uint32 id : soulstoneIds)
     {
-        if (bot->GetItemCount(id, false) > 0)  
+        if (bot->GetItemCount(id, false) > 0)
             return false;                      // Already has a soulstone
     }
 
@@ -330,7 +330,7 @@ bool UseSoulstoneTankAction::Execute(Event event)
                 {
                     chosenTank = member;
                     soulstoneReservations[chosenTank->GetGUID()] = now + 2500;  // Reserve for 2.5 seconds
-                    break;                                                      
+                    break;
                 }
             }
         }
