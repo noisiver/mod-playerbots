@@ -1,10 +1,10 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #include "DruidTriggers.h"
-
+#include "Player.h"
 #include "Playerbots.h"
 
 bool MarkOfTheWildOnPartyTrigger::IsActive()
@@ -34,3 +34,30 @@ bool BearFormTrigger::IsActive() { return !botAI->HasAnyAuraOf(bot, "bear form",
 bool TreeFormTrigger::IsActive() { return !botAI->HasAura(33891, bot); }
 
 bool CatFormTrigger::IsActive() { return !botAI->HasAura("cat form", bot); }
+
+const std::set<uint32> HurricaneChannelCheckTrigger::HURRICANE_SPELL_IDS = {
+    16914,  // Hurricane Rank 1
+    17401,  // Hurricane Rank 2
+    17402,  // Hurricane Rank 3
+    27012,  // Hurricane Rank 4
+    48467   // Hurricane Rank 5
+};
+
+bool HurricaneChannelCheckTrigger::IsActive()
+{
+    Player* bot = botAI->GetBot();
+
+    // Check if the bot is channeling a spell
+    if (Spell* spell = bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
+    {
+        // Only trigger if the spell being channeled is Hurricane
+        if (HURRICANE_SPELL_IDS.count(spell->m_spellInfo->Id))
+        {
+            uint8 attackerCount = AI_VALUE(uint8, "attacker count");
+            return attackerCount < minEnemies;
+        }
+    }
+
+    // Not channeling Hurricane
+    return false;
+}

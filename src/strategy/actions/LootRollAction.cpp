@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #include "LootRollAction.h"
@@ -9,13 +9,12 @@
 #include "Group.h"
 #include "ItemUsageValue.h"
 #include "LootAction.h"
+#include "ObjectMgr.h"
 #include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
 
 bool LootRollAction::Execute(Event event)
 {
-    Player* bot = QueryItemUsageAction::botAI->GetBot();
-
     Group* group = bot->GetGroup();
     if (!group)
         return false;
@@ -30,29 +29,57 @@ bool LootRollAction::Execute(Event event)
         ObjectGuid guid = roll->itemGUID;
         uint32 slot = roll->itemSlot;
         uint32 itemId = roll->itemid;
+        int32 randomProperty = 0;
+        if (roll->itemRandomPropId)
+            randomProperty = roll->itemRandomPropId;
+        else if (roll->itemRandomSuffix)
+            randomProperty = -((int)roll->itemRandomSuffix);
 
         RollVote vote = PASS;
         ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
         if (!proto)
             continue;
-        ItemUsage usage = AI_VALUE2(ItemUsage, "item usage", itemId);
-        switch (proto->Class)
+
+        std::string itemUsageParam;
+        if (randomProperty != 0) {
+            itemUsageParam = std::to_string(itemId) + "," + std::to_string(randomProperty);
+        } else {
+            itemUsageParam = std::to_string(itemId);
+        }
+        ItemUsage usage = AI_VALUE2(ItemUsage, "item usage", itemUsageParam);
+
+        // Armor Tokens are classed as MISC JUNK (Class 15, Subclass 0), luckily no other items I found have class bits and epic quality.
+        if (proto->Class == ITEM_CLASS_MISC && proto->SubClass == ITEM_SUBCLASS_JUNK && proto->Quality == ITEM_QUALITY_EPIC)
         {
-            case ITEM_CLASS_WEAPON:
-            case ITEM_CLASS_ARMOR:
-                if (usage == ITEM_USAGE_EQUIP || usage == ITEM_USAGE_REPLACE || usage == ITEM_USAGE_BAD_EQUIP)
-                {
-                    vote = NEED;
-                }
-                else if (usage != ITEM_USAGE_NONE)
-                {
-                    vote = GREED;
-                }
-                break;
-            default:
-                if (StoreLootAction::IsLootAllowed(itemId, botAI))
-                    vote = NEED;
-                break;
+            if (CanBotUseToken(proto, bot))
+            {
+                vote = NEED; // Eligible for "Need"
+            }
+            else
+            {
+                vote = GREED; // Not eligible, so "Greed"
+            }
+        }
+        else
+        {
+            switch (proto->Class)
+            {
+                case ITEM_CLASS_WEAPON:
+                case ITEM_CLASS_ARMOR:
+                    if (usage == ITEM_USAGE_EQUIP || usage == ITEM_USAGE_REPLACE || usage == ITEM_USAGE_BAD_EQUIP)
+                    {
+                        vote = NEED;
+                    }
+                    else if (usage != ITEM_USAGE_NONE)
+                    {
+                        vote = GREED;
+                    }
+                    break;
+                default:
+                    if (StoreLootAction::IsLootAllowed(itemId, botAI))
+                        vote = CalculateRollVote(proto); // Ensure correct Need/Greed behavior
+                    break;
+            }
         }
         if (sPlayerbotAIConfig->lootRollLevel == 0)
         {
@@ -62,7 +89,14 @@ bool LootRollAction::Execute(Event event)
         {
             if (vote == NEED)
             {
-                vote = GREED;
+                if (RollUniqueCheck(proto, bot))
+                    {
+                        vote = PASS;
+                    }
+                else
+                    {
+                        vote = GREED;
+                    }
             }
             else if (vote == GREED)
             {
@@ -79,62 +113,13 @@ bool LootRollAction::Execute(Event event)
                 group->CountRollVote(bot->GetGUID(), guid, vote);
                 break;
         }
+        // One item at a time
+        return true;
     }
-    // WorldPacket p(event.getPacket()); //WorldPacket packet for CMSG_LOOT_ROLL, (8+4+1)
-    // p.rpos(0); //reset packet pointer
-    // p >> guid; //guid of the item rolled
-    // p >> slot; //number of players invited to roll
-    // p >> rollType; //need,greed or pass on roll
 
-    // std::vector<Roll*> rolls = group->GetRolls();
-    // bot->Say("guid:" + std::to_string(guid.GetCounter()) +
-    //     "item entry:" + std::to_string(guid.GetEntry()), LANG_UNIVERSAL);
-    // for (std::vector<Roll*>::iterator i = rolls.begin(); i != rolls.end(); ++i)
-    // {
-    //     if ((*i)->isValid() && (*i)->itemGUID == guid && (*i)->itemSlot == slot)
-    //     {
-    //         uint32 itemId = (*i)->itemid;
-    //         bot->Say("item entry2:" + std::to_string(itemId), LANG_UNIVERSAL);
-    //         ItemTemplate const *proto = sObjectMgr->GetItemTemplate(itemId);
-    //         if (!proto)
-    //             continue;
-
-    //         switch (proto->Class)
-    //         {
-    //         case ITEM_CLASS_WEAPON:
-    //         case ITEM_CLASS_ARMOR:
-    //             if (!QueryItemUsage(proto).empty())
-    //                 vote = NEED;
-    //             else if (bot->HasSkill(SKILL_ENCHANTING))
-    //                 vote = DISENCHANT;
-    //             break;
-    //         default:
-    //             if (StoreLootAction::IsLootAllowed(itemId, botAI))
-    //                 vote = NEED;
-    //             break;
-    //         }
-    //         break;
-    //     }
-    // }
-
-    // if (ItemTemplate const* proto = sObjectMgr->GetItemTemplate(guid.GetEntry()))
-    // {
-    //     switch (proto->Class)
-    //     {
-    //         case ITEM_CLASS_WEAPON:
-    //         case ITEM_CLASS_ARMOR:
-    //             if (!QueryItemUsage(proto).empty())
-    //                 vote = NEED;
-    //             break;
-    //         default:
-    //             if (StoreLootAction::IsLootAllowed(guid.GetEntry(), botAI))
-    //                 vote = NEED;
-    //             break;
-    //     }
-    // }
-
-    return true;
+    return false;
 }
+
 
 RollVote LootRollAction::CalculateRollVote(ItemTemplate const* proto)
 {
@@ -165,7 +150,7 @@ RollVote LootRollAction::CalculateRollVote(ItemTemplate const* proto)
     return StoreLootAction::IsLootAllowed(proto->ItemId, GET_PLAYERBOT_AI(bot)) ? needVote : PASS;
 }
 
-bool MasterLootRollAction::isUseful() { return !botAI->HasActivePlayerMaster(); };
+bool MasterLootRollAction::isUseful() { return !botAI->HasActivePlayerMaster(); }
 
 bool MasterLootRollAction::Execute(Event event)
 {
@@ -202,5 +187,74 @@ bool MasterLootRollAction::Execute(Event event)
     RollVote vote = CalculateRollVote(proto);
     group->CountRollVote(bot->GetGUID(), creatureGuid, CalculateRollVote(proto));
 
+    return true;
+}
+
+bool CanBotUseToken(ItemTemplate const* proto, Player* bot)
+{
+    // Get the bitmask for the bot's class
+    uint32 botClassMask = (1 << (bot->getClass() - 1));
+
+    // Check if the bot's class is allowed to use the token
+    if (proto->AllowableClass & botClassMask)
+    {
+        return true; // Bot's class is eligible to use this token
+    }
+
+    return false; // Bot's class cannot use this token
+}
+
+bool RollUniqueCheck(ItemTemplate const* proto, Player* bot)
+{
+    // Count the total number of the item (equipped + in bags)
+    uint32 totalItemCount = bot->GetItemCount(proto->ItemId, true);
+
+    // Count the number of the item in bags only
+    uint32 bagItemCount = bot->GetItemCount(proto->ItemId, false);
+
+    // Determine if the unique item is already equipped
+    bool isEquipped = (totalItemCount > bagItemCount);
+    if (isEquipped && proto->HasFlag(ITEM_FLAG_UNIQUE_EQUIPPABLE))
+    {
+        return true;  // Unique Item is already equipped
+    }
+    else if (proto->HasFlag(ITEM_FLAG_UNIQUE_EQUIPPABLE) && (bagItemCount > 1))
+    {
+        return true; // Unique item already in bag, don't roll for it
+    }
+    return false; // Item is not equipped or in bags, roll for it
+}
+
+bool RollAction::Execute(Event event)
+{
+    std::string link = event.getParam();
+
+    if (link.empty())
+    {
+        bot->DoRandomRoll(0,100);
+        return false;
+    }
+    ItemIds itemIds = chat->parseItems(link);
+    if (itemIds.empty())
+        return false;
+    uint32 itemId = *itemIds.begin();
+    ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
+    if (!proto)
+    {
+        return false;
+    }
+    std::string itemUsageParam;
+    itemUsageParam = std::to_string(itemId);
+
+    ItemUsage usage = AI_VALUE2(ItemUsage, "item usage", itemUsageParam);
+    switch (proto->Class)
+    {
+        case ITEM_CLASS_WEAPON:
+        case ITEM_CLASS_ARMOR:
+        if (usage == ITEM_USAGE_EQUIP || usage == ITEM_USAGE_REPLACE || usage == ITEM_USAGE_BAD_EQUIP)
+        {
+            bot->DoRandomRoll(0,100);
+        }
+    }
     return true;
 }

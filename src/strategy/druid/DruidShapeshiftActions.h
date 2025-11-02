@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #ifndef _PLAYERBOT_DRUIDSHAPESHIFTACTIONS_H
@@ -64,6 +64,16 @@ class CastCasterFormAction : public CastBuffSpellAction
 {
 public:
     CastCasterFormAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "caster form") {}
+
+    bool isUseful() override;
+    bool isPossible() override { return true; }
+    bool Execute(Event event) override;
+};
+
+class CastCancelTreeFormAction : public CastBuffSpellAction
+{
+public:
+    CastCancelTreeFormAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "cancel tree form") {}
 
     bool isUseful() override;
     bool isPossible() override { return true; }

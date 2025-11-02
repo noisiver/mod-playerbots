@@ -25,7 +25,7 @@ float EstimatedLifetimeValue::Calculate()
 
 float EstimatedGroupDpsValue::Calculate()
 {
-    float totalDps;
+    float totalDps = 0;
 
     std::vector<Player*> groupPlayer = {bot};
     if (Group* group = bot->GetGroup())
@@ -36,7 +36,11 @@ float EstimatedGroupDpsValue::Calculate()
             if (member == bot)  // calculated
                 continue;
 
-            if (!member || !member->IsInWorld())
+            // ignore real player as they may not help with damage
+            if (!GET_PLAYERBOT_AI(member) || GET_PLAYERBOT_AI(member)->IsRealPlayer())
+                continue;
+
+            if (!member || !member->IsInWorld() || !member->IsAlive())
                 continue;
 
             if (member->GetMapId() != bot->GetMapId())

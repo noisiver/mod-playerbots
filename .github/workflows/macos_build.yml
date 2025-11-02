@@ -5,9 +5,9 @@ on:
   pull_request:
     branches: [ "master" ]
 
-# concurrency:
-#   group: ${{ github.head_ref }} || concat(${{ github.ref }}, ${{ github.workflow }})
-#   cancel-in-progress: true
+concurrency:
+  group: "macos-build-${{ github.event.pull_request.number }}"
+  cancel-in-progress: true
 
 jobs:
   macos-build:
@@ -15,19 +15,19 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - macos-12
+          - macos-14
     runs-on: ${{ matrix.os }}
     name: ${{ matrix.os }}
     steps:
       - name: Checkout AzerothCore
         uses: actions/checkout@v4
         with:
-          repository: 'liyunfan1223/azerothcore-wotlk'
+          repository: 'mod-playerbots/azerothcore-wotlk'
           ref: 'Playerbot'
       - name: Checkout Playerbot Module
         uses: actions/checkout@v4
         with:
-          repository: 'liyunfan1223/mod-playerbots'
+          repository: 'mod-playerbots/mod-playerbots'
           path: 'modules/mod-playerbots'
       - name: Cache
         uses: actions/cache@v4

@@ -1,10 +1,11 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #include "RtiTargetValue.h"
 
+#include "AttackersValue.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"
 
@@ -47,9 +48,6 @@ Unit* RtiTargetValue::Calculate()
     if (!guid)
         return nullptr;
 
-    if (!bot->IsInCombat())
-        return nullptr;
-
     //////////////////////////////////////////////////////begin: delete below check
     // Some units that need to be killed in battle are not on the list of attackers,
     // such as the Kor'kron Battle-Mage in Icecrown Citadel.
@@ -61,7 +59,7 @@ Unit* RtiTargetValue::Calculate()
     //////////////////////////////////////////////////////end: delete below check
 
     Unit* unit = botAI->GetUnit(guid);
-    if (!unit || unit->isDead() || !bot->IsWithinLOSInMap(unit) ||
+    if (!unit || unit->isDead() || !bot->IsWithinLOSInMap(unit) || !AttackersValue::IsValidTarget(unit, bot) ||
         sServerFacade->IsDistanceGreaterThan(sServerFacade->GetDistance2d(bot, unit),
                                              sPlayerbotAIConfig->sightDistance))
         return nullptr;

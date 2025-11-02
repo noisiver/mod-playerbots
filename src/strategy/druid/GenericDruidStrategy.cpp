@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #include "GenericDruidStrategy.h"
@@ -121,6 +121,9 @@ void GenericDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     // NextAction::array(0, new NextAction("innervate", ACTION_EMERGENCY + 5), nullptr)));
     triggers.push_back(new TriggerNode("combat party member dead",
                                        NextAction::array(0, new NextAction("rebirth", ACTION_HIGH + 9), NULL)));
+    triggers.push_back(new TriggerNode("being attacked",
+                                       NextAction::array(0, new NextAction("nature's grasp", ACTION_HIGH + 1), nullptr)));
+    triggers.push_back(new TriggerNode("new pet", NextAction::array(0, new NextAction("set pet stance", 60.0f), nullptr)));
 }
 
 void DruidCureStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
@@ -130,6 +133,11 @@ void DruidCureStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(
         new TriggerNode("party member cure poison",
                         NextAction::array(0, new NextAction("abolish poison on party", ACTION_DISPEL + 1), nullptr)));
+
+    triggers.push_back(
+        new TriggerNode("party member remove curse",
+                        NextAction::array(0, new NextAction("remove curse on party", ACTION_DISPEL + 7), NULL)));
+
 }
 
 void DruidBoostStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
@@ -146,4 +154,23 @@ void DruidCcStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         "entangling roots kite", NextAction::array(0, new NextAction("entangling roots", ACTION_HIGH + 2), nullptr)));
     triggers.push_back(new TriggerNode(
         "hibernate", NextAction::array(0, new NextAction("hibernate on cc", ACTION_HIGH + 3), nullptr)));
+}
+
+void DruidHealerDpsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
+{
+    triggers.push_back(
+        new TriggerNode("healer should attack",
+                        NextAction::array(0,
+                            new NextAction("cancel tree form", ACTION_DEFAULT + 0.3f),
+                            new NextAction("moonfire", ACTION_DEFAULT + 0.2f),
+                            new NextAction("wrath", ACTION_DEFAULT + 0.1f),
+                            new NextAction("starfire", ACTION_DEFAULT),
+                            nullptr)));
+
+    // long cast time
+    // triggers.push_back(
+    //     new TriggerNode("medium aoe and healer should attack",
+    //                     NextAction::array(0,
+    //                         new NextAction("hurricane", ACTION_DEFAULT + 0.7f),
+    //                         nullptr)));
 }

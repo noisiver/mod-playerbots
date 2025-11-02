@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #include "PositionValue.h"
@@ -63,3 +63,25 @@ bool PositionValue::Load(std::string const text)
 }
 
 WorldPosition CurrentPositionValue::Calculate() { return WorldPosition(bot); }
+
+PositionInfo SinglePositionValue::Calculate()
+{
+    PositionMap& posMap = AI_VALUE(PositionMap&, "position");
+    return posMap[getQualifier()];
+}
+
+void SinglePositionValue::Set(PositionInfo value)
+{
+    PositionMap& posMap = AI_VALUE(PositionMap&, "position");
+    PositionInfo pos = posMap[getQualifier()];
+    pos = value;
+    posMap[getQualifier()] = pos;
+}
+
+void SinglePositionValue::Reset()
+{
+    PositionMap& posMap = AI_VALUE(PositionMap&, "position");
+    PositionInfo pos = posMap[getQualifier()];
+    pos.Reset();
+    posMap[getQualifier()] = pos;
+}

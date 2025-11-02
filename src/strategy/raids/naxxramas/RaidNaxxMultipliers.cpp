@@ -27,7 +27,7 @@ float GrobbulusMultiplier::GetValue(Action* action)
     {
         return 1.0f;
     }
-    if (dynamic_cast<AvoidAoeAction*>(action))
+    if (dynamic_cast<AvoidAoeAction*>(action) || dynamic_cast<CombatFormationMoveAction*>(action))
     {
         return 0.0f;
     }
@@ -41,14 +41,19 @@ float HeiganDanceMultiplier::GetValue(Action* action)
     {
         return 1.0f;
     }
-
     auto* boss_ai = dynamic_cast<Heigan::boss_heigan::boss_heiganAI*>(boss->GetAI());
+    if (!boss_ai || boss_ai->events.Empty())
+    {
+        return 1.0f;
+    }
     EventMap* eventMap = &boss_ai->events;
     uint32 curr_phase = boss_ai->currentPhase;
     uint32 curr_dance = eventMap->GetNextEventTime(4);
     uint32 curr_timer = eventMap->GetTimer();
     uint32 curr_erupt = eventMap->GetNextEventTime(3);
-    if (dynamic_cast<SetBehindTargetAction*>(action))
+    if (dynamic_cast<CombatFormationMoveAction*>(action) ||
+        dynamic_cast<CastDisengageAction*>(action) ||
+        dynamic_cast<CastBlinkBackAction*>(action) )
     {
         return 0.0f;
     }
@@ -62,7 +67,8 @@ float HeiganDanceMultiplier::GetValue(Action* action)
     }
     if (dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<CastMeleeSpellAction*>(action))
     {
-        uint32 spellId = AI_VALUE2(uint32, "spell id", action->getName());
+        CastSpellAction* spellAction = dynamic_cast<CastSpellAction*>(action);
+        uint32 spellId = AI_VALUE2(uint32, "spell id", spellAction->getSpell());
         SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
         if (!spellInfo)
         {
@@ -87,7 +93,8 @@ float LoathebGenericMultiplier::GetValue(Action* action)
     context->GetValue<bool>("neglect threat")->Set(true);
     if (botAI->GetState() == BOT_STATE_COMBAT &&
         (dynamic_cast<DpsAssistAction*>(action) || dynamic_cast<TankAssistAction*>(action) ||
-         dynamic_cast<CastDebuffSpellOnAttackerAction*>(action) || dynamic_cast<FleeAction*>(action)))
+         dynamic_cast<CastDebuffSpellOnAttackerAction*>(action) || dynamic_cast<FleeAction*>(action) ||
+         dynamic_cast<CombatFormationMoveAction*>(action)))
     {
         return 0.0f;
     }
@@ -109,6 +116,8 @@ float ThaddiusGenericMultiplier::GetValue(Action* action)
     {
         return 1.0f;
     }
+    if (dynamic_cast<CombatFormationMoveAction*>(action))
+        return 0.0f;
     // pet phase
     if (helper.IsPhasePet() &&
         (dynamic_cast<DpsAssistAction*>(action) || dynamic_cast<TankAssistAction*>(action) ||
@@ -134,13 +143,13 @@ float ThaddiusGenericMultiplier::GetValue(Action* action)
     // // if (curr_phase == 2 && bot->GetPositionZ() > 312.5f && dynamic_cast<MovementAction*>(action)) {
     // if (curr_phase == 2 && (curr_timer % 20000 >= 18000 || curr_timer % 20000 <= 2000) &&
     // dynamic_cast<MovementAction*>(action)) {
-    // 	// MotionMaster *mm = bot->GetMotionMaster();
-    // 	// mm->Clear();
-    // 	return 0.0f;
+    //     // MotionMaster *mm = bot->GetMotionMaster();
+    //     // mm->Clear();
+    //     return 0.0f;
     // }
     // thaddius phase
     // if (curr_phase == 8 && dynamic_cast<FleeAction*>(action)) {
-    // 		return 0.0f;
+    //         return 0.0f;
     // }
     return 1.0f;
 }
@@ -151,7 +160,8 @@ float SapphironGenericMultiplier::GetValue(Action* action)
     {
         return 1.0f;
     }
-    if (dynamic_cast<FollowAction*>(action) || dynamic_cast<CastDeathGripAction*>(action))
+    if (dynamic_cast<FollowAction*>(action) || dynamic_cast<CastDeathGripAction*>(action) ||
+        dynamic_cast<CombatFormationMoveAction*>(action))
     {
         return 0.0f;
     }
@@ -252,23 +262,23 @@ float FourhorsemanGenericMultiplier::GetValue(Action* action)
 
 // float GothikGenericMultiplier::GetValue(Action* action)
 // {
-// 	Unit* boss = AI_VALUE2(Unit*, "find target", "gothik the harvester");
-// 	if (!boss) {
+//     Unit* boss = AI_VALUE2(Unit*, "find target", "gothik the harvester");
+//     if (!boss) {
 //         return 1.0f;
 //     }
-// 	BossAI* boss_ai = dynamic_cast<BossAI*>(boss->GetAI());
-// 	EventMap* eventMap = boss_botAI->GetEvents();
+//     BossAI* boss_ai = dynamic_cast<BossAI*>(boss->GetAI());
+//     EventMap* eventMap = boss_botAI->GetEvents();
 //     uint32 curr_phase = eventMap->GetPhaseMask();
-// 	if (curr_phase == 1 && (dynamic_cast<FollowAction*>(action))) {
-// 		return 0.0f;
-// 	}
-// 	if (curr_phase == 1 && (dynamic_cast<AttackAction*>(action))) {
-// 		Unit* target = action->GetTarget();
-// 		if (target == boss) {
-// 			return 0.0f;
-// 		}
-// 	}
-// 	return 1.0f;
+//     if (curr_phase == 1 && (dynamic_cast<FollowAction*>(action))) {
+//         return 0.0f;
+//     }
+//     if (curr_phase == 1 && (dynamic_cast<AttackAction*>(action))) {
+//         Unit* target = action->GetTarget();
+//         if (target == boss) {
+//             return 0.0f;
+//         }
+//     }
+//     return 1.0f;
 // }
 
 float GluthGenericMultiplier::GetValue(Action* action)

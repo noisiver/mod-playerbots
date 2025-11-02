@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #include "Trigger.h"
@@ -32,12 +32,11 @@ Value<Unit*>* Trigger::GetTargetValue() { return context->GetValue<Unit*>(GetTar
 
 Unit* Trigger::GetTarget() { return GetTargetValue()->Get(); }
 
-bool Trigger::needCheck()
+bool Trigger::needCheck(uint32 now)
 {
     if (checkInterval < 2)
         return true;
 
-    uint32 now = getMSTime();
     if (!lastCheckTime || now - lastCheckTime >= checkInterval)
     {
         lastCheckTime = now;

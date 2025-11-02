@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #include "GenericPaladinStrategy.h"
@@ -61,7 +61,7 @@ void PaladinCureStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
 void PaladinBoostStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    
+
     // triggers.push_back(new TriggerNode("divine favor", NextAction::array(0, new NextAction("divine favor",
     // ACTION_HIGH + 1), nullptr)));
 }
@@ -70,4 +70,18 @@ void PaladinCcStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(
         new TriggerNode("turn undead", NextAction::array(0, new NextAction("turn undead", ACTION_HIGH + 1), nullptr)));
+}
+
+void PaladinHealerDpsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
+{
+    triggers.push_back(
+        new TriggerNode("healer should attack",
+                        NextAction::array(0,
+                            new NextAction("hammer of wrath", ACTION_DEFAULT + 0.6f),
+                            new NextAction("holy shock", ACTION_DEFAULT + 0.5f),
+                            new NextAction("shield of righteousness", ACTION_DEFAULT + 0.4f),
+                            new NextAction("judgement of light", ACTION_DEFAULT + 0.3f),
+                            new NextAction("consecration", ACTION_DEFAULT + 0.2f),
+                            new NextAction("exorcism", ACTION_DEFAULT+ 0.1f),
+                            nullptr)));
 }

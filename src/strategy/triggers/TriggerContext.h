@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #ifndef _PLAYERBOT_TRIGGERCONTEXT_H
@@ -12,6 +12,8 @@
 #include "LfgTriggers.h"
 #include "LootTriggers.h"
 #include "NamedObjectContext.h"
+#include "NewRpgStrategy.h"
+#include "NewRpgTriggers.h"
 #include "PvpTriggers.h"
 #include "RaidNaxxTriggers.h"
 #include "RpgTriggers.h"
@@ -28,12 +30,15 @@ public:
     {
         creators["return"] = &TriggerContext::_return;
         creators["sit"] = &TriggerContext::sit;
+        creators["return to stay position"] = &TriggerContext::return_to_stay_position;
         creators["collision"] = &TriggerContext::collision;
 
         creators["timer"] = &TriggerContext::Timer;
+        creators["timer bg"] = &TriggerContext::TimerBG;
         creators["random"] = &TriggerContext::Random;
         creators["seldom"] = &TriggerContext::seldom;
         creators["often"] = &TriggerContext::often;
+        creators["very often"] = &TriggerContext::very_often;
 
         creators["target critical health"] = &TriggerContext::TargetCriticalHealth;
 
@@ -47,6 +52,7 @@ public:
         creators["high mana"] = &TriggerContext::HighMana;
         creators["almost full mana"] = &TriggerContext::AlmostFullMana;
         creators["enough mana"] = &TriggerContext::EnoughMana;
+
 
         creators["party member critical health"] = &TriggerContext::PartyMemberCriticalHealth;
         creators["party member low health"] = &TriggerContext::PartyMemberLowHealth;
@@ -83,6 +89,9 @@ public:
         creators["medium aoe"] = &TriggerContext::MediumAoe;
         creators["high aoe"] = &TriggerContext::HighAoe;
 
+        creators["healer should attack"] = &TriggerContext::healer_should_attack;
+        creators["medium aoe and healer should attack"] = &TriggerContext::medium_aoe_and_healer_should_attack;
+
         creators["has area debuff"] = &TriggerContext::HasAreaDebuff;
 
         creators["enemy out of melee"] = &TriggerContext::EnemyOutOfMelee;
@@ -101,6 +110,7 @@ public:
         creators["combo points not full"] = &TriggerContext::ComboPointsNotFull;
         creators["combo points not full and high energy"] = &TriggerContext::ComboPointsNotFullAndHighEnergy;
 
+        creators["being attacked"] = &TriggerContext::BeingAttacked;
         creators["medium threat"] = &TriggerContext::MediumThreat;
         creators["low tank threat"] = &TriggerContext::low_tank_threat;
 
@@ -135,8 +145,8 @@ public:
         creators["medium aoe heal"] = &TriggerContext::medium_aoe_heal;
         creators["almost full aoe heal"] = &TriggerContext::almost_full_aoe_heal;
 
-        creators["group heal occasion"] = &TriggerContext::group_heal_occasion;
-        creators["medium group heal occasion"] = &TriggerContext::medium_group_heal_occasion;
+        creators["group heal setting"] = &TriggerContext::group_heal_occasion;
+        creators["medium group heal setting"] = &TriggerContext::medium_group_heal_occasion;
         creators["invalid target"] = &TriggerContext::invalid_target;
         creators["lfg proposal active"] = &TriggerContext::lfg_proposal_active;
 
@@ -168,6 +178,7 @@ public:
         creators["in Battleground"] = &TriggerContext::player_is_in_BATTLEGROUND;
         creators["in Battleground without flag"] = &TriggerContext::player_is_in_BATTLEGROUND_no_flag;
         creators["wants in bg"] = &TriggerContext::player_wants_in_bg;
+        creators["alliance no snowfall gy"] = &TriggerContext::alliance_no_snowfall_gy;
 
         creators["mounted"] = &TriggerContext::mounted;
 
@@ -209,6 +220,14 @@ public:
         creators["rpg craft"] = &TriggerContext::rpg_craft;
         creators["rpg trade useful"] = &TriggerContext::rpg_trade_useful;
         creators["rpg duel"] = &TriggerContext::rpg_duel;
+        creators["go grind status"] = &TriggerContext::go_grind_status;
+        creators["go camp status"] = &TriggerContext::go_camp_status;
+        creators["wander random status"] = &TriggerContext::wander_random_status;
+        creators["wander npc status"] = &TriggerContext::wander_npc_status;
+        creators["do quest status"] = &TriggerContext::do_quest_status;
+        creators["travel flight status"] = &TriggerContext::travel_flight_status;
+        creators["can self resurrect"] = &TriggerContext::can_self_resurrect;
+        creators["new pet"] = &TriggerContext::new_pet;
     }
 
 private:
@@ -216,6 +235,7 @@ private:
     static Trigger* give_water(PlayerbotAI* botAI) { return new GiveWaterTrigger(botAI); }
     static Trigger* no_rti(PlayerbotAI* botAI) { return new NoRtiTrigger(botAI); }
     static Trigger* _return(PlayerbotAI* botAI) { return new ReturnTrigger(botAI); }
+    static Trigger* return_to_stay_position(PlayerbotAI* ai) { return new ReturnToStayPositionTrigger(ai); }
     static Trigger* sit(PlayerbotAI* botAI) { return new SitTrigger(botAI); }
     static Trigger* far_from_rpg_target(PlayerbotAI* botAI) { return new FarFromRpgTargetTrigger(botAI); }
     static Trigger* near_rpg_target(PlayerbotAI* botAI) { return new NearRpgTargetTrigger(botAI); }
@@ -242,11 +262,11 @@ private:
     }
     static Trigger* group_heal_occasion(PlayerbotAI* ai)
     {
-        return new AoeInGroupTrigger(ai, "group heal occasion", "almost full", 0.6);
+        return new AoeInGroupTrigger(ai, "group heal setting", "almost full");
     }
     static Trigger* medium_group_heal_occasion(PlayerbotAI* ai)
     {
-        return new AoeInGroupTrigger(ai, "group heal occasion", "medium", 0.6);
+        return new AoeInGroupTrigger(ai, "medium group heal setting", "medium");
     }
     static Trigger* target_changed(PlayerbotAI* botAI) { return new TargetChangedTrigger(botAI); }
     static Trigger* swimming(PlayerbotAI* botAI) { return new IsSwimmingTrigger(botAI); }
@@ -265,6 +285,8 @@ private:
     static Trigger* LightAoe(PlayerbotAI* botAI) { return new LightAoeTrigger(botAI); }
     static Trigger* MediumAoe(PlayerbotAI* botAI) { return new MediumAoeTrigger(botAI); }
     static Trigger* HighAoe(PlayerbotAI* botAI) { return new HighAoeTrigger(botAI); }
+    static Trigger* healer_should_attack(PlayerbotAI* botAI) { return new HealerShouldAttackTrigger(botAI); }
+    static Trigger* medium_aoe_and_healer_should_attack(PlayerbotAI* botAI) { return new TwoTriggers(botAI, "medium aoe", "healer should attack"); }
     static Trigger* HasAreaDebuff(PlayerbotAI* botAI) { return new HasAreaDebuffTrigger(botAI); }
     static Trigger* LoseAggro(PlayerbotAI* botAI) { return new LoseAggroTrigger(botAI); }
     static Trigger* HasAggro(PlayerbotAI* botAI) { return new HasAggroTrigger(botAI); }
@@ -289,6 +311,7 @@ private:
     static Trigger* NoAttackers(PlayerbotAI* botAI) { return new NoAttackersTrigger(botAI); }
     static Trigger* TankAssist(PlayerbotAI* botAI) { return new TankAssistTrigger(botAI); }
     static Trigger* Timer(PlayerbotAI* botAI) { return new TimerTrigger(botAI); }
+    static Trigger* TimerBG(PlayerbotAI* botAI) { return new TimerBGTrigger(botAI); }
     static Trigger* NoTarget(PlayerbotAI* botAI) { return new NoTargetTrigger(botAI); }
     static Trigger* TargetInSight(PlayerbotAI* botAI) { return new TargetInSightTrigger(botAI); }
     static Trigger* not_dps_target_active(PlayerbotAI* botAI) { return new NotDpsTargetActiveTrigger(botAI); }
@@ -298,6 +321,7 @@ private:
     static Trigger* Random(PlayerbotAI* botAI) { return new RandomTrigger(botAI, "random", 20); }
     static Trigger* seldom(PlayerbotAI* botAI) { return new RandomTrigger(botAI, "seldom", 300); }
     static Trigger* often(PlayerbotAI* botAI) { return new RandomTrigger(botAI, "often", 5); }
+    static Trigger* very_often(PlayerbotAI* botAI) { return new RandomTrigger(botAI, "often", 3); }
     static Trigger* EnemyOutOfMelee(PlayerbotAI* botAI) { return new EnemyOutOfMeleeTrigger(botAI); }
     static Trigger* EnemyOutOfSpell(PlayerbotAI* botAI) { return new EnemyOutOfSpellRangeTrigger(botAI); }
     static Trigger* enemy_too_close_for_spell(PlayerbotAI* botAI) { return new EnemyTooCloseForSpellTrigger(botAI); }
@@ -321,6 +345,7 @@ private:
     }
     static Trigger* ComboPointsNotFull(PlayerbotAI* botAI) { return new ComboPointsNotFullTrigger(botAI); }
     static Trigger* ComboPointsNotFullAndHighEnergy(PlayerbotAI* botAI) { return new TwoTriggers(botAI, "combo points not full", "high energy available"); }
+    static Trigger* BeingAttacked(PlayerbotAI* botAI) { return new BeingAttackedTrigger(botAI); }
     static Trigger* MediumThreat(PlayerbotAI* botAI) { return new MediumThreatTrigger(botAI); }
     static Trigger* low_tank_threat(PlayerbotAI* botAI) { return new LowTankThreatTrigger(botAI); }
     // static Trigger* MediumThreat(PlayerbotAI* botAI) { return new MediumThreatTrigger(botAI); }
@@ -357,10 +382,8 @@ private:
     static Trigger* enemy_team_has_flag(PlayerbotAI* botAI) { return new EnemyTeamHasFlag(botAI); }
     static Trigger* enemy_flagcarrier_near(PlayerbotAI* botAI) { return new EnemyFlagCarrierNear(botAI); }
     static Trigger* player_is_in_BATTLEGROUND(PlayerbotAI* botAI) { return new PlayerIsInBattleground(botAI); }
-    static Trigger* player_is_in_BATTLEGROUND_no_flag(PlayerbotAI* botAI)
-    {
-        return new PlayerIsInBattlegroundWithoutFlag(botAI);
-    }
+    static Trigger* player_is_in_BATTLEGROUND_no_flag(PlayerbotAI* botAI) { return new PlayerIsInBattlegroundWithoutFlag(botAI); }
+    static Trigger* alliance_no_snowfall_gy(PlayerbotAI* botAI) { return new AllianceNoSnowfallGY(botAI); }
     static Trigger* mounted(PlayerbotAI* botAI) { return new IsMountedTrigger(botAI); }
     static Trigger* at_dark_portal_outland(PlayerbotAI* botAI) { return new AtDarkPortalOutlandTrigger(botAI); }
     static Trigger* at_dark_portal_azeroth(PlayerbotAI* botAI) { return new AtDarkPortalAzerothTrigger(botAI); }
@@ -396,6 +419,14 @@ private:
     static Trigger* rpg_craft(PlayerbotAI* botAI) { return new RpgCraftTrigger(botAI); }
     static Trigger* rpg_trade_useful(PlayerbotAI* botAI) { return new RpgTradeUsefulTrigger(botAI); }
     static Trigger* rpg_duel(PlayerbotAI* botAI) { return new RpgDuelTrigger(botAI); }
+    static Trigger* go_grind_status(PlayerbotAI* botAI) { return new NewRpgStatusTrigger(botAI, RPG_GO_GRIND); }
+    static Trigger* go_camp_status(PlayerbotAI* botAI) { return new NewRpgStatusTrigger(botAI, RPG_GO_CAMP); }
+    static Trigger* wander_random_status(PlayerbotAI* botAI) { return new NewRpgStatusTrigger(botAI, RPG_WANDER_RANDOM); }
+    static Trigger* wander_npc_status(PlayerbotAI* botAI) { return new NewRpgStatusTrigger(botAI, RPG_WANDER_NPC); }
+    static Trigger* do_quest_status(PlayerbotAI* botAI) { return new NewRpgStatusTrigger(botAI, RPG_DO_QUEST); }
+    static Trigger* travel_flight_status(PlayerbotAI* botAI) { return new NewRpgStatusTrigger(botAI, RPG_TRAVEL_FLIGHT); }
+    static Trigger* can_self_resurrect(PlayerbotAI* ai) { return new SelfResurrectTrigger(ai); }
+    static Trigger* new_pet(PlayerbotAI* ai) { return new NewPetTrigger(ai); }
 };
 
 #endif

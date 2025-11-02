@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #include "NearestCorpsesValue.h"
@@ -26,7 +26,7 @@ void NearestCorpsesValue::FindUnits(std::list<Unit*>& targets)
 {
     AnyDeadUnitInObjectRangeCheck u_check(bot, range);
     Acore::UnitListSearcher<AnyDeadUnitInObjectRangeCheck> searcher(bot, targets, u_check);
-    Cell::VisitAllObjects(bot, searcher, range);
+    Cell::VisitObjects(bot, searcher, range);
 }
 
 bool NearestCorpsesValue::AcceptUnit(Unit* unit) { return true; }

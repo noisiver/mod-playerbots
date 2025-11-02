@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #include "TravelNode.h"
@@ -178,6 +178,9 @@ uint32 TravelNodePath::getPrice()
 
     TaxiPathEntry const* taxiPath = sTaxiPathStore.LookupEntry(pathObject);
 
+    if (!taxiPath)
+        return 0;
+	
     return taxiPath->price;
 }
 
@@ -594,7 +597,7 @@ bool TravelNode::isEqual(TravelNode* compareNode)
 
 void TravelNode::print([[maybe_unused]] bool printFailed)
 {
-    WorldPosition* startPosition = getPosition();
+    // WorldPosition* startPosition = getPosition(); //not used, line marked for removal.
 
     uint32 mapSize = getNodeMap(true).size();
 
@@ -1167,9 +1170,9 @@ std::vector<TravelNode*> TravelNodeMap::getNodes(WorldPosition pos, float range)
 TravelNode* TravelNodeMap::getNode(WorldPosition pos, [[maybe_unused]] std::vector<WorldPosition>& ppath, Unit* bot,
                                    float range)
 {
-    float x = pos.getX();
-    float y = pos.getY();
-    float z = pos.getZ();
+    //float x = pos.getX(); //not used, line marked for removal.
+    //float y = pos.getY(); //not used, line marked for removal.
+    //float z = pos.getZ(); //not used, line marked for removal.
 
     if (bot && !bot->GetMap())
         return nullptr;
@@ -1348,6 +1351,9 @@ TravelNodeRoute TravelNodeMap::getRoute(WorldPosition startPos, WorldPosition en
     std::vector<WorldPosition> newStartPath;
     std::vector<TravelNode*> startNodes = m_nodes, endNodes = m_nodes;
 
+    if(!startNodes.size() || !endNodes.size())
+         return TravelNodeRoute();
+
     // Partial sort to get the closest 5 nodes at the begin of the array.
     std::partial_sort(startNodes.begin(), startNodes.begin() + 5, startNodes.end(),
                       [startPos](TravelNode* i, TravelNode* j) { return i->fDist(startPos) < j->fDist(startPos); });
@@ -1495,7 +1501,7 @@ TravelNode* TravelNodeMap::addZoneLinkNode(TravelNode* startNode)
 {
     for (auto& path : *startNode->getPaths())
     {
-        TravelNode* endNode = path.first;
+        //TravelNode* endNode = path.first; //not used, line marked for removal.
 
         std::string zoneName = startNode->getPosition()->getAreaName(true, true);
         for (auto& pos : path.second.getPath())
@@ -1638,7 +1644,7 @@ void TravelNodeMap::generateNpcNodes()
             else if (cInfo->npcflag & UNIT_NPC_FLAG_SPIRITGUIDE)
                 nodeName += " spiritguide";
 
-            TravelNode* node = sTravelNodeMap->addNode(guidP, nodeName, true, true);
+            /*TravelNode* node = */ sTravelNodeMap->addNode(guidP, nodeName, true, true); //node not used, fragment marked for removal.
         }
         else if (cInfo->rank == 3)
         {
@@ -1754,7 +1760,7 @@ void TravelNodeMap::generateAreaTriggerNodes()
         else
             nodeName = inPos.getAreaName(false) + " portal";
 
-        TravelNode* entryNode = sTravelNodeMap->getNode(outPos, nullptr, 20.0f);  // Entry side, portal exit.
+        //TravelNode* entryNode = sTravelNodeMap->getNode(outPos, nullptr, 20.0f);  // Entry side, portal exit. //not used, line marked for removal.
 
         TravelNode* outNode = sTravelNodeMap->addNode(outPos, nodeName, true, true);  // Exit size, portal exit.
 
@@ -1976,7 +1982,7 @@ void TravelNodeMap::generateZoneMeanNodes()
 
         WorldPosition pos = WorldPosition(points, WP_MEAN_CENTROID);
 
-        TravelNode* node = sTravelNodeMap->addNode(pos, pos.getAreaName(), true, true, false);
+        /*TravelNode* node = */sTravelNodeMap->addNode(pos, pos.getAreaName(), true, true, false); //node not used, but addNode as side effect, fragment marked for removal.
     }
 }
 
@@ -2117,7 +2123,7 @@ void TravelNodeMap::removeUselessPaths()
             if (path.second.getComplete() && startNode->hasLinkTo(path.first))
                 ASSERT(true);
     }
-    uint32 it = 0, rem = 0;
+    uint32 it = 0/*, rem = 0*/; //rem not used in this scope, (shadowing) fragment marked for removal.
     while (true)
     {
         uint32 rem = 0;
@@ -2207,7 +2213,7 @@ void TravelNodeMap::printMap()
 
     std::vector<TravelNode*> anodes = getNodes();
 
-    uint32 nr = 0;
+    //uint32 nr = 0; //not used, line marked for removal.
 
     for (auto& node : anodes)
     {
@@ -2296,7 +2302,7 @@ void TravelNodeMap::printNodeStore()
         }
     }
 
-    sPlayerbotAIConfig->log(nodeStore, "	}");
+    sPlayerbotAIConfig->log(nodeStore, "    }");
     sPlayerbotAIConfig->log(nodeStore, "};");
 
     printf("\r [Done] \r\x3D");

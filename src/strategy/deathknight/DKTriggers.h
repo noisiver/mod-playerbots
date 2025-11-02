@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #ifndef _PLAYERBOT_DKTRIGGERS_H
@@ -20,10 +20,10 @@ public:
     PlagueStrikeDebuffTrigger(PlayerbotAI* botAI) : DebuffTrigger(botAI, "blood plague", 1, true, .0f) {}
 };
 
-class PlagueStrike8sDebuffTrigger : public DebuffTrigger
+class PlagueStrike3sDebuffTrigger : public DebuffTrigger
 {
 public:
-    PlagueStrike8sDebuffTrigger(PlayerbotAI* botAI) : DebuffTrigger(botAI, "blood plague", 1, true, .0f, 3000) {}
+    PlagueStrike3sDebuffTrigger(PlayerbotAI* botAI) : DebuffTrigger(botAI, "blood plague", 1, true, .0f, 3000) {}
 };
 
 // DEBUFF_CHECKISOWNER_TRIGGER(IcyTouchDebuffTrigger, "frost fever");
@@ -33,10 +33,10 @@ public:
     IcyTouchDebuffTrigger(PlayerbotAI* botAI) : DebuffTrigger(botAI, "frost fever", 1, true, .0f) {}
 };
 
-class IcyTouch8sDebuffTrigger : public DebuffTrigger
+class IcyTouch3sDebuffTrigger : public DebuffTrigger
 {
 public:
-    IcyTouch8sDebuffTrigger(PlayerbotAI* botAI) : DebuffTrigger(botAI, "frost fever", 1, true, .0f, 3000) {}
+    IcyTouch3sDebuffTrigger(PlayerbotAI* botAI) : DebuffTrigger(botAI, "frost fever", 1, true, .0f, 3000) {}
 };
 
 BUFF_TRIGGER(UnbreakableArmorTrigger, "unbreakable armor");
@@ -162,6 +162,13 @@ class HighUnholyRuneTrigger : public Trigger
 {
 public:
     HighUnholyRuneTrigger(PlayerbotAI* botAI) : Trigger(botAI, "high unholy rune") {}
+    bool IsActive() override;
+};
+
+class NoRuneTrigger : public Trigger
+{
+public:
+    NoRuneTrigger(PlayerbotAI* botAI) : Trigger(botAI, "no rune") {}
     bool IsActive() override;
 };
 

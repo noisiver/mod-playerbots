@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #include "GenericHunterNonCombatStrategy.h"
@@ -44,11 +44,14 @@ void GenericHunterNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& tri
 {
     NonCombatStrategy::InitTriggers(triggers);
 
-    triggers.push_back(
-        new TriggerNode("trueshot aura", NextAction::array(0, new NextAction("trueshot aura", 2.0f), nullptr)));
-    triggers.push_back(new TriggerNode("often", NextAction::array(0, new NextAction("apply oil", 1.0f), nullptr)));
-    triggers.push_back(
-        new TriggerNode("low ammo", NextAction::array(0, new NextAction("say::low ammo", ACTION_NORMAL), nullptr)));
+    triggers.push_back(new TriggerNode("trueshot aura", NextAction::array(0, new NextAction("trueshot aura", 2.0f), nullptr)));
+    triggers.push_back(new TriggerNode("often", NextAction::array(0,
+                       new NextAction("apply stone", 1.0f),
+                       new NextAction("apply oil", 1.0f),
+                       nullptr)));
+    triggers.push_back(new TriggerNode("low ammo", NextAction::array(0, new NextAction("say::low ammo", ACTION_NORMAL), nullptr)));
+    triggers.push_back(new TriggerNode("no track", NextAction::array(0, new NextAction("track humanoids", ACTION_NORMAL), nullptr)));
+    triggers.push_back(new TriggerNode("no ammo", NextAction::array(0, new NextAction("equip upgrades", ACTION_HIGH + 1), nullptr)));
     // triggers.push_back(new TriggerNode("no ammo", NextAction::array(0, new NextAction("switch to melee",
     // ACTION_NORMAL + 1), new NextAction("say::no ammo", ACTION_NORMAL), nullptr))); triggers.push_back(new
     // TriggerNode("has ammo", NextAction::array(0, new NextAction("switch to ranged", ACTION_NORMAL), nullptr)));
@@ -57,12 +60,9 @@ void GenericHunterNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& tri
 void HunterPetStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(new TriggerNode("no pet", NextAction::array(0, new NextAction("call pet", 60.0f), nullptr)));
-    triggers.push_back(
-        new TriggerNode("has pet", NextAction::array(0, new NextAction("toggle pet spell", 60.0f), nullptr)));
-    triggers.push_back(
-        new TriggerNode("pet not happy", NextAction::array(0, new NextAction("feed pet", 60.0f), nullptr)));
-    triggers.push_back(
-        new TriggerNode("hunters pet medium health", NextAction::array(0, new NextAction("mend pet", 60.0f), nullptr)));
-    triggers.push_back(
-        new TriggerNode("hunters pet dead", NextAction::array(0, new NextAction("revive pet", 60.0f), nullptr)));
+    triggers.push_back(new TriggerNode("has pet", NextAction::array(0, new NextAction("toggle pet spell", 60.0f), nullptr)));
+    triggers.push_back(new TriggerNode("new pet", NextAction::array(0, new NextAction("set pet stance", 60.0f), nullptr)));
+    triggers.push_back(new TriggerNode("pet not happy", NextAction::array(0, new NextAction("feed pet", 60.0f), nullptr)));
+    triggers.push_back(new TriggerNode("hunters pet medium health", NextAction::array(0, new NextAction("mend pet", 60.0f), nullptr)));
+    triggers.push_back(new TriggerNode("hunters pet dead", NextAction::array(0, new NextAction("revive pet", 60.0f), nullptr)));
 }

@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #include "ReviveFromCorpseAction.h"
@@ -13,6 +13,7 @@
 #include "Playerbots.h"
 #include "RandomPlayerbotMgr.h"
 #include "ServerFacade.h"
+#include "Corpse.h"
 
 bool ReviveFromCorpseAction::Execute(Event event)
 {
@@ -168,6 +169,7 @@ bool FindCorpseAction::Execute(Event event)
         if (deadTime > delay)
         {
             bot->GetMotionMaster()->Clear();
+            bot->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TELEPORTED | AURA_INTERRUPT_FLAG_CHANGE_MAP);
             bot->TeleportTo(moveToPos.getMapId(), moveToPos.getX(), moveToPos.getY(), moveToPos.getZ(), 0);
         }
 
@@ -187,7 +189,7 @@ bool FindCorpseAction::Execute(Event event)
 
             if (!moved)
             {
-                moved = botAI->DoSpecificAction("spirit healer");
+                moved = botAI->DoSpecificAction("spirit healer", Event(), true);
             }
         }
     }
@@ -346,17 +348,18 @@ bool SpiritHealerAction::Execute(Event event)
     if (moved)
         return true;
 
-    if (!botAI->HasActivePlayerMaster())
-    {
-        context->GetValue<uint32>("death count")->Set(dCount + 1);
-        return bot->TeleportTo(ClosestGrave->Map, ClosestGrave->x, ClosestGrave->y, ClosestGrave->z, 0.f);
-    }
+    // if (!botAI->HasActivePlayerMaster())
+    // {
+    context->GetValue<uint32>("death count")->Set(dCount + 1);
+    bot->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TELEPORTED | AURA_INTERRUPT_FLAG_CHANGE_MAP);
+    return bot->TeleportTo(ClosestGrave->Map, ClosestGrave->x, ClosestGrave->y, ClosestGrave->z, 0.f);
+    // }
 
-    LOG_INFO("playerbots", "Bot {} {}:{} <{}> can't find a spirit healer", bot->GetGUID().ToString().c_str(),
-             bot->GetTeamId() == TEAM_ALLIANCE ? "A" : "H", bot->GetLevel(), bot->GetName().c_str());
+    // LOG_INFO("playerbots", "Bot {} {}:{} <{}> can't find a spirit healer", bot->GetGUID().ToString().c_str(),
+    //          bot->GetTeamId() == TEAM_ALLIANCE ? "A" : "H", bot->GetLevel(), bot->GetName().c_str());
 
-    botAI->TellError("Cannot find any spirit healer nearby");
+    // botAI->TellError("Cannot find any spirit healer nearby");
     return false;
 }
 
-bool SpiritHealerAction::isUseful() { return bot->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_GHOST); }
+bool SpiritHealerAction::isUseful() { return bot->HasPlayerFlag(PLAYER_FLAGS_GHOST); }

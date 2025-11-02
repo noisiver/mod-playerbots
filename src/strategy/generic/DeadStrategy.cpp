@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #include "DeadStrategy.h"
@@ -25,6 +25,8 @@ void DeadStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode("falling far", NextAction::array(0, new NextAction("repop", relevance + 1.f), nullptr)));
     triggers.push_back(
         new TriggerNode("location stuck", NextAction::array(0, new NextAction("repop", relevance + 1), nullptr)));
+    triggers.push_back(new TriggerNode(
+        "can self resurrect", NextAction::array(0, new NextAction("self resurrect", relevance + 2.0f), nullptr)));
 }
 
 DeadStrategy::DeadStrategy(PlayerbotAI* botAI) : PassTroughStrategy(botAI) {}

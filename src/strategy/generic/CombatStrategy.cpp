@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #include "CombatStrategy.h"
@@ -12,8 +12,9 @@ void CombatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(new TriggerNode("enemy out of spell",
                                        NextAction::array(0, new NextAction("reach spell", ACTION_HIGH), nullptr)));
+    // drop target relevance 99 (lower than Worldpacket triggers)
     triggers.push_back(
-        new TriggerNode("invalid target", NextAction::array(0, new NextAction("drop target", 100), nullptr)));
+        new TriggerNode("invalid target", NextAction::array(0, new NextAction("drop target", 99), nullptr)));
     triggers.push_back(
         new TriggerNode("mounted", NextAction::array(0, new NextAction("check mount state", 54), nullptr)));
     // triggers.push_back(new TriggerNode("out of react range", NextAction::array(0, new NextAction("flee to master",
@@ -21,8 +22,10 @@ void CombatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("combat stuck", NextAction::array(0, new NextAction("reset", 1.0f), nullptr)));
     triggers.push_back(new TriggerNode("not facing target",
                                        NextAction::array(0, new NextAction("set facing", ACTION_MOVE + 7), nullptr)));
-    triggers.push_back(
-        new TriggerNode("pet attack", NextAction::array(0, new NextAction("pet attack", ACTION_NORMAL), nullptr)));
+    // triggers.push_back(new TriggerNode("pet attack", NextAction::array(0, new NextAction("pet attack", 40.0f), nullptr)));
+    // The pet-attack trigger is commented out because it was forcing the bot's pet to attack, overriding stay and follow commands.
+    // Pets will automatically attack the bot's enemy if they are in "defensive" or "aggressive"
+    // stance, or if the master issues an attack command.
     // triggers.push_back(new TriggerNode("combat long stuck", NextAction::array(0, new NextAction("hearthstone", 0.9f),
     // new NextAction("repop", 0.8f), nullptr)));
 }
@@ -70,19 +73,27 @@ AvoidAoeStrategy::AvoidAoeStrategy(PlayerbotAI* botAI) : Strategy(botAI) {}
 
 NextAction** AvoidAoeStrategy::getDefaultActions()
 {
-    return NextAction::array(0, new NextAction("aaoe", ACTION_EMERGENCY), nullptr);
+    return NextAction::array(0, new NextAction("avoid aoe", ACTION_EMERGENCY), nullptr);
 }
 
 void AvoidAoeStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    // triggers.push_back(new TriggerNode(
-    //         "has area debuff",
-    //         NextAction::array(0, new NextAction("flee", ACTION_EMERGENCY + 5), NULL)));
 }
 
 void AvoidAoeStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
     // multipliers.push_back(new AvoidAoeStrategyMultiplier(botAI));
+}
+
+TankFaceStrategy::TankFaceStrategy(PlayerbotAI* botAI) : Strategy(botAI) {}
+
+NextAction** TankFaceStrategy::getDefaultActions()
+{
+    return NextAction::array(0, new NextAction("tank face", ACTION_MOVE), nullptr);
+}
+
+void TankFaceStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
+{
 }
 
 NextAction** CombatFormationStrategy::getDefaultActions()
