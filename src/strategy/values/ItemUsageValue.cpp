@@ -22,10 +22,13 @@ ItemUsage ItemUsageValue::Calculate()
     uint32 itemId = 0;
     uint32 randomPropertyId = 0;
     size_t pos = qualifier.find(",");
-    if (pos != std::string::npos) {
+    if (pos != std::string::npos)
+    {
         itemId = atoi(qualifier.substr(0, pos).c_str());
         randomPropertyId = atoi(qualifier.substr(pos + 1).c_str());
-    } else {
+    }
+    else
+    {
         itemId = atoi(qualifier.c_str());
     }
 
@@ -306,7 +309,7 @@ ItemUsage ItemUsageValue::QueryItemUsageForEquip(ItemTemplate const* itemProto, 
     {
         needToCheckUnique = true;
     }
-    else if (itemProto->Flags & ITEM_FLAG_UNIQUE_EQUIPPABLE)
+    else if (itemProto->HasFlag(ITEM_FLAG_UNIQUE_EQUIPPABLE))
     {
         needToCheckUnique = true;
     }
@@ -417,7 +420,6 @@ ItemUsage ItemUsageValue::QueryItemUsageForEquip(ItemTemplate const* itemProto, 
             possibleSlots = 2;
         }
     }
-
 
     for (uint8 i = 0; i < possibleSlots; i++)
     {
