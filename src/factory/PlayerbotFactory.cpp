@@ -42,6 +42,8 @@
 #include "AiObjectContext.h"
 #include "ItemPackets.h"
 
+#include "mod_progression.h"
+
 const uint64 diveMask = (1LL << 7) | (1LL << 44) | (1LL << 37) | (1LL << 38) | (1LL << 26) | (1LL << 30) | (1LL << 27) |
                         (1LL << 33) | (1LL << 24) | (1LL << 34);
 
@@ -1817,6 +1819,119 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
                         ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
                         if (!proto)
                             continue;
+
+                        uint32 progressionPatchId = sProgressionMgr->GetPatchId();
+
+                        if (progressionPatchId < 6 && proto->ItemLevel > 63)
+                        {
+                            continue;
+                        }
+
+                        if (progressionPatchId < 7 && proto->ItemLevel > 66)
+                        {
+                            continue;
+                        }
+
+                        if (progressionPatchId < 12 && proto->ItemLevel > 76)
+                        {
+                            continue;
+                        }
+
+                        if (progressionPatchId < 13 && proto->ItemLevel > 110)
+                        {
+                            continue;
+                        }
+
+                        if (progressionPatchId < 14 && proto->ItemLevel > 120)
+                        {
+                            continue;
+                        }
+
+                        if (progressionPatchId < 17 && proto->ItemLevel > 133)
+                        {
+                            continue;
+                        }
+
+                        if (progressionPatchId < 18 && proto->ItemLevel > 200)
+                        {
+                            continue;
+                        }
+
+                        if (progressionPatchId < 19 && proto->ItemLevel > 213)
+                        {
+                            continue;
+                        }
+
+                        if (progressionPatchId < 20 && proto->ItemLevel > 226)
+                        {
+                            continue;
+                        }
+
+                        if (progressionPatchId < 21 && proto->ItemLevel > 245)
+                        {
+                            continue;
+                        }
+
+                        if (!sRandomPlayerbotMgr->IsRandomBot(bot))
+                        {
+                            if (progressionPatchId < 12)
+                            {
+                                 if (proto->ItemLevel > 58)
+                                 {
+                                     continue;
+                                 }
+                            }
+                            else if (progressionPatchId < 17)
+                            {
+                                 if (proto->ItemLevel > 100)
+                                 {
+                                     continue;
+                                 }
+                            }
+                            else
+                            {
+                                 if (proto->ItemLevel > 174)
+                                 {
+                                     continue;
+                                 }
+                            }
+                        }
+
+                        switch (progressionPatchId)
+                        {
+                            case 0:
+                            case 1:
+                            case 2:
+                            case 3:
+                            case 4:
+                            case 12:
+                            case 17:
+                                if (proto->Quality > ITEM_QUALITY_RARE)
+                                {
+                                    continue;
+                                }
+                                break;
+                            case 5:
+                            case 6:
+                            case 7:
+                            case 8:
+                            case 9:
+                            case 10:
+                            case 11:
+                            case 13:
+                            case 14:
+                            case 15:
+                            case 16:
+                            case 18:
+                            case 19:
+                            case 20:
+                            case 21:
+                                if (proto->Quality > ITEM_QUALITY_EPIC)
+                                {
+                                    continue;
+                                }
+                                break;
+                        }
 
                         bool shouldCheckGS = desiredQuality > ITEM_QUALITY_NORMAL;
 
