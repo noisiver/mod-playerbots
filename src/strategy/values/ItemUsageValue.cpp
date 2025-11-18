@@ -245,6 +245,51 @@ ItemUsage ItemUsageValue::QueryItemUsageForEquip(ItemTemplate const* itemProto, 
     if (itemProto->InventoryType == INVTYPE_NON_EQUIP)
         return ITEM_USAGE_NONE;
 
+    if (!sRandomPlayerbotMgr->IsRandomBot(bot))
+    {
+        if (itemProto->Class == ITEM_CLASS_WEAPON && itemProto->SubClass == ITEM_SUBCLASS_WEAPON_GUN)
+            return ITEM_USAGE_NONE;
+
+        if (itemProto->Class == ITEM_CLASS_ARMOR &&
+            (itemProto->InventoryType == INVTYPE_HEAD || itemProto->InventoryType == INVTYPE_SHOULDERS ||
+             itemProto->InventoryType == INVTYPE_CHEST || itemProto->InventoryType == INVTYPE_WAIST ||
+             itemProto->InventoryType == INVTYPE_LEGS || itemProto->InventoryType == INVTYPE_FEET ||
+             itemProto->InventoryType == INVTYPE_WRISTS || itemProto->InventoryType == INVTYPE_HANDS))
+        {
+            switch (bot->getClass())
+            {
+                case CLASS_WARRIOR:
+                case CLASS_PALADIN:
+                case CLASS_DEATH_KNIGHT:
+                    if ((bot->HasSpell(750) && itemProto->SubClass != ITEM_SUBCLASS_ARMOR_PLATE) || (!bot->HasSpell(750) && itemProto->SubClass != ITEM_SUBCLASS_ARMOR_MAIL))
+                        return ITEM_USAGE_NONE;
+                    break;
+                case CLASS_HUNTER:
+                case CLASS_SHAMAN:
+                    if ((bot->HasSpell(8737) && itemProto->SubClass != ITEM_SUBCLASS_ARMOR_MAIL) || (!bot->HasSpell(8737) && itemProto->SubClass != ITEM_SUBCLASS_ARMOR_LEATHER))
+                        return ITEM_USAGE_NONE;
+                    break;
+                case CLASS_ROGUE:
+                case CLASS_DRUID:
+                    if (itemProto->SubClass != ITEM_SUBCLASS_ARMOR_LEATHER)
+                        return ITEM_USAGE_NONE;
+                    break;
+                case CLASS_MAGE:
+                case CLASS_PRIEST:
+                case CLASS_WARLOCK:
+                    if (itemProto->SubClass != ITEM_SUBCLASS_ARMOR_CLOTH)
+                        return ITEM_USAGE_NONE;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        if ((bot->getClass() == CLASS_SHAMAN && AiFactory::GetPlayerSpecTab(bot) != SHAMAN_TAB_ENHANCEMENT) || (bot->getClass() == CLASS_PALADIN && AiFactory::GetPlayerSpecTab(bot) == PALADIN_TAB_HOLY))
+            if ((botAI->FindEquipSlot(itemProto, NULL_SLOT, true) == EQUIPMENT_SLOT_OFFHAND && !(itemProto->Class == ITEM_CLASS_ARMOR && itemProto->SubClass == ITEM_SUBCLASS_ARMOR_SHIELD)) || (itemProto->Class == ITEM_CLASS_WEAPON && itemProto->InventoryType == INVTYPE_2HWEAPON))
+                return ITEM_USAGE_NONE;
+    }
+
     Item* pItem = Item::CreateItem(itemProto->ItemId, 1, bot, false, 0, true);
     if (!pItem)
         return ITEM_USAGE_NONE;
