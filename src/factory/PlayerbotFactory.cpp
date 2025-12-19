@@ -1820,7 +1820,7 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
                         if (!proto)
                             continue;
 
-                        uint32 progressionPatchId = sProgressionMgr->GetPatchId();
+                        uint32 progressionPatchId = sProgression->GetPatchId();
 
                         if (progressionPatchId < 6 && proto->ItemLevel > 63)
                         {
