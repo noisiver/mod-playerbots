@@ -1820,160 +1820,100 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
                         if (!proto)
                             continue;
 
-                        uint32 progressionPatchId = sProgressionMgr->GetPatchId();
+                        uint32 progressionPhaseId = sProgressionMgr->GetPhaseId();
 
-                        if (progressionPatchId < 6 && proto->ItemLevel > 63)
-                        {
+                        if ((progressionPhaseId < 1 && proto->ItemLevel > 58) ||
+                            (progressionPhaseId < 3 && proto->ItemLevel > 62) ||
+                            (progressionPhaseId < 7 && proto->ItemLevel > 76) ||
+                            (progressionPhaseId < 8 && proto->ItemLevel > 100) ||
+                            (progressionPhaseId < 10 && proto->ItemLevel > 110) ||
+                            (progressionPhaseId < 11 && proto->ItemLevel > 115) ||
+                            (progressionPhaseId < 12 && proto->ItemLevel > 120) ||
+                            (progressionPhaseId < 13 && proto->ItemLevel > 125) ||
+                            (progressionPhaseId < 14 && proto->ItemLevel > 130) ||
+                            (progressionPhaseId < 15 && proto->ItemLevel > 174) ||
+                            (progressionPhaseId < 16 && proto->ItemLevel > 200) ||
+                            (progressionPhaseId < 17 && proto->ItemLevel > 219) ||
+                            (progressionPhaseId < 18 && proto->ItemLevel > 226) ||
+                            (progressionPhaseId < 19 && proto->ItemLevel > 232) ||
+                            (progressionPhaseId == 19 && proto->ItemLevel > 245))
                             continue;
-                        }
 
-                        if (progressionPatchId < 7 && proto->ItemLevel > 66)
-                        {
-                            continue;
-                        }
-
-                        if (progressionPatchId < 12 && proto->ItemLevel > 76)
-                        {
-                            continue;
-                        }
-
-                        if (progressionPatchId < 13 && proto->ItemLevel > 110)
-                        {
-                            continue;
-                        }
-
-                        if (progressionPatchId < 14 && proto->ItemLevel > 120)
-                        {
-                            continue;
-                        }
-
-                        if (progressionPatchId < 17 && proto->ItemLevel > 133)
-                        {
-                            continue;
-                        }
-
-                        if (progressionPatchId < 18 && proto->ItemLevel > 200)
-                        {
-                            continue;
-                        }
-
-                        if (progressionPatchId < 19 && proto->ItemLevel > 213)
-                        {
-                            continue;
-                        }
-
-                        if (progressionPatchId < 20 && proto->ItemLevel > 226)
-                        {
-                            continue;
-                        }
-
-                        if (progressionPatchId < 21 && proto->ItemLevel > 245)
-                        {
-                            continue;
-                        }
-
-                        if (!sRandomPlayerbotMgr->IsRandomBot(bot))
-                        {
-                            if (progressionPatchId < 12)
-                            {
-                                 if (proto->ItemLevel > 58)
-                                 {
-                                     continue;
-                                 }
-                            }
-                            else if (progressionPatchId < 17)
-                            {
-                                 if (proto->ItemLevel > 100)
-                                 {
-                                     continue;
-                                 }
-                            }
-                            else
-                            {
-                                 if (proto->ItemLevel > 174)
-                                 {
-                                     continue;
-                                 }
-                            }
-
-                            if (proto->Class == ITEM_CLASS_WEAPON && proto->SubClass == ITEM_SUBCLASS_WEAPON_GUN)
-                                continue;
-
-                            if (proto->Class == ITEM_CLASS_ARMOR &&
-                                (proto->InventoryType == INVTYPE_HEAD || proto->InventoryType == INVTYPE_SHOULDERS ||
-                                 proto->InventoryType == INVTYPE_CHEST || proto->InventoryType == INVTYPE_WAIST ||
-                                 proto->InventoryType == INVTYPE_LEGS || proto->InventoryType == INVTYPE_FEET ||
-                                 proto->InventoryType == INVTYPE_WRISTS || proto->InventoryType == INVTYPE_HANDS))
-                            {
-                                switch (bot->getClass())
-                                {
-                                    case CLASS_WARRIOR:
-                                    case CLASS_PALADIN:
-                                    case CLASS_DEATH_KNIGHT:
-                                        if ((bot->HasSpell(750) && proto->SubClass != ITEM_SUBCLASS_ARMOR_PLATE) || (!bot->HasSpell(750) && proto->SubClass != ITEM_SUBCLASS_ARMOR_MAIL))
-                                            continue;
-                                        break;
-                                    case CLASS_HUNTER:
-                                    case CLASS_SHAMAN:
-                                        if ((bot->HasSpell(8737) && proto->SubClass != ITEM_SUBCLASS_ARMOR_MAIL) || (!bot->HasSpell(8737) && proto->SubClass != ITEM_SUBCLASS_ARMOR_LEATHER))
-                                            continue;
-                                        break;
-                                    case CLASS_ROGUE:
-                                    case CLASS_DRUID:
-                                        if (proto->SubClass != ITEM_SUBCLASS_ARMOR_LEATHER)
-                                            continue;
-                                        break;
-                                    case CLASS_MAGE:
-                                    case CLASS_PRIEST:
-                                    case CLASS_WARLOCK:
-                                        if (proto->SubClass != ITEM_SUBCLASS_ARMOR_CLOTH)
-                                            continue;
-                                        break;
-                                    default:
-                                        break;
-                                }
-                            }
-
-                            if ((bot->getClass() == CLASS_SHAMAN && AiFactory::GetPlayerSpecTab(bot) != SHAMAN_TAB_ENHANCEMENT) || (bot->getClass() == CLASS_PALADIN && AiFactory::GetPlayerSpecTab(bot) == PALADIN_TAB_HOLY))
-                                if ((botAI->FindEquipSlot(proto, NULL_SLOT, true) == EQUIPMENT_SLOT_OFFHAND && !(proto->Class == ITEM_CLASS_ARMOR && proto->SubClass == ITEM_SUBCLASS_ARMOR_SHIELD)) || (proto->Class == ITEM_CLASS_WEAPON && proto->InventoryType == INVTYPE_2HWEAPON))
-                                    continue;
-                        }
-
-                        switch (progressionPatchId)
+                        switch (progressionPhaseId)
                         {
                             case 0:
+                            case 7:
+                            case 14:
+                                if (proto->Quality > ITEM_QUALITY_UNCOMMON)
+                                    continue;
+                                break;
                             case 1:
+                            case 8:
+                            case 9:
+                            case 15:
+                                if (proto->Quality > ITEM_QUALITY_RARE)
+                                    continue;
+                                break;
                             case 2:
                             case 3:
                             case 4:
-                            case 12:
-                            case 17:
-                                if (proto->Quality > ITEM_QUALITY_RARE)
-                                {
-                                    continue;
-                                }
-                                break;
                             case 5:
                             case 6:
-                            case 7:
-                            case 8:
-                            case 9:
                             case 10:
                             case 11:
+                            case 12:
                             case 13:
-                            case 14:
-                            case 15:
                             case 16:
+                            case 17:
                             case 18:
-                            case 19:
-                            case 20:
-                            case 21:
                                 if (proto->Quality > ITEM_QUALITY_EPIC)
-                                {
                                     continue;
-                                }
+                                break;
+                            default:
                                 break;
                         }
+
+                        if (proto->Class == ITEM_CLASS_WEAPON && proto->SubClass == ITEM_SUBCLASS_WEAPON_GUN)
+                            continue;
+
+                        if (proto->Class == ITEM_CLASS_ARMOR &&
+                            (proto->InventoryType == INVTYPE_HEAD || proto->InventoryType == INVTYPE_SHOULDERS ||
+                             proto->InventoryType == INVTYPE_CHEST || proto->InventoryType == INVTYPE_WAIST ||
+                             proto->InventoryType == INVTYPE_LEGS || proto->InventoryType == INVTYPE_FEET ||
+                             proto->InventoryType == INVTYPE_WRISTS || proto->InventoryType == INVTYPE_HANDS))
+                        {
+                            switch (bot->getClass())
+                            {
+                                case CLASS_WARRIOR:
+                                case CLASS_PALADIN:
+                                case CLASS_DEATH_KNIGHT:
+                                    if ((bot->HasSpell(750) && proto->SubClass != ITEM_SUBCLASS_ARMOR_PLATE) || (!bot->HasSpell(750) && proto->SubClass != ITEM_SUBCLASS_ARMOR_MAIL))
+                                        continue;
+                                    break;
+                                case CLASS_HUNTER:
+                                case CLASS_SHAMAN:
+                                    if ((bot->HasSpell(8737) && proto->SubClass != ITEM_SUBCLASS_ARMOR_MAIL) || (!bot->HasSpell(8737) && proto->SubClass != ITEM_SUBCLASS_ARMOR_LEATHER))
+                                        continue;
+                                    break;
+                                case CLASS_ROGUE:
+                                case CLASS_DRUID:
+                                    if (proto->SubClass != ITEM_SUBCLASS_ARMOR_LEATHER)
+                                        continue;
+                                    break;
+                                case CLASS_MAGE:
+                                case CLASS_PRIEST:
+                                case CLASS_WARLOCK:
+                                    if (proto->SubClass != ITEM_SUBCLASS_ARMOR_CLOTH)
+                                        continue;
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+
+                        if ((bot->getClass() == CLASS_SHAMAN && AiFactory::GetPlayerSpecTab(bot) != SHAMAN_TAB_ENHANCEMENT) || (bot->getClass() == CLASS_PALADIN && AiFactory::GetPlayerSpecTab(bot) == PALADIN_TAB_HOLY))
+                            if ((botAI->FindEquipSlot(proto, NULL_SLOT, true) == EQUIPMENT_SLOT_OFFHAND && !(proto->Class == ITEM_CLASS_ARMOR && proto->SubClass == ITEM_SUBCLASS_ARMOR_SHIELD)) || (proto->Class == ITEM_CLASS_WEAPON && proto->InventoryType == INVTYPE_2HWEAPON))
+                                continue;
 
                         bool shouldCheckGS = desiredQuality > ITEM_QUALITY_NORMAL;
 
