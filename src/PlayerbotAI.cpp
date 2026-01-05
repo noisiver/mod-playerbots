@@ -43,6 +43,7 @@
 #include "PlayerbotAIConfig.h"
 #include "PlayerbotDbStore.h"
 #include "PlayerbotMgr.h"
+#include "PlayerbotGuildMgr.h"
 #include "Playerbots.h"
 #include "PointMovementGenerator.h"
 #include "PositionValue.h"
@@ -930,7 +931,6 @@ void PlayerbotAI::HandleCommand(uint32 type, std::string const text, Player* fro
         fromPlayer->SendDirectMessage(&data);
         return;
     }
-
     if (!IsAllowedCommand(filtered) &&
         (!GetSecurity()->CheckLevelFor(PLAYERBOT_SECURITY_ALLOW_ALL, type != CHAT_MSG_WHISPER, fromPlayer)))
         return;
@@ -1504,9 +1504,6 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
         case 532:
             strategyName = "karazhan";  // Karazhan
             break;
-        case 533:
-            strategyName = "naxx";  // Naxxramas
-            break;
         case 544:
             strategyName = "magtheridon";  // Magtheridon's Lair
             break;
@@ -2035,7 +2032,7 @@ bool PlayerbotAI::IsTank(Player* player, bool bySpec)
     switch (player->getClass())
     {
         case CLASS_DEATH_KNIGHT:
-            if (tab == DEATHKNIGHT_TAB_BLOOD)
+            if (tab == DEATH_KNIGHT_TAB_BLOOD)
             {
                 return true;
             }
@@ -2143,7 +2140,7 @@ bool PlayerbotAI::IsDps(Player* player, bool bySpec)
             }
             break;
         case CLASS_DEATH_KNIGHT:
-            if (tab != DEATHKNIGHT_TAB_BLOOD)
+            if (tab != DEATH_KNIGHT_TAB_BLOOD)
             {
                 return true;
             }
@@ -2803,7 +2800,12 @@ bool PlayerbotAI::TellMaster(std::ostringstream& stream, PlayerbotSecurityLevel 
 
 bool PlayerbotAI::TellMaster(std::string const text, PlayerbotSecurityLevel securityLevel)
 {
-    if (!master || !TellMasterNoFacing(text, securityLevel))
+    if (!master)
+    {
+        if (sPlayerbotAIConfig->randomBotSayWithoutMaster)
+            return TellMasterNoFacing(text, securityLevel);
+    }
+    if (!TellMasterNoFacing(text, securityLevel))
         return false;
 
     if (!bot->isMoving() && !bot->IsInCombat() && bot->GetMapId() == master->GetMapId() &&
@@ -5861,26 +5863,12 @@ bool PlayerbotAI::CanMove()
     return bot->GetMotionMaster()->GetCurrentMovementGeneratorType() != FLIGHT_MOTION_TYPE;
 }
 
-bool PlayerbotAI::IsRealGuild(uint32 guildId)
-{
-    Guild* guild = sGuildMgr->GetGuildById(guildId);
-    if (!guild)
-    {
-        return false;
-    }
-    uint32 leaderAccount = sCharacterCache->GetCharacterAccountIdByGuid(guild->GetLeaderGUID());
-    if (!leaderAccount)
-        return false;
-
-    return !(sPlayerbotAIConfig->IsInRandomAccountList(leaderAccount));
-}
-
 bool PlayerbotAI::IsInRealGuild()
 {
     if (!bot->GetGuildId())
         return false;
 
-    return IsRealGuild(bot->GetGuildId());
+    return sPlayerbotGuildMgr->IsRealGuild(bot->GetGuildId());
 }
 
 void PlayerbotAI::QueueChatResponse(const ChatQueuedReply chatReply) { chatReplies.push_back(std::move(chatReply)); }
