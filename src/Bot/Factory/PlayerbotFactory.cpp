@@ -39,6 +39,8 @@
 #include "AiObjectContext.h"
 #include "ItemPackets.h"
 
+#include "mod_progression.h"
+
 const uint64 diveMask = (1LL << 7) | (1LL << 44) | (1LL << 37) | (1LL << 38) | (1LL << 26) | (1LL << 30) | (1LL << 27) |
                         (1LL << 33) | (1LL << 24) | (1LL << 34);
 
@@ -1853,6 +1855,59 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
                             if ((bot->getClass() == CLASS_SHAMAN && AiFactory::GetPlayerSpecTab(bot) != SHAMAN_TAB_ENHANCEMENT) || (bot->getClass() == CLASS_PALADIN && AiFactory::GetPlayerSpecTab(bot) == PALADIN_TAB_HOLY))
                                 if ((botAI->FindEquipSlot(proto, NULL_SLOT, true) == EQUIPMENT_SLOT_OFFHAND && !(proto->Class == ITEM_CLASS_ARMOR && proto->SubClass == ITEM_SUBCLASS_ARMOR_SHIELD)) || (proto->Class == ITEM_CLASS_WEAPON && proto->InventoryType == INVTYPE_2HWEAPON))
                                     continue;
+                        }
+
+                        uint32 progressionPhaseId = sProgressionMgr->GetPhaseId();
+
+                        if ((progressionPhaseId < 1 && proto->ItemLevel > 58) ||
+                            (progressionPhaseId < 3 && proto->ItemLevel > 62) ||
+                            (progressionPhaseId < 7 && proto->ItemLevel > 76) ||
+                            (progressionPhaseId < 8 && proto->ItemLevel > 100) ||
+                            (progressionPhaseId < 10 && proto->ItemLevel > 110) ||
+                            (progressionPhaseId < 11 && proto->ItemLevel > 115) ||
+                            (progressionPhaseId < 12 && proto->ItemLevel > 120) ||
+                            (progressionPhaseId < 13 && proto->ItemLevel > 125) ||
+                            (progressionPhaseId < 14 && proto->ItemLevel > 130) ||
+                            (progressionPhaseId < 15 && proto->ItemLevel > 174) ||
+                            (progressionPhaseId < 16 && proto->ItemLevel > 200) ||
+                            (progressionPhaseId < 17 && proto->ItemLevel > 219) ||
+                            (progressionPhaseId < 18 && proto->ItemLevel > 226) ||
+                            (progressionPhaseId < 19 && proto->ItemLevel > 232) ||
+                            (progressionPhaseId == 19 && proto->ItemLevel > 245))
+                            continue;
+
+                        switch (progressionPhaseId)
+                        {
+                            case 0:
+                            case 7:
+                            case 14:
+                                if (proto->Quality > ITEM_QUALITY_UNCOMMON)
+                                    continue;
+                                break;
+                            case 1:
+                            case 8:
+                            case 9:
+                            case 15:
+                                if (proto->Quality > ITEM_QUALITY_RARE)
+                                    continue;
+                                break;
+                            case 2:
+                            case 3:
+                            case 4:
+                            case 5:
+                            case 6:
+                            case 10:
+                            case 11:
+                            case 12:
+                            case 13:
+                            case 16:
+                            case 17:
+                            case 18:
+                                if (proto->Quality > ITEM_QUALITY_EPIC)
+                                    continue;
+                                break;
+                            default:
+                                break;
                         }
 
                         bool shouldCheckGS = desiredQuality > ITEM_QUALITY_NORMAL;
