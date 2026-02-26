@@ -245,7 +245,7 @@ ItemUsage ItemUsageValue::QueryItemUsageForEquip(ItemTemplate const* itemProto, 
     if (itemProto->InventoryType == INVTYPE_NON_EQUIP)
         return ITEM_USAGE_NONE;
 
-    if (!sRandomPlayerbotMgr->IsRandomBot(bot))
+    if (!sRandomPlayerbotMgr.IsRandomBot(bot))
     {
         if (itemProto->Class == ITEM_CLASS_WEAPON && itemProto->SubClass == ITEM_SUBCLASS_WEAPON_GUN)
             return ITEM_USAGE_NONE;
