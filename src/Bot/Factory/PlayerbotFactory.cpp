@@ -1812,7 +1812,7 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
                         if (!proto)
                             continue;
 
-                        if (!sRandomPlayerbotMgr->IsRandomBot(bot))
+                        if (!sRandomPlayerbotMgr.IsRandomBot(bot))
                         {
                             if (proto->Class == ITEM_CLASS_WEAPON && proto->SubClass == ITEM_SUBCLASS_WEAPON_GUN)
                                 continue;
