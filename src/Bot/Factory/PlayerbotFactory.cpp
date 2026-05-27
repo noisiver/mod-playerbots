@@ -2203,37 +2203,37 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
 
                         if (!sRandomPlayerbotMgr.IsRandomBot(bot))
                         {
-                            if (itemProto->Class == ITEM_CLASS_WEAPON && itemProto->SubClass == ITEM_SUBCLASS_WEAPON_GUN)
+                            if (proto->Class == ITEM_CLASS_WEAPON && proto->SubClass == ITEM_SUBCLASS_WEAPON_GUN)
                                 return ITEM_USAGE_NONE;
 
-                            if (itemProto->Class == ITEM_CLASS_ARMOR &&
-                                (itemProto->InventoryType == INVTYPE_HEAD || itemProto->InventoryType == INVTYPE_SHOULDERS ||
-                                 itemProto->InventoryType == INVTYPE_CHEST || itemProto->InventoryType == INVTYPE_WAIST ||
-                                 itemProto->InventoryType == INVTYPE_LEGS || itemProto->InventoryType == INVTYPE_FEET ||
-                                 itemProto->InventoryType == INVTYPE_WRISTS || itemProto->InventoryType == INVTYPE_HANDS))
+                            if (proto->Class == ITEM_CLASS_ARMOR &&
+                                (proto->InventoryType == INVTYPE_HEAD || proto->InventoryType == INVTYPE_SHOULDERS ||
+                                 proto->InventoryType == INVTYPE_CHEST || proto->InventoryType == INVTYPE_WAIST ||
+                                 proto->InventoryType == INVTYPE_LEGS || proto->InventoryType == INVTYPE_FEET ||
+                                 proto->InventoryType == INVTYPE_WRISTS || proto->InventoryType == INVTYPE_HANDS))
                             {
                                 switch (bot->getClass())
                                 {
                                     case CLASS_WARRIOR:
                                     case CLASS_PALADIN:
                                     case CLASS_DEATH_KNIGHT:
-                                        if ((bot->HasSpell(750) && itemProto->SubClass != ITEM_SUBCLASS_ARMOR_PLATE) || (!bot->HasSpell(750) && itemProto->SubClass != ITEM_SUBCLASS_ARMOR_MAIL))
+                                        if ((bot->HasSpell(750) && proto->SubClass != ITEM_SUBCLASS_ARMOR_PLATE) || (!bot->HasSpell(750) && proto->SubClass != ITEM_SUBCLASS_ARMOR_MAIL))
                                             return ITEM_USAGE_NONE;
                                         break;
                                     case CLASS_HUNTER:
                                     case CLASS_SHAMAN:
-                                        if ((bot->HasSpell(8737) && itemProto->SubClass != ITEM_SUBCLASS_ARMOR_MAIL) || (!bot->HasSpell(8737) && itemProto->SubClass != ITEM_SUBCLASS_ARMOR_LEATHER))
+                                        if ((bot->HasSpell(8737) && proto->SubClass != ITEM_SUBCLASS_ARMOR_MAIL) || (!bot->HasSpell(8737) && proto->SubClass != ITEM_SUBCLASS_ARMOR_LEATHER))
                                             return ITEM_USAGE_NONE;
                                         break;
                                     case CLASS_ROGUE:
                                     case CLASS_DRUID:
-                                        if (itemProto->SubClass != ITEM_SUBCLASS_ARMOR_LEATHER)
+                                        if (proto->SubClass != ITEM_SUBCLASS_ARMOR_LEATHER)
                                             return ITEM_USAGE_NONE;
                                         break;
                                     case CLASS_MAGE:
                                     case CLASS_PRIEST:
                                     case CLASS_WARLOCK:
-                                        if (itemProto->SubClass != ITEM_SUBCLASS_ARMOR_CLOTH)
+                                        if (proto->SubClass != ITEM_SUBCLASS_ARMOR_CLOTH)
                                             return ITEM_USAGE_NONE;
                                         break;
                                     default:
@@ -2241,11 +2241,11 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
                                 }
                             }
 
-                            if (itemProto->Class == ITEM_CLASS_WEAPON && itemProto->SubClass == ITEM_SUBCLASS_WEAPON_GUN)
+                            if (proto->Class == ITEM_CLASS_WEAPON && proto->SubClass == ITEM_SUBCLASS_WEAPON_GUN)
                                 return ITEM_USAGE_NONE;
 
                             if ((bot->getClass() == CLASS_SHAMAN && AiFactory::GetPlayerSpecTab(bot) != SHAMAN_TAB_ENHANCEMENT) || (bot->getClass() == CLASS_PALADIN && AiFactory::GetPlayerSpecTab(bot) == PALADIN_TAB_HOLY))
-                                if ((botAI->FindEquipSlot(itemProto, NULL_SLOT, true) == EQUIPMENT_SLOT_OFFHAND && !(itemProto->Class == ITEM_CLASS_ARMOR && itemProto->SubClass == ITEM_SUBCLASS_ARMOR_SHIELD)) || (itemProto->Class == ITEM_CLASS_WEAPON && itemProto->InventoryType == INVTYPE_2HWEAPON))
+                                if ((botAI->FindEquipSlot(proto, NULL_SLOT, true) == EQUIPMENT_SLOT_OFFHAND && !(proto->Class == ITEM_CLASS_ARMOR && proto->SubClass == ITEM_SUBCLASS_ARMOR_SHIELD)) || (proto->Class == ITEM_CLASS_WEAPON && proto->InventoryType == INVTYPE_2HWEAPON))
                                     return ITEM_USAGE_NONE;
                         }
 
