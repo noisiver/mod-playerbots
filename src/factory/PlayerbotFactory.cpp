@@ -1821,7 +1821,7 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
                         if (!sRandomPlayerbotMgr.IsRandomBot(bot))
                         {
                             if (proto->Class == ITEM_CLASS_WEAPON && proto->SubClass == ITEM_SUBCLASS_WEAPON_GUN)
-                                continue
+                                continue;
 
                             if (proto->Class == ITEM_CLASS_ARMOR &&
                                 (proto->InventoryType == INVTYPE_HEAD || proto->InventoryType == INVTYPE_SHOULDERS ||
@@ -1835,23 +1835,23 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
                                     case CLASS_PALADIN:
                                     case CLASS_DEATH_KNIGHT:
                                         if ((bot->HasSpell(750) && proto->SubClass != ITEM_SUBCLASS_ARMOR_PLATE) || (!bot->HasSpell(750) && proto->SubClass != ITEM_SUBCLASS_ARMOR_MAIL))
-                                            continue
+                                            continue;
                                         break;
                                     case CLASS_HUNTER:
                                     case CLASS_SHAMAN:
                                         if ((bot->HasSpell(8737) && proto->SubClass != ITEM_SUBCLASS_ARMOR_MAIL) || (!bot->HasSpell(8737) && proto->SubClass != ITEM_SUBCLASS_ARMOR_LEATHER))
-                                            continue
+                                            continue;
                                         break;
                                     case CLASS_ROGUE:
                                     case CLASS_DRUID:
                                         if (proto->SubClass != ITEM_SUBCLASS_ARMOR_LEATHER)
-                                            continue
+                                            continue;
                                         break;
                                     case CLASS_MAGE:
                                     case CLASS_PRIEST:
                                     case CLASS_WARLOCK:
                                         if (proto->SubClass != ITEM_SUBCLASS_ARMOR_CLOTH)
-                                            continue
+                                            continue;
                                         break;
                                     default:
                                         break;
@@ -1859,11 +1859,11 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
                             }
 
                             if (proto->Class == ITEM_CLASS_WEAPON && proto->SubClass == ITEM_SUBCLASS_WEAPON_GUN)
-                                continue
+                                continue;
 
                             if ((bot->getClass() == CLASS_SHAMAN && AiFactory::GetPlayerSpecTab(bot) != SHAMAN_TAB_ENHANCEMENT) || (bot->getClass() == CLASS_PALADIN && AiFactory::GetPlayerSpecTab(bot) == PALADIN_TAB_HOLY))
                                 if ((botAI->FindEquipSlot(proto, NULL_SLOT, true) == EQUIPMENT_SLOT_OFFHAND && !(proto->Class == ITEM_CLASS_ARMOR && proto->SubClass == ITEM_SUBCLASS_ARMOR_SHIELD)) || (proto->Class == ITEM_CLASS_WEAPON && proto->InventoryType == INVTYPE_2HWEAPON))
-                                    continue
+                                    continue;
                         }
 
                         bool shouldCheckGS = desiredQuality > ITEM_QUALITY_NORMAL;
