@@ -412,6 +412,22 @@ inline Position const& RsHalionCombustionSpot(uint32 instanceId)
     return (count % 2u) == 0u ? RS_HALION_COMBUSTION_SPOT_A : RS_HALION_COMBUSTION_SPOT_B;
 }
 
+inline Position const& RsHalionCombustionSpot(Player* bot)
+{
+    std::pair<uint32, ObjectGuid> const key(bot->GetInstanceId(), bot->GetGUID());
+    auto& memory = RubySanctumHelpers::combustionSpotUsesA;
+
+    auto it = memory.find(key);
+    if (it == memory.end())
+    {
+        bool const useA = bot->GetExactDist2d(RS_HALION_COMBUSTION_SPOT_A) <=
+                          bot->GetExactDist2d(RS_HALION_COMBUSTION_SPOT_B);
+        it = memory.emplace(key, useA).first;
+    }
+
+    return it->second ? RS_HALION_COMBUSTION_SPOT_A : RS_HALION_COMBUSTION_SPOT_B;
+}
+
 inline bool RsHalionCombustionAtSpot(Unit* u)
 {
     if (!u)
@@ -421,7 +437,7 @@ inline bool RsHalionCombustionAtSpot(Unit* u)
     if (!p)
         return false;
 
-    Position const& spot = RsHalionCombustionSpot(p->GetInstanceId());
+    Position const& spot = RsHalionCombustionSpot(p);
     return p->GetExactDist2d(spot.GetPositionX(), spot.GetPositionY()) <= RS_HALION_COMBUSTION_REACH;
 }
 

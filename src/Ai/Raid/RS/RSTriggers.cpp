@@ -211,6 +211,8 @@ bool RsHalionEnterPortalTrigger::IsActive()
             return false;
         if (RsHalionP3TwilightAssigned(botAI, bot))
             return false;
+        if (RsHalionCutterShouldMove(bot->GetInstanceId()))
+            return false;
         return RsHalionFindPortal(botAI) != nullptr;
     }
 

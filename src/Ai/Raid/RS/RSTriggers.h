@@ -47,6 +47,7 @@ enum SpellIdsRS
     RS_SPELL_TAUNT_DK                   = 56222,
     RS_SPELL_TAUNT_DRUID                = 6795,
     RS_SPELL_PAIN_SUPPRESION            = 69910,
+    RS_SPELL_MAGIC_BARRIER              = 38112,
 
     SPELL_FLAME_BREATH                  = 74525,
     SPELL_FLAME_BREATH_ALT1             = 68970,

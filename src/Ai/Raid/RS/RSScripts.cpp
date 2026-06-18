@@ -17,6 +17,7 @@ namespace RubySanctumHelpers
     std::unordered_map<uint32, CutterTiming> cutterTiming;
     std::unordered_map<uint32, PortalAddGate> portalAddGate;
     std::map<std::pair<uint32, ObjectGuid>, bool> p3TwilightAssignment;
+    std::map<std::pair<uint32, ObjectGuid>, bool> combustionSpotUsesA;
     std::unordered_map<uint32, HalionCorporeality> halionCorporeality;
 }
 
@@ -178,32 +179,63 @@ private:
     {
         uint32 const now = getMSTime();
         uint32 const rescueMs = 5000;
+        float const bossHp = creature->GetHealthPct();
 
         static std::unordered_map<ObjectGuid, uint32> grantStart;
 
         Map::PlayerList const& players = creature->GetMap()->GetPlayers();
+
+        bool physicalHealerAlive = false;
+        bool twilightHealerAlive = false;
+        for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
+        {
+            Player* player = it->GetSource();
+            if (!player || !player->IsAlive() || !PlayerbotAI::IsHeal(player))
+                continue;
+            if (RsHalionInTwilight(player))
+                twilightHealerAlive = true;
+            else
+                physicalHealerAlive = true;
+        }
+
         for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
         {
             Player* player = it->GetSource();
             if (!player || !player->IsAlive() || !PlayerbotAI::IsTank(player))
                 continue;
 
+            bool const tankTwilight = RsHalionInTwilight(player);
+            bool const healerInRealm = tankTwilight ? twilightHealerAlive : physicalHealerAlive;
+
             ObjectGuid const guid = player->GetGUID();
+
+            if (!tankTwilight && bossHp >= 46.0f)
+            {
+                player->AddAura(RS_SPELL_MAGIC_BARRIER, player);
+                grantStart.erase(guid);
+                continue;
+            }
+
+            if (bossHp > 50.0f)
+                continue;
+
             auto granted = grantStart.find(guid);
 
             if (granted != grantStart.end())
             {
                 if (getMSTimeDiff(granted->second, now) >= rescueMs)
                 {
-                    player->SetCommandStatusOff(CHEAT_GOD);
+                    player->RemoveAura(RS_SPELL_MAGIC_BARRIER);
                     grantStart.erase(granted);
                 }
+                else
+                    player->AddAura(RS_SPELL_MAGIC_BARRIER, player);
                 continue;
             }
 
-            if (!player->HealthAbovePct(50))
+            if (!player->HealthAbovePct(50) && healerInRealm)
             {
-                player->SetCommandStatusOn(CHEAT_GOD);
+                player->AddAura(RS_SPELL_MAGIC_BARRIER, player);
                 grantStart[guid] = now;
             }
         }
@@ -236,7 +268,7 @@ private:
             ObjectGuid const guid = player->GetGUID();
             if (casting)
             {
-                player->SetCommandStatusOn(CHEAT_GOD);
+                player->AddAura(RS_SPELL_MAGIC_BARRIER, player);
                 grantStart[guid] = now;
                 continue;
             }
@@ -247,20 +279,16 @@ private:
 
             if (getMSTimeDiff(granted->second, now) >= holdMs)
             {
-                player->SetCommandStatusOff(CHEAT_GOD);
+                player->RemoveAura(RS_SPELL_MAGIC_BARRIER);
                 grantStart.erase(granted);
             }
             else
-                player->SetCommandStatusOn(CHEAT_GOD);
+                player->AddAura(RS_SPELL_MAGIC_BARRIER, player);
         }
     }
 
     void HandleCombustionDispel(Creature* physical)
     {
-        uint32 const instanceId = physical->GetMap()->GetInstanceId();
-        if (!RsHalionMeteorCastRecently(instanceId))
-            return;
-
         Map::PlayerList const& players = physical->GetMap()->GetPlayers();
         for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
         {
@@ -295,7 +323,7 @@ private:
             ObjectGuid const guid = player->GetGUID();
             if (player->HasAura(SPELL_SOUL_CONSUMPTION))
             {
-                player->SetCommandStatusOn(CHEAT_GOD);
+                player->AddAura(RS_SPELL_MAGIC_BARRIER, player);
                 grantStart[guid] = now;
                 continue;
             }
@@ -306,11 +334,11 @@ private:
 
             if (getMSTimeDiff(granted->second, now) >= holdMs)
             {
-                player->SetCommandStatusOff(CHEAT_GOD);
+                player->RemoveAura(RS_SPELL_MAGIC_BARRIER);
                 grantStart.erase(granted);
             }
             else
-                player->SetCommandStatusOn(CHEAT_GOD);
+                player->AddAura(RS_SPELL_MAGIC_BARRIER, player);
         }
     }
 
@@ -473,7 +501,7 @@ private:
             return;
         }
 
-        if (creature->GetMap()->IsHeroic() && !creature->HealthAbovePct(50))
+        if (creature->GetMap()->IsHeroic() && !creature->HealthAbovePct(51))
             HandleP3TankRescue(creature);
 
         uint32 const now = getMSTime();

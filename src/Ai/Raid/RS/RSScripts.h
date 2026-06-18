@@ -43,6 +43,8 @@ namespace RubySanctumHelpers
 
     extern std::map<std::pair<uint32, ObjectGuid>, bool> p3TwilightAssignment;
 
+    extern std::map<std::pair<uint32, ObjectGuid>, bool> combustionSpotUsesA;
+
     struct HalionCorporeality
     {
         uint8 physicalIndex;

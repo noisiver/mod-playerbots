@@ -308,7 +308,7 @@ float RsHalionP2Multiplier::GetValue(Action* action)
 
     if (RsHalionTwilightTank(botAI) != bot && RsHalionCutterShouldMove(bot->GetInstanceId()))
     {
-        if (bot->getClass() == CLASS_ROGUE &&
+        if (bot->getClass() == CLASS_ROGUE && bot->GetMap()->IsHeroic() &&
             !dynamic_cast<RsHalionCutterAction*>(action) &&
             !dynamic_cast<RsHalionP2AvoidConesAction*>(action))
             return 0.0f;

@@ -219,8 +219,7 @@ bool RsHalionAvoidConesAction::Execute(Event )
 
 bool RsHalionCombustionAction::Execute(Event )
 {
-    if (RsHalionHasCombustion(bot) && RsHalionMeteorCastRecently(bot->GetInstanceId()) &&
-        RsHalionCombustionAtSpot(bot))
+    if (RsHalionHasCombustion(bot) && RsHalionCombustionAtSpot(bot))
     {
         bot->RemoveAurasDueToSpell(SPELL_FIERY_COMBUSTION, ObjectGuid::Empty, 0, AURA_REMOVE_BY_EXPIRE);
         bot->RemoveAurasDueToSpell(SPELL_MARK_OF_COMBUSTION, ObjectGuid::Empty, 0, AURA_REMOVE_BY_EXPIRE);
@@ -232,6 +231,8 @@ bool RsHalionCombustionAction::Execute(Event )
 
     if (!RsHalionHasCombustion(bot))
     {
+        RubySanctumHelpers::combustionSpotUsesA.erase({bot->GetInstanceId(), bot->GetGUID()});
+
         if (RsHalionCombustionReturning(bot))
         {
             Position const& rally = RsHalionMeteorSpot(bot->GetInstanceId());
@@ -244,7 +245,7 @@ bool RsHalionCombustionAction::Execute(Event )
     if (!bot->HasAura(RS_SPELL_NITRO_BOOSTS))
         bot->AddAura(RS_SPELL_NITRO_BOOSTS, bot);
 
-    Position const& spot = RsHalionCombustionSpot(bot->GetInstanceId());
+    Position const& spot = RsHalionCombustionSpot(bot);
 
     if (bot->GetExactDist2d(spot.GetPositionX(), spot.GetPositionY()) <= RS_HALION_COMBUSTION_REACH)
         return false;
@@ -329,14 +330,7 @@ bool RsHalionEnterPortalAction::Execute(Event )
             return false;
 
         if (RsHalionCutterShouldMove(bot->GetInstanceId()))
-        {
-            if (bot->GetMotionMaster()->GetCurrentMovementGeneratorType() == POINT_MOTION_TYPE)
-            {
-                bot->GetMotionMaster()->Clear();
-                bot->StopMoving();
-            }
             return false;
-        }
 
         p3TwilightExit = true;
     }
@@ -458,13 +452,13 @@ bool RsHalionEnterPortalAction::Execute(Event )
 
     if (!p3TwilightExit && !phase3)
     {
-        bot->SetCommandStatusOn(CHEAT_GOD);
+        bot->AddAura(RS_SPELL_MAGIC_BARRIER, bot);
 
         ObjectGuid const guid = bot->GetGUID();
         botAI->AddTimedEvent([guid]()
         {
             if (Player* p = ObjectAccessor::FindPlayer(guid))
-                p->SetCommandStatusOff(CHEAT_GOD);
+                p->RemoveAura(RS_SPELL_MAGIC_BARRIER);
         }, 5000);
     }
 
@@ -548,7 +542,38 @@ bool RsHalionP2AvoidConesAction::Execute(Event )
     if (!tank)
         return false;
 
-    bool const loose = RsHalionCutterShouldMove(bot->GetInstanceId()) && bot->getClass() != CLASS_ROGUE &&
+    std::vector<std::pair<Unit*, Unit*>> pairs;
+    bool const singleCutter = RsHalionCollectOrbPairs(boss, pairs) && pairs.size() == 1;
+
+    if (RsHalionCutterBeamDanger(botAI, bot) && singleCutter)
+    {
+        if (bot->IsNonMeleeSpellCast(false))
+            bot->InterruptNonMeleeSpells(false);
+
+        Unit* na = pairs[0].first;
+        Unit* nb = pairs[0].second;
+        float const nearestSigned = RsHalionBeamSignedDist(bot->GetPositionX(), bot->GetPositionY(), na, nb);
+        float const nearest = std::fabs(nearestSigned);
+        float const ex = nb->GetPositionX() - na->GetPositionX();
+        float const ey = nb->GetPositionY() - na->GetPositionY();
+        float const elen = std::sqrt(ex * ex + ey * ey);
+        if (elen > 0.01f)
+        {
+            float const side = nearestSigned >= 0.0f ? 1.0f : -1.0f;
+            float const nx = side * ey / elen;
+            float const ny = side * -ex / elen;
+            float const clear = RS_HALION_CUTTER_DANGER + RS_HALION_CUTTER_MARGIN;
+            float const stepLen = std::max(clear - nearest, RS_HALION_P2_STEP);
+            float const moveX = bot->GetPositionX() + nx * stepLen;
+            float const moveY = bot->GetPositionY() + ny * stepLen;
+            if (bot->IsWithinLOS(moveX, moveY, bot->GetPositionZ()))
+                return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false,
+                              true, MovementPriority::MOVEMENT_FORCED, true);
+        }
+    }
+
+    bool const loose = RsHalionCutterShouldMove(bot->GetInstanceId()) &&
+        (singleCutter || bot->getClass() != CLASS_ROGUE) &&
         !RsHalionCutterBeamDanger(botAI, bot);
 
     if (loose && bot->IsNonMeleeSpellCast(false, false, true))
@@ -560,10 +585,40 @@ bool RsHalionP2AvoidConesAction::Execute(Event )
     float const bossX = boss->GetPositionX();
     float const bossY = boss->GetPositionY();
     float const bossToTank = std::atan2(tank->GetPositionY() - bossY, tank->GetPositionX() - bossX);
-    float const leftAngle = bossToTank + static_cast<float>(M_PI) * 105.0f / 180.0f;
     float const radius = botAI->IsMelee(bot) ? RS_HALION_P2_MELEE_DIST : RS_HALION_P2_RANGED_DIST;
-    float const targetX = bossX + std::cos(leftAngle) * radius;
-    float const targetY = bossY + std::sin(leftAngle) * radius;
+    float slotAngle = bossToTank + static_cast<float>(M_PI) * 105.0f / 180.0f;
+
+    if (singleCutter)
+    {
+        float const clear = RS_HALION_CUTTER_DANGER + RS_HALION_CUTTER_MARGIN;
+        auto slotClear = [&](float ang) -> bool
+        {
+            float const sx = bossX + std::cos(ang) * radius;
+            float const sy = bossY + std::sin(ang) * radius;
+            return std::fabs(RsHalionBeamSignedDist(sx, sy, pairs[0].first, pairs[0].second)) > clear;
+        };
+
+        if (!slotClear(slotAngle))
+        {
+            float const stepArc = static_cast<float>(M_PI) / 18.0f;
+            for (int i = 1; i <= 18; ++i)
+            {
+                if (slotClear(slotAngle + stepArc * static_cast<float>(i)))
+                {
+                    slotAngle += stepArc * static_cast<float>(i);
+                    break;
+                }
+                if (slotClear(slotAngle - stepArc * static_cast<float>(i)))
+                {
+                    slotAngle -= stepArc * static_cast<float>(i);
+                    break;
+                }
+            }
+        }
+    }
+
+    float const targetX = bossX + std::cos(slotAngle) * radius;
+    float const targetY = bossY + std::sin(slotAngle) * radius;
 
     float const dx = targetX - bot->GetPositionX();
     float const dy = targetY - bot->GetPositionY();
@@ -637,12 +692,12 @@ bool RsHalionConsumptionAction::Execute(Event )
     std::vector<Unit*> pools;
     RsHalionCollectHazardPools(bot, pools);
 
-    auto spotClear = [&](float px, float py) -> bool
+    auto beamClear = [&](float px, float py) -> bool
     {
         for (auto const& pair : pairs)
             if (std::fabs(RsHalionBeamSignedDist(px, py, pair.first, pair.second)) <= RS_HALION_CUTTER_BOT_CLEAR)
                 return false;
-        return RsHalionSpotClearOfPools(pools, px, py);
+        return true;
     };
 
     bool const startInPool = !RsHalionSpotClearOfPools(pools, bot->GetPositionX(), bot->GetPositionY());
@@ -651,36 +706,51 @@ bool RsHalionConsumptionAction::Execute(Event )
         ? std::atan2(bot->GetPositionY() - bossY, bot->GetPositionX() - bossX)
         : 0.0f;
     float const stepArc = static_cast<float>(M_PI) / 36.0f;
-    for (int i = 0; i <= 24; ++i)
+
+    bool moveResult = false;
+    auto tryReachOut = [&](bool needBeamClear, bool needPoolClear, bool needPathClear) -> bool
     {
-        for (float const sign : {1.0f, -1.0f})
+        for (int i = 0; i <= 24; ++i)
         {
-            float const a = radAngle + sign * stepArc * static_cast<float>(i);
-            float const goalX = bossX + std::cos(a) * RS_HALION_CONSUMPTION_OUT_DIST;
-            float const goalY = bossY + std::sin(a) * RS_HALION_CONSUMPTION_OUT_DIST;
+            for (float const sign : {1.0f, -1.0f})
+            {
+                float const a = radAngle + sign * stepArc * static_cast<float>(i);
+                float const goalX = bossX + std::cos(a) * RS_HALION_CONSUMPTION_OUT_DIST;
+                float const goalY = bossY + std::sin(a) * RS_HALION_CONSUMPTION_OUT_DIST;
 
-            if (!spotClear(goalX, goalY))
-                continue;
+                if (needBeamClear && !beamClear(goalX, goalY))
+                    continue;
+                if (needPoolClear && !RsHalionSpotClearOfPools(pools, goalX, goalY))
+                    continue;
 
-            float const dx = goalX - bot->GetPositionX();
-            float const dy = goalY - bot->GetPositionY();
-            float const dist = std::sqrt(dx * dx + dy * dy);
-            float const stepLen = std::min(RS_HALION_CONSUMPTION_STEP, dist);
-            float const moveX = dist < 0.01f ? goalX : bot->GetPositionX() + (dx / dist) * stepLen;
-            float const moveY = dist < 0.01f ? goalY : bot->GetPositionY() + (dy / dist) * stepLen;
+                float const dx = goalX - bot->GetPositionX();
+                float const dy = goalY - bot->GetPositionY();
+                float const dist = std::sqrt(dx * dx + dy * dy);
+                float const stepLen = std::min(RS_HALION_CONSUMPTION_STEP, dist);
+                float const moveX = dist < 0.01f ? goalX : bot->GetPositionX() + (dx / dist) * stepLen;
+                float const moveY = dist < 0.01f ? goalY : bot->GetPositionY() + (dy / dist) * stepLen;
 
-            if (!spotClear(moveX, moveY))
-                continue;
-            if (!startInPool &&
-                !RsHalionPathClearOfPools(pools, bot->GetPositionX(), bot->GetPositionY(), moveX, moveY))
-                continue;
-            if (!bot->IsWithinLOS(moveX, moveY, bot->GetPositionZ()))
-                continue;
+                if (needBeamClear && !beamClear(moveX, moveY))
+                    continue;
+                if (needPoolClear && !RsHalionSpotClearOfPools(pools, moveX, moveY))
+                    continue;
+                if (needPathClear && !startInPool &&
+                    !RsHalionPathClearOfPools(pools, bot->GetPositionX(), bot->GetPositionY(), moveX, moveY))
+                    continue;
+                if (!bot->IsWithinLOS(moveX, moveY, bot->GetPositionZ()))
+                    continue;
 
-            return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, true,
-                          MovementPriority::MOVEMENT_FORCED);
+                moveResult = MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false,
+                                    true, MovementPriority::MOVEMENT_FORCED);
+                return true;
+            }
         }
-    }
+        return false;
+    };
+
+    if (tryReachOut(true, true, true) || tryReachOut(true, true, false) ||
+        tryReachOut(true, false, false) || tryReachOut(false, false, false))
+        return moveResult;
 
     return false;
 }
@@ -765,55 +835,30 @@ bool RsHalionCutterAction::Execute(Event )
                               MovementPriority::MOVEMENT_FORCED, true, false);
         }
 
-        if (pairs.size() == 1)
-        {
-            float const sd = std::fabs(RsHalionBeamSignedDist(bot->GetPositionX(), bot->GetPositionY(),
-                                                              pairs[0].first, pairs[0].second));
-            if (sd >= RS_HALION_CUTTER_TANK_TRAIL_NORMAL)
-                return false;
+        float const trailAngle = RS_HALION_CUTTER_TANK_TRAIL / radius;
+        float const tolAngle = RS_HALION_CUTTER_TANK_TRAIL_TOL / radius;
 
-            float const stepAngle = 3.0f / radius;
-            float const moveAngle = tankAngle + spinSign * stepAngle;
-            float const moveX = bossX + std::cos(moveAngle) * radius;
-            float const moveY = bossY + std::sin(moveAngle) * radius;
-
-            if (!bot->IsWithinLOS(moveX, moveY, bot->GetPositionZ()))
-                return false;
-
-            return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, true,
-                          MovementPriority::MOVEMENT_FORCED, true);
-        }
-
-        float bestGap = std::numeric_limits<float>::max();
-        float crossAngle = tankAngle;
+        float bestDist = std::numeric_limits<float>::max();
+        float follow = 0.0f;
         for (auto const& pair : pairs)
         {
             float const phi = std::atan2(pair.second->GetPositionY() - pair.first->GetPositionY(),
                                          pair.second->GetPositionX() - pair.first->GetPositionX());
             for (float const c : {phi, phi + static_cast<float>(M_PI)})
             {
-                float gap = spinSign * (c - tankAngle);
-                while (gap <= 0.0f)
-                    gap += 2.0f * static_cast<float>(M_PI);
-                while (gap > 2.0f * static_cast<float>(M_PI))
-                    gap -= 2.0f * static_cast<float>(M_PI);
-                if (gap < bestGap)
+                float const targetAngle = c - spinSign * trailAngle;
+                float f = spinSign * (targetAngle - tankAngle);
+                while (f > static_cast<float>(M_PI))
+                    f -= 2.0f * static_cast<float>(M_PI);
+                while (f < -static_cast<float>(M_PI))
+                    f += 2.0f * static_cast<float>(M_PI);
+                if (std::fabs(f) < bestDist)
                 {
-                    bestGap = gap;
-                    crossAngle = c;
+                    bestDist = std::fabs(f);
+                    follow = f;
                 }
             }
         }
-
-        float const trailAngle = RS_HALION_CUTTER_TANK_TRAIL / radius;
-        float const tolAngle = RS_HALION_CUTTER_TANK_TRAIL_TOL / radius;
-        float const targetAngle = crossAngle - spinSign * trailAngle;
-
-        float follow = spinSign * (targetAngle - tankAngle);
-        while (follow > static_cast<float>(M_PI))
-            follow -= 2.0f * static_cast<float>(M_PI);
-        while (follow < -static_cast<float>(M_PI))
-            follow += 2.0f * static_cast<float>(M_PI);
 
         if (std::fabs(follow) <= tolAngle)
             return false;
