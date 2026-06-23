@@ -231,8 +231,6 @@ bool RsHalionCombustionAction::Execute(Event )
 
     if (!RsHalionHasCombustion(bot))
     {
-        RubySanctumHelpers::combustionSpotUsesA.erase({bot->GetInstanceId(), bot->GetGUID()});
-
         if (RsHalionCombustionReturning(bot))
         {
             Position const& rally = RsHalionMeteorSpot(bot->GetInstanceId());

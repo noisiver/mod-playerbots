@@ -17,7 +17,6 @@ namespace RubySanctumHelpers
     std::unordered_map<uint32, CutterTiming> cutterTiming;
     std::unordered_map<uint32, PortalAddGate> portalAddGate;
     std::map<std::pair<uint32, ObjectGuid>, bool> p3TwilightAssignment;
-    std::map<std::pair<uint32, ObjectGuid>, bool> combustionSpotUsesA;
     std::unordered_map<uint32, HalionCorporeality> halionCorporeality;
 }
 
