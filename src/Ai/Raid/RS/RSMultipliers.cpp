@@ -173,6 +173,9 @@ float RsHalionMeteorMultiplier::GetValue(Action* action)
     if (botAI->IsTank(bot) && !RsHalionAssistTankAsMelee(botAI))
         return 1.0f;
 
+    if (RsHalionInTwilight(bot))
+        return 1.0f;
+
     Unit* physBoss = RsHalionAnyPhysicalBoss(botAI);
     if (!physBoss || !physBoss->IsInCombat())
         return 1.0f;

@@ -855,6 +855,12 @@ inline bool RsHalionMeteorShouldRally(Player* bot)
     static std::set<ObjectGuid> committed;
     ObjectGuid const guid = bot->GetGUID();
 
+    if (RsHalionInTwilight(bot))
+    {
+        committed.erase(guid);
+        return false;
+    }
+
     float const dist = bot->GetExactDist2d(RsHalionMeteorSpot(bot->GetInstanceId()));
 
     if (dist <= RS_HALION_METEOR_REACH)
