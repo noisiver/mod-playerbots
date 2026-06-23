@@ -164,7 +164,16 @@ inline Unit* RsHalionFindBoss(PlayerbotAI* botAI, std::string const& name, uint3
 
 inline Unit* RsHalionTwilightBoss(PlayerbotAI* botAI)
 {
-    return RsHalionFindBoss(botAI, "twilight halion", NPC_TWILIGHT_HALION);
+    if (Unit* boss = RsHalionFindBoss(botAI, "twilight halion", NPC_TWILIGHT_HALION))
+        return boss;
+
+    auto const it = RubySanctumHelpers::cutterTiming.find(botAI->GetBot()->GetInstanceId());
+    if (it != RubySanctumHelpers::cutterTiming.end() && !it->second.bossGuid.IsEmpty())
+        if (Unit* boss = botAI->GetUnit(it->second.bossGuid))
+            if (boss->IsAlive() && boss->GetEntry() == NPC_TWILIGHT_HALION)
+                return boss;
+
+    return nullptr;
 }
 
 inline Unit* RsHalionPhase2Boss(PlayerbotAI* botAI)

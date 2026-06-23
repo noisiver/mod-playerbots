@@ -627,14 +627,34 @@ bool RsHalionP2AvoidConesAction::Execute(Event )
     if (dist <= (loose ? RS_HALION_P2_STEP : 1.0f))
         return false;
 
+    float const botZ = bot->GetPositionZ();
+    auto losOk = [&](float x, float y) -> bool
+    {
+        return bot->IsWithinLOS(x, y, botZ) || bot->IsWithinLOS(x, y, botZ + 2.0f) ||
+               bot->IsWithinLOS(x, y, botZ - 2.0f);
+    };
+
     float const stepLen = std::min(dist, RS_HALION_P2_STEP);
     float const moveX = bot->GetPositionX() + (dx / dist) * stepLen;
     float const moveY = bot->GetPositionY() + (dy / dist) * stepLen;
 
-    if (!bot->IsWithinLOS(moveX, moveY, bot->GetPositionZ()))
+    if (losOk(moveX, moveY))
+        return MoveTo(bot->GetMapId(), moveX, moveY, botZ, false, false, false, false,
+                      MovementPriority::MOVEMENT_FORCED, true);
+
+    float const toBossX = bossX - bot->GetPositionX();
+    float const toBossY = bossY - bot->GetPositionY();
+    float const toBossLen = std::sqrt(toBossX * toBossX + toBossY * toBossY);
+    if (toBossLen < 0.01f)
         return false;
 
-    return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+    float const radialStep = std::min(toBossLen, RS_HALION_P2_STEP);
+    float const radialX = bot->GetPositionX() + (toBossX / toBossLen) * radialStep;
+    float const radialY = bot->GetPositionY() + (toBossY / toBossLen) * radialStep;
+    if (!losOk(radialX, radialY))
+        return false;
+
+    return MoveTo(bot->GetMapId(), radialX, radialY, botZ, false, false, false, false,
                   MovementPriority::MOVEMENT_FORCED, true);
 }
 
