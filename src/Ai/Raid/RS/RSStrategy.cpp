@@ -76,4 +76,5 @@ void RaidRsStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new RsHalionMeleeFlankMultiplier(botAI));
     multipliers.push_back(new RsHalionP2Multiplier(botAI));
     multipliers.push_back(new RsHalionHpBalanceMultiplier(botAI));
+    multipliers.push_back(new RsHalionRealmIsolationMultiplier(botAI));
 }

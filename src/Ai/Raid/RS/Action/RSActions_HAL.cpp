@@ -483,11 +483,10 @@ bool RsHalionP2TankPositionAction::Execute(Event )
             group->SetTargetIcon(RS_ICON_CROSS, bot->GetGUID(), boss->GetGUID());
     }
 
+    ThreatManager& mgr = boss->GetThreatMgr();
     if (boss->GetVictim() != bot)
-    {
-        ThreatManager& mgr = boss->GetThreatMgr();
         mgr.AddThreat(bot, 1000000.0f, nullptr, true, true);
-    }
+    mgr.FixateTarget(bot);
 
     context->GetValue<std::string>("rti")->Set("cross");
 
@@ -544,8 +543,9 @@ bool RsHalionP2AvoidConesAction::Execute(Event )
 
     std::vector<std::pair<Unit*, Unit*>> pairs;
     bool const singleCutter = RsHalionCollectOrbPairs(boss, pairs) && pairs.size() == 1;
+    bool const cutterFiring = RsHalionCutterActive(bot->GetInstanceId());
 
-    if (RsHalionCutterBeamDanger(botAI, bot) && singleCutter)
+    if (RsHalionCutterBeamDanger(botAI, bot) && singleCutter && cutterFiring)
     {
         if (bot->IsNonMeleeSpellCast(false))
             bot->InterruptNonMeleeSpells(false);
@@ -572,14 +572,15 @@ bool RsHalionP2AvoidConesAction::Execute(Event )
         }
     }
 
+    bool const lockedClass = bot->getClass() == CLASS_ROGUE || bot->getClass() == CLASS_WARRIOR;
     bool const loose = RsHalionCutterShouldMove(bot->GetInstanceId()) &&
-        (singleCutter || bot->getClass() != CLASS_ROGUE) &&
+        !lockedClass &&
         !RsHalionCutterBeamDanger(botAI, bot);
 
     if (loose && bot->IsNonMeleeSpellCast(false, false, true))
         return false;
 
-    if (RsHalionCutterBeamDanger(botAI, bot) && bot->IsNonMeleeSpellCast(false))
+    if (RsHalionCutterBeamDanger(botAI, bot) && cutterFiring && bot->IsNonMeleeSpellCast(false))
         bot->InterruptNonMeleeSpells(false);
 
     float const bossX = boss->GetPositionX();
@@ -588,7 +589,7 @@ bool RsHalionP2AvoidConesAction::Execute(Event )
     float const radius = botAI->IsMelee(bot) ? RS_HALION_P2_MELEE_DIST : RS_HALION_P2_RANGED_DIST;
     float slotAngle = bossToTank + static_cast<float>(M_PI) * 105.0f / 180.0f;
 
-    if (singleCutter)
+    if (singleCutter && cutterFiring)
     {
         float const clear = RS_HALION_CUTTER_DANGER + RS_HALION_CUTTER_MARGIN;
         auto slotClear = [&](float ang) -> bool

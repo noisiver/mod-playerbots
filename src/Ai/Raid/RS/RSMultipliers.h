@@ -73,4 +73,11 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class RsHalionRealmIsolationMultiplier : public Multiplier
+{
+public:
+    RsHalionRealmIsolationMultiplier(PlayerbotAI* ai) : Multiplier(ai, "rs halion realm isolation") {}
+    virtual float GetValue(Action* action);
+};
+
 #endif
