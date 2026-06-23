@@ -173,6 +173,9 @@ float RsHalionMeteorMultiplier::GetValue(Action* action)
     if (botAI->IsTank(bot) && !RsHalionAssistTankAsMelee(botAI))
         return 1.0f;
 
+    if (RsHalionInTwilight(bot))
+        return 1.0f;
+
     Unit* physBoss = RsHalionAnyPhysicalBoss(botAI);
     if (!physBoss || !physBoss->IsInCombat())
         return 1.0f;
@@ -264,6 +267,25 @@ float RsHalionHpBalanceMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
+float RsHalionRealmIsolationMultiplier::GetValue(Action* action)
+{
+    if (!RsHalionEngaged(botAI))
+        return 1.0f;
+
+    Unit* target = action->GetTarget();
+    if (!target || target == bot)
+        return 1.0f;
+
+    Player* member = target->ToPlayer();
+    if (!member || !member->IsAlive())
+        return 1.0f;
+
+    if (RsHalionInTwilight(member) != RsHalionInTwilight(bot))
+        return 0.0f;
+
+    return 1.0f;
+}
+
 float RsHalionP2Multiplier::GetValue(Action* action)
 {
     if (!RsHalionInTwilight(bot))
@@ -308,7 +330,8 @@ float RsHalionP2Multiplier::GetValue(Action* action)
 
     if (RsHalionTwilightTank(botAI) != bot && RsHalionCutterShouldMove(bot->GetInstanceId()))
     {
-        if (bot->getClass() == CLASS_ROGUE && bot->GetMap()->IsHeroic() &&
+        if ((bot->getClass() == CLASS_ROGUE || bot->getClass() == CLASS_WARRIOR) &&
+            !dynamic_cast<MeleeAction*>(action) &&
             !dynamic_cast<RsHalionCutterAction*>(action) &&
             !dynamic_cast<RsHalionP2AvoidConesAction*>(action))
             return 0.0f;
