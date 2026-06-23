@@ -585,7 +585,7 @@ bool RsHalionP2AvoidConesAction::Execute(Event )
     float const bossY = boss->GetPositionY();
     float const bossToTank = std::atan2(tank->GetPositionY() - bossY, tank->GetPositionX() - bossX);
     float const radius = botAI->IsMelee(bot) ? RS_HALION_P2_MELEE_DIST : RS_HALION_P2_RANGED_DIST;
-    float slotAngle = bossToTank + static_cast<float>(M_PI) * 105.0f / 180.0f;
+    float slotAngle = bossToTank + static_cast<float>(M_PI) * 95.0f / 180.0f;
 
     if (singleCutter && cutterFiring)
     {
