@@ -200,9 +200,10 @@ inline bool RsHalionIsPhase3(PlayerbotAI* botAI)
 
 inline constexpr uint8 RS_HALION_CORP_BALANCED = 5;
 inline constexpr uint8 RS_HALION_CORP_STOP_AT = 4;
+inline constexpr uint8 RS_HALION_CORP_STOP_ALL_AT = 2;
 inline constexpr uint32 RS_HALION_CORP_FRESH_MS = 3000;
 
-inline bool RsHalionRealmThrottled(PlayerbotAI* botAI, Player* bot)
+inline bool RsHalionOwnCorpIndex(PlayerbotAI* botAI, Player* bot, uint8& outIndex)
 {
     if (!RsHalionIsPhase3(botAI))
         return false;
@@ -217,7 +218,15 @@ inline bool RsHalionRealmThrottled(PlayerbotAI* botAI, Player* bot)
     if (ownStamp == 0 || getMSTimeDiff(ownStamp, getMSTime()) > RS_HALION_CORP_FRESH_MS)
         return false;
 
-    uint8 const ownIndex = inTwilight ? corp.twilightIndex : corp.physicalIndex;
+    outIndex = inTwilight ? corp.twilightIndex : corp.physicalIndex;
+    return true;
+}
+
+inline bool RsHalionRealmThrottled(PlayerbotAI* botAI, Player* bot)
+{
+    uint8 ownIndex = RS_HALION_CORP_BALANCED;
+    if (!RsHalionOwnCorpIndex(botAI, bot, ownIndex))
+        return false;
 
     static std::map<ObjectGuid, bool> throttled;
     ObjectGuid const guid = bot->GetGUID();
@@ -229,6 +238,47 @@ inline bool RsHalionRealmThrottled(PlayerbotAI* botAI, Player* bot)
         held = false;
 
     return held;
+}
+
+inline bool RsHalionLeadingTooMuch(PlayerbotAI* botAI, Player* bot)
+{
+    uint8 ownIndex = RS_HALION_CORP_BALANCED;
+    if (!RsHalionOwnCorpIndex(botAI, bot, ownIndex))
+        return false;
+
+    return ownIndex <= RS_HALION_CORP_STOP_ALL_AT;
+}
+
+inline bool RsHalionInThrottledHalf(PlayerbotAI* botAI, Player* bot)
+{
+    Group* group = bot->GetGroup();
+    if (!group)
+        return true;
+
+    uint32 const instanceId = bot->GetInstanceId();
+    bool const inTwilight = RsHalionInTwilight(bot);
+    ObjectGuid const selfGuid = bot->GetGUID();
+
+    uint32 total = 0;
+    uint32 rank = 0;
+    for (GroupReference* itr = group->GetFirstMember(); itr; itr = itr->next())
+    {
+        Player* member = itr->GetSource();
+        if (!member || !member->IsAlive() || member->GetInstanceId() != instanceId)
+            continue;
+        if (!GET_PLAYERBOT_AI(member))
+            continue;
+        if (PlayerbotAI::IsTank(member) || PlayerbotAI::IsHeal(member))
+            continue;
+        if (RsHalionInTwilight(member) != inTwilight)
+            continue;
+
+        ++total;
+        if (member->GetGUID() < selfGuid)
+            ++rank;
+    }
+
+    return rank < total / 2;
 }
 
 inline bool RsHalionP3TwilightAssigned(PlayerbotAI* botAI, Player* bot)
@@ -910,8 +960,6 @@ inline constexpr float RS_HALION_CUTTER_LEADER_FAR = 8.0f;
 
 inline constexpr uint32 RS_HALION_CUTTER_CYCLE_MS = 29000;
 inline constexpr uint32 RS_HALION_CUTTER_LEAD_MS = 5000;
-inline constexpr uint32 RS_HALION_CUTTER_ACTIVE_MS = 11000;
-inline constexpr uint32 RS_HALION_CUTTER_DRIFT_MS = 5000;
 inline constexpr uint32 RS_HALION_FIRST_SHOOT_MS = 21000;
 
 inline bool RsHalionCutterShouldMove(uint32 instanceId)
@@ -933,14 +981,11 @@ inline bool RsHalionCutterShouldMove(uint32 instanceId)
     RubySanctumHelpers::CutterTiming const& state = it->second;
     uint32 const since = GetMSTimeDiffToNow(state.lastShootTime);
 
-    if (state.active || since <= RS_HALION_CUTTER_ACTIVE_MS)
+    if (state.active)
         return true;
 
     uint32 const intoCycle = since % RS_HALION_CUTTER_CYCLE_MS;
-    if (intoCycle >= RS_HALION_CUTTER_CYCLE_MS - RS_HALION_CUTTER_LEAD_MS)
-        return true;
-
-    return intoCycle <= RS_HALION_CUTTER_DRIFT_MS;
+    return intoCycle >= RS_HALION_CUTTER_CYCLE_MS - RS_HALION_CUTTER_LEAD_MS;
 }
 
 inline bool RsHalionCutterActive(uint32 instanceId)
