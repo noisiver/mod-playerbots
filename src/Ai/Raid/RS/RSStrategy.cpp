@@ -62,6 +62,18 @@ void RaidRsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("rs halion p2 avoid cones",
         { NextAction("rs halion p2 avoid cones", ACTION_RAID + 5),
           NextAction("attack rti target", ACTION_RAID + 4) }));
+
+    triggers.push_back(new TriggerNode("rs trash main tank",
+        { NextAction("rs trash main tank", ACTION_RAID + 6) }));
+    triggers.push_back(new TriggerNode("rs trash assist tank",
+        { NextAction("rs trash assist tank", ACTION_RAID + 6) }));
+    triggers.push_back(new TriggerNode("rs trash ranged",
+        { NextAction("rs trash ranged", ACTION_RAID + 5) }));
+    triggers.push_back(new TriggerNode("rs trash melee flank",
+        { NextAction("rear flank", ACTION_RAID + 5) }));
+    triggers.push_back(new TriggerNode("rs trash adds",
+        { NextAction("rs trash adds", ACTION_RAID + 5),
+          NextAction("attack rti target", ACTION_RAID + 4) }));
 }
 
 void RaidRsStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
@@ -77,4 +89,5 @@ void RaidRsStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new RsHalionP2Multiplier(botAI));
     multipliers.push_back(new RsHalionHpBalanceMultiplier(botAI));
     multipliers.push_back(new RsHalionRealmIsolationMultiplier(botAI));
+    multipliers.push_back(new RsTrashAddsMultiplier(botAI));
 }

@@ -446,6 +446,144 @@ private:
     bool RunAddsToBoss(Unit* boss, std::vector<Unit*> const& adds);
 };
 
+inline constexpr float RS_TRASH_TANK_SPREAD = 20.0f;
+inline constexpr float RS_TRASH_RANGED_DIST = 25.0f;
+inline constexpr float RS_TRASH_RANGED_TOL = 10.0f;
+inline constexpr float RS_TRASH_RANGED_STEP = 7.0f;
+inline constexpr float RS_TRASH_TANK_SPACE_TOL = 5.0f;
+inline constexpr float RS_TRASH_DETECT_RANGE = 40.0f;
+inline constexpr float RS_TRASH_TANK_GRAB_RANGE = 100.0f;
+
+inline bool RsTrashIsCommander(uint32 entry)
+{
+    return entry == NPC_CHARSCALE_COMMANDER || entry == NPC_CHARSCALE_COMMANDER_H;
+}
+
+inline bool RsTrashIsInvoker(uint32 entry)
+{
+    return entry == NPC_CHARSCALE_INVOKER || entry == NPC_CHARSCALE_INVOKER_H;
+}
+
+inline bool RsTrashIsCharscale(uint32 entry)
+{
+    switch (entry)
+    {
+        case NPC_CHARSCALE_INVOKER:
+        case NPC_CHARSCALE_INVOKER_H:
+        case NPC_CHARSCALE_ASSAULTER:
+        case NPC_CHARSCALE_ASSAULTER_H:
+        case NPC_CHARSCALE_ELITE:
+        case NPC_CHARSCALE_ELITE_H:
+        case NPC_CHARSCALE_COMMANDER:
+        case NPC_CHARSCALE_COMMANDER_H:
+            return true;
+        default:
+            return false;
+    }
+}
+
+inline bool RsTrashIsTrashEntry(uint32 entry)
+{
+    return RsTrashIsCharscale(entry) || entry == NPC_ONYX_FLAMECALLER;
+}
+
+inline int RsTrashPriorityRank(uint32 entry)
+{
+    switch (entry)
+    {
+        case NPC_CHARSCALE_COMMANDER:
+        case NPC_CHARSCALE_COMMANDER_H:
+            return 0;
+        case NPC_CHARSCALE_INVOKER:
+        case NPC_CHARSCALE_INVOKER_H:
+            return 1;
+        case NPC_ONYX_FLAMECALLER:
+            return 2;
+        case NPC_CHARSCALE_ASSAULTER:
+        case NPC_CHARSCALE_ASSAULTER_H:
+        case NPC_CHARSCALE_ELITE:
+        case NPC_CHARSCALE_ELITE_H:
+            return 3;
+        default:
+            return std::numeric_limits<int>::max();
+    }
+}
+
+inline void RsTrashCollect(PlayerbotAI* botAI, std::vector<Unit*>& out)
+{
+    GuidVector const targets = botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
+    for (ObjectGuid const& guid : targets)
+    {
+        Unit* unit = botAI->GetUnit(guid);
+        if (unit && unit->IsAlive() && RsTrashIsTrashEntry(unit->GetEntry()))
+            out.push_back(unit);
+    }
+}
+
+inline bool RsTrashActive(PlayerbotAI* botAI, Player* bot)
+{
+    if (!bot || !bot->IsInCombat())
+        return false;
+
+    GuidVector const targets = botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
+    for (ObjectGuid const& guid : targets)
+    {
+        Unit* unit = botAI->GetUnit(guid);
+        if (!unit || !unit->IsAlive())
+            continue;
+
+        if (!RsTrashIsCharscale(unit->GetEntry()))
+            continue;
+
+        if (bot->GetExactDist2d(unit) <= RS_TRASH_DETECT_RANGE)
+            return true;
+    }
+    return false;
+}
+
+class RsTrashAddsAction : public AttackAction
+{
+public:
+    RsTrashAddsAction(PlayerbotAI* botAI) : AttackAction(botAI, "rs trash adds") {}
+    bool Execute(Event event) override;
+
+private:
+    bool IsDesignatedMarker();
+    Unit* FindPriorityAdd();
+    void UpdateSkullMarker(Unit* priorityAdd);
+};
+
+class RsTrashTankAction : public AttackAction
+{
+public:
+    RsTrashTankAction(PlayerbotAI* botAI, std::string const name) : AttackAction(botAI, name) {}
+
+protected:
+    bool HoldAt(std::vector<Unit*> const& assigned, float spotX, float spotY, float spotZ, bool moveToSpot,
+                bool hasAway, float awayOri);
+};
+
+class RsTrashMainTankAction : public RsTrashTankAction
+{
+public:
+    RsTrashMainTankAction(PlayerbotAI* botAI) : RsTrashTankAction(botAI, "rs trash main tank") {}
+    bool Execute(Event event) override;
+};
+
+class RsTrashAssistTankAction : public RsTrashTankAction
+{
+public:
+    RsTrashAssistTankAction(PlayerbotAI* botAI) : RsTrashTankAction(botAI, "rs trash assist tank") {}
+    bool Execute(Event event) override;
+};
+
+class RsTrashRangedAction : public AttackAction
+{
+public:
+    RsTrashRangedAction(PlayerbotAI* botAI) : AttackAction(botAI, "rs trash ranged") {}
+    bool Execute(Event event) override;
+};
+
 inline float RsHalionTargetOrientation()
 {
     float angle = std::atan2(RS_HALION_TANK_POSITION.GetPositionY() - RS_HALION_CENTER_POSITION.GetPositionY(),

@@ -292,6 +292,20 @@ float RsHalionRealmIsolationMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
+float RsTrashAddsMultiplier::GetValue(Action* action)
+{
+    if (botAI->IsTank(bot) || botAI->IsHeal(bot))
+        return 1.0f;
+
+    if (!RsTrashActive(botAI, bot))
+        return 1.0f;
+
+    if (dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<FollowAction*>(action))
+        return 0.0f;
+
+    return 1.0f;
+}
+
 float RsHalionP2Multiplier::GetValue(Action* action)
 {
     if (!RsHalionInTwilight(bot))

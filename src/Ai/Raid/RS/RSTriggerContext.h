@@ -32,6 +32,11 @@ public:
         creators["rs halion consumption"] = &RaidRsTriggerContext::rs_halion_consumption;
         creators["rs halion cutter"] = &RaidRsTriggerContext::rs_halion_cutter;
         creators["rs halion heal consumption"] = &RaidRsTriggerContext::rs_halion_heal_consumption;
+        creators["rs trash adds"] = &RaidRsTriggerContext::rs_trash_adds;
+        creators["rs trash main tank"] = &RaidRsTriggerContext::rs_trash_main_tank;
+        creators["rs trash assist tank"] = &RaidRsTriggerContext::rs_trash_assist_tank;
+        creators["rs trash ranged"] = &RaidRsTriggerContext::rs_trash_ranged;
+        creators["rs trash melee flank"] = &RaidRsTriggerContext::rs_trash_melee_flank;
     }
 
 private:
@@ -58,6 +63,11 @@ private:
     static Trigger* rs_halion_consumption(PlayerbotAI* ai) { return new RsHalionConsumptionTrigger(ai); }
     static Trigger* rs_halion_cutter(PlayerbotAI* ai) { return new RsHalionCutterTrigger(ai); }
     static Trigger* rs_halion_heal_consumption(PlayerbotAI* ai) { return new RsHalionHealConsumptionTrigger(ai); }
+    static Trigger* rs_trash_adds(PlayerbotAI* ai) { return new RsTrashAddsTrigger(ai); }
+    static Trigger* rs_trash_main_tank(PlayerbotAI* ai) { return new RsTrashMainTankTrigger(ai); }
+    static Trigger* rs_trash_assist_tank(PlayerbotAI* ai) { return new RsTrashAssistTankTrigger(ai); }
+    static Trigger* rs_trash_ranged(PlayerbotAI* ai) { return new RsTrashRangedTrigger(ai); }
+    static Trigger* rs_trash_melee_flank(PlayerbotAI* ai) { return new RsTrashMeleeFlankTrigger(ai); }
 };
 
 #endif
