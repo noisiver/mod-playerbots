@@ -18,6 +18,71 @@ namespace RubySanctumHelpers
     std::unordered_map<uint32, PortalAddGate> portalAddGate;
     std::map<std::pair<uint32, ObjectGuid>, bool> p3TwilightAssignment;
     std::unordered_map<uint32, HalionCorporeality> halionCorporeality;
+
+    std::unordered_map<uint32, uint32> tankAuraLastApply;
+    std::unordered_map<uint32, uint32> addBuffLastApply;
+    std::unordered_map<uint32, uint32> halionRootLastScan;
+    std::unordered_map<uint32, uint32> portalCountdownLastShown;
+    std::unordered_map<uint32, std::map<ObjectGuid, uint32>> portalSeen;
+
+    std::unordered_map<ObjectGuid, uint32> breathTwilightGrant;
+    std::unordered_map<ObjectGuid, uint32> breathPhysicalGrant;
+    std::unordered_map<ObjectGuid, uint32> p3RescueGrant;
+    std::unordered_map<ObjectGuid, uint32> consumptionGrant;
+    std::set<ObjectGuid> meteorCommitted;
+    std::set<ObjectGuid> rallyCommitted;
+    std::set<ObjectGuid> combustionReturning;
+    std::map<ObjectGuid, std::pair<uint32, bool>> cutterDangerCache;
+    std::map<ObjectGuid, bool> realmThrottled;
+    std::map<ObjectGuid, bool> meteorSpotUsesA;
+    std::map<ObjectGuid, ObjectGuid> botPortalTarget;
+    std::set<ObjectGuid> clearedForConsumption;
+
+    void ResetInstance(uint32 instanceId, Map* map)
+    {
+        meteorPingPong.erase(instanceId);
+        cutterTiming.erase(instanceId);
+        portalAddGate.erase(instanceId);
+        halionCorporeality.erase(instanceId);
+        tankAuraLastApply.erase(instanceId);
+        addBuffLastApply.erase(instanceId);
+        halionRootLastScan.erase(instanceId);
+        portalCountdownLastShown.erase(instanceId);
+        portalSeen.erase(instanceId);
+
+        for (auto it = p3TwilightAssignment.begin(); it != p3TwilightAssignment.end(); )
+        {
+            if (it->first.first == instanceId)
+                it = p3TwilightAssignment.erase(it);
+            else
+                ++it;
+        }
+
+        if (!map)
+            return;
+
+        Map::PlayerList const& players = map->GetPlayers();
+        for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
+        {
+            Player* player = it->GetSource();
+            if (!player)
+                continue;
+
+            ObjectGuid const guid = player->GetGUID();
+            breathTwilightGrant.erase(guid);
+            breathPhysicalGrant.erase(guid);
+            p3RescueGrant.erase(guid);
+            consumptionGrant.erase(guid);
+            meteorCommitted.erase(guid);
+            rallyCommitted.erase(guid);
+            combustionReturning.erase(guid);
+            cutterDangerCache.erase(guid);
+            realmThrottled.erase(guid);
+            meteorSpotUsesA.erase(guid);
+            botPortalTarget.erase(guid);
+            clearedForConsumption.erase(guid);
+        }
+    }
 }
 
 static uint8 RsHalionReadCorporealityIndex(Creature* creature, bool physical)
@@ -38,7 +103,7 @@ public:
 
     void OnAllCreatureUpdate(Creature* creature, uint32 ) override
     {
-        if (!creature)
+        if (!creature || creature->GetMapId() != RS_MAP_RUBY_SANCTUM)
             return;
 
         if (creature->GetEntry() == NPC_METEOR_STRIKE_MARK)
@@ -73,12 +138,13 @@ private:
         {
             tracked = vehicle->GetPassenger(0);
             for (int8 seat = 0; seat < 4; ++seat)
-                if (Unit* orb = vehicle->GetPassenger(seat))
-                    if (orb->HasAura(SPELL_TWILIGHT_PULSE_PERIODIC))
-                    {
-                        firing = true;
-                        break;
-                    }
+            {
+                if (Unit* orb = vehicle->GetPassenger(seat); orb && orb->HasAura(SPELL_TWILIGHT_PULSE_PERIODIC))
+                {
+                    firing = true;
+                    break;
+                }
+            }
         }
 
         if (firing && !state.active)
@@ -110,7 +176,7 @@ private:
         uint32 const instanceId = creature->GetMap()->GetInstanceId();
         uint32 const now = getMSTime();
 
-        static std::unordered_map<uint32, uint32> lastApply;
+        auto& lastApply = RubySanctumHelpers::tankAuraLastApply;
         uint32& last = lastApply[instanceId];
         if (last != 0 && getMSTimeDiff(last, now) < 2000)
             return;
@@ -132,7 +198,7 @@ private:
         uint32 const instanceId = creature->GetMap()->GetInstanceId();
         uint32 const now = getMSTime();
 
-        static std::unordered_map<uint32, uint32> lastApply;
+        auto& lastApply = RubySanctumHelpers::addBuffLastApply;
         uint32& last = lastApply[instanceId];
         if (last != 0 && getMSTimeDiff(last, now) < 2000)
             return;
@@ -145,18 +211,16 @@ private:
             Player* player = it->GetSource();
             if (!player)
                 continue;
-            if (Creature* add = player->FindNearestCreature(NPC_LIVING_INFERNO, 200.0f))
-                if (add->IsAlive())
-                {
-                    addsAlive = true;
-                    break;
-                }
-            if (Creature* add = player->FindNearestCreature(NPC_LIVING_EMBER, 200.0f))
-                if (add->IsAlive())
-                {
-                    addsAlive = true;
-                    break;
-                }
+            if (Creature* add = player->FindNearestCreature(NPC_LIVING_INFERNO, 200.0f); add && add->IsAlive())
+            {
+                addsAlive = true;
+                break;
+            }
+            if (Creature* add = player->FindNearestCreature(NPC_LIVING_EMBER, 200.0f); add && add->IsAlive())
+            {
+                addsAlive = true;
+                break;
+            }
         }
 
         for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
@@ -164,12 +228,10 @@ private:
             Player* player = it->GetSource();
             if (!player || !player->IsAlive())
                 continue;
-            if (addsAlive && !player->HasAura(SPELL_TWILIGHT_REALM))
-            {
-                if (!player->HasAura(RS_SPELL_EMPOWERED_BLOOD))
-                    player->AddAura(RS_SPELL_EMPOWERED_BLOOD, player);
-            }
-            else if (player->HasAura(RS_SPELL_EMPOWERED_BLOOD))
+            bool const wantEmpowered = addsAlive && !player->HasAura(SPELL_TWILIGHT_REALM);
+            if (wantEmpowered && !player->HasAura(RS_SPELL_EMPOWERED_BLOOD))
+                player->AddAura(RS_SPELL_EMPOWERED_BLOOD, player);
+            else if (!wantEmpowered && player->HasAura(RS_SPELL_EMPOWERED_BLOOD))
                 player->RemoveAura(RS_SPELL_EMPOWERED_BLOOD);
         }
     }
@@ -180,7 +242,7 @@ private:
         uint32 const rescueMs = 5000;
         float const bossHp = creature->GetHealthPct();
 
-        static std::unordered_map<ObjectGuid, uint32> grantStart;
+        auto& grantStart = RubySanctumHelpers::p3RescueGrant;
 
         Map::PlayerList const& players = creature->GetMap()->GetPlayers();
 
@@ -247,14 +309,16 @@ private:
 
         bool casting = false;
         for (size_t i = 0; i < breathCount; ++i)
+        {
             if (boss->FindCurrentSpellBySpellId(breathIds[i]))
             {
                 casting = true;
                 break;
             }
+        }
 
-        static std::unordered_map<ObjectGuid, uint32> twilightGrantStart;
-        static std::unordered_map<ObjectGuid, uint32> physicalGrantStart;
+        auto& twilightGrantStart = RubySanctumHelpers::breathTwilightGrant;
+        auto& physicalGrantStart = RubySanctumHelpers::breathPhysicalGrant;
         std::unordered_map<ObjectGuid, uint32>& grantStart = twilight ? twilightGrantStart : physicalGrantStart;
 
         Map::PlayerList const& players = boss->GetMap()->GetPlayers();
@@ -310,7 +374,7 @@ private:
         uint32 const now = getMSTime();
         uint32 const holdMs = 2000;
 
-        static std::unordered_map<ObjectGuid, uint32> grantStart;
+        auto& grantStart = RubySanctumHelpers::consumptionGrant;
 
         Map::PlayerList const& players = twilight->GetMap()->GetPlayers();
         for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
@@ -455,7 +519,7 @@ private:
     {
         uint32 const instanceId = creature->GetMap()->GetInstanceId();
 
-        static std::unordered_map<uint32, uint32> lastScan;
+        auto& lastScan = RubySanctumHelpers::halionRootLastScan;
 
         bool const fightActive = creature->IsAlive() && creature->IsInCombat();
 
@@ -470,14 +534,7 @@ private:
         {
             if (creature->HasUnitState(UNIT_STATE_ROOT))
                 creature->SetControlled(false, UNIT_STATE_ROOT);
-            for (auto it = RubySanctumHelpers::p3TwilightAssignment.begin();
-                 it != RubySanctumHelpers::p3TwilightAssignment.end(); )
-            {
-                if (it->first.first == instanceId)
-                    it = RubySanctumHelpers::p3TwilightAssignment.erase(it);
-                else
-                    ++it;
-            }
+            RubySanctumHelpers::ResetInstance(instanceId, creature->GetMap());
             return;
         }
 

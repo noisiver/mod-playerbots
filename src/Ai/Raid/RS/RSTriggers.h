@@ -5,6 +5,8 @@
 #include "Playerbots.h"
 #include "Trigger.h"
 
+inline constexpr uint32 RS_MAP_RUBY_SANCTUM = 724;
+
 enum CreatureIdsRS
 {
 

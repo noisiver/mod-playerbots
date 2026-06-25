@@ -2,10 +2,14 @@
 #define _PLAYERBOT_RSSCRIPTS_H
 
 #include <map>
+#include <set>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 #include "ObjectGuid.h"
 #include "Position.h"
+
+class Map;
 
 namespace RubySanctumHelpers
 {
@@ -52,6 +56,30 @@ namespace RubySanctumHelpers
     };
 
     extern std::unordered_map<uint32, HalionCorporeality> halionCorporeality;
+
+    // throttle/state keyed by instance, cleared on encounter reset
+    extern std::unordered_map<uint32, uint32> tankAuraLastApply;
+    extern std::unordered_map<uint32, uint32> addBuffLastApply;
+    extern std::unordered_map<uint32, uint32> halionRootLastScan;
+    extern std::unordered_map<uint32, uint32> portalCountdownLastShown;
+    extern std::unordered_map<uint32, std::map<ObjectGuid, uint32>> portalSeen;
+
+    // per-bot transient fight state keyed by bot guid, cleared on encounter reset
+    extern std::unordered_map<ObjectGuid, uint32> breathTwilightGrant;
+    extern std::unordered_map<ObjectGuid, uint32> breathPhysicalGrant;
+    extern std::unordered_map<ObjectGuid, uint32> p3RescueGrant;
+    extern std::unordered_map<ObjectGuid, uint32> consumptionGrant;
+    extern std::set<ObjectGuid> meteorCommitted;
+    extern std::set<ObjectGuid> rallyCommitted;
+    extern std::set<ObjectGuid> combustionReturning;
+    extern std::map<ObjectGuid, std::pair<uint32, bool>> cutterDangerCache;
+    extern std::map<ObjectGuid, bool> realmThrottled;
+    extern std::map<ObjectGuid, bool> meteorSpotUsesA;
+    extern std::map<ObjectGuid, ObjectGuid> botPortalTarget;
+    extern std::set<ObjectGuid> clearedForConsumption;
+
+    // clear every per-instance and per-bot entry for an instance (encounter reset / kill / idle)
+    void ResetInstance(uint32 instanceId, Map* map);
 
     inline constexpr uint32 HALION_CORPOREALITY_AURAS[11] =
     {

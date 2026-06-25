@@ -54,7 +54,7 @@ Unit* RsZarithrianAddsAction::FindPriorityAdd()
 
     Unit* boss = AI_VALUE2(Unit*, "find target", "general zarithrian");
 
-    Unit* current = botAI->GetUnit(group->GetTargetIcon(RS_ICON_SKULL));
+    Unit* current = botAI->GetUnit(group->GetTargetIcon(RtiTargetValue::skullIndex));
     if (current && current->IsAlive() && current->GetEntry() == NPC_ONYX_FLAMECALLER)
         return current;
 
@@ -86,8 +86,8 @@ void RsZarithrianAddsAction::UpdateSkullMarker(Unit* priorityAdd)
     if (!group)
         return;
 
-    if (group->GetTargetIcon(RS_ICON_SKULL) != priorityAdd->GetGUID())
-        group->SetTargetIcon(RS_ICON_SKULL, bot->GetGUID(), priorityAdd->GetGUID());
+    if (group->GetTargetIcon(RtiTargetValue::skullIndex) != priorityAdd->GetGUID())
+        group->SetTargetIcon(RtiTargetValue::skullIndex, bot->GetGUID(), priorityAdd->GetGUID());
 }
 
 uint32 RsZarithrianTankAction::GetCleaveStacks(Unit* unit)

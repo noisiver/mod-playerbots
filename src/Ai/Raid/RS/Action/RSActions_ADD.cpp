@@ -210,7 +210,7 @@ Unit* RsTrashAddsAction::FindPriorityAdd()
     for (Unit* mob : markable)
         bestRank = std::min(bestRank, RsTrashPriorityRank(mob->GetEntry()));
 
-    Unit* current = botAI->GetUnit(group->GetTargetIcon(RS_ICON_SKULL));
+    Unit* current = botAI->GetUnit(group->GetTargetIcon(RtiTargetValue::skullIndex));
     if (current && MarkableAdd(botAI, current) && RsTrashIsTrashEntry(current->GetEntry()) &&
         RsTrashPriorityRank(current->GetEntry()) == bestRank)
         return current;
@@ -237,8 +237,8 @@ void RsTrashAddsAction::UpdateSkullMarker(Unit* priorityAdd)
     if (!group)
         return;
 
-    if (group->GetTargetIcon(RS_ICON_SKULL) != priorityAdd->GetGUID())
-        group->SetTargetIcon(RS_ICON_SKULL, bot->GetGUID(), priorityAdd->GetGUID());
+    if (group->GetTargetIcon(RtiTargetValue::skullIndex) != priorityAdd->GetGUID())
+        group->SetTargetIcon(RtiTargetValue::skullIndex, bot->GetGUID(), priorityAdd->GetGUID());
 }
 
 bool RsTrashTankAction::HoldAt(std::vector<Unit*> const& assigned, float spotX, float spotY, float spotZ,
@@ -251,7 +251,7 @@ bool RsTrashTankAction::HoldAt(std::vector<Unit*> const& assigned, float spotX, 
         if (!mob || !mob->IsAlive())
             continue;
 
-        if (mob->IsInCombat() && mob->GetVictim() != bot)
+        if (sPlayerbotAIConfig.EnableRSThreatReset && mob->IsInCombat() && mob->GetVictim() != bot)
         {
             ThreatManager& mgr = mob->GetThreatMgr();
             mgr.AddThreat(bot, 1000000.0f, nullptr, true, true);

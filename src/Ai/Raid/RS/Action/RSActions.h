@@ -16,6 +16,7 @@
 #include "RSScripts.h"
 #include "RSStrategy.h"
 #include "RSTriggers.h"
+#include "RtiTargetValue.h"
 #include "ThreatManager.h"
 #include "Timer.h"
 #include "Vehicle.h"
@@ -32,10 +33,6 @@ inline const Position RS_HALION_COMBUSTION_SPOT_B = Position(3164.8992f, 580.430
 inline const Position RS_HALION_METEOR_SPOT_A = Position(3167.8013f, 510.99084f, 72.85342f);
 inline const Position RS_HALION_METEOR_SPOT_B = Position(3160.1658f, 553.1889f, 72.88719f);
 inline const Position RS_HALION_METEOR_MID = Position(3158.5593f, 534.84015f, 72.88689f);
-
-inline constexpr uint8 RS_ICON_STAR = 0;
-inline constexpr uint8 RS_ICON_CROSS = 6;
-inline constexpr uint8 RS_ICON_SKULL = 7;
 
 inline float RsAngleDiff(float a, float b)
 {
@@ -66,7 +63,9 @@ inline bool RsCastClassTaunt(PlayerbotAI* botAI, Player* bot, Unit* target)
     if (!target || !target->IsAlive())
         return false;
 
-    if (target->GetVictim() != bot)
+    bool const threatReset = sPlayerbotAIConfig.EnableRSThreatReset;
+
+    if (threatReset && target->GetVictim() != bot)
     {
         ThreatManager& mgr = target->GetThreatMgr();
         mgr.AddThreat(bot, 1000000.0f, nullptr, true, true);
@@ -76,22 +75,26 @@ inline bool RsCastClassTaunt(PlayerbotAI* botAI, Player* bot, Unit* target)
     switch (bot->getClass())
     {
         case CLASS_PALADIN:
-            bot->RemoveSpellCooldown(RS_SPELL_TAUNT_PALADIN, true);
+            if (threatReset)
+                bot->RemoveSpellCooldown(RS_SPELL_TAUNT_PALADIN, true);
             if (botAI->CastSpell("hand of reckoning", target))
                 return true;
             break;
         case CLASS_DEATH_KNIGHT:
-            bot->RemoveSpellCooldown(RS_SPELL_TAUNT_DK, true);
+            if (threatReset)
+                bot->RemoveSpellCooldown(RS_SPELL_TAUNT_DK, true);
             if (botAI->CastSpell("dark command", target))
                 return true;
             break;
         case CLASS_DRUID:
-            bot->RemoveSpellCooldown(RS_SPELL_TAUNT_DRUID, true);
+            if (threatReset)
+                bot->RemoveSpellCooldown(RS_SPELL_TAUNT_DRUID, true);
             if (botAI->CastSpell("growl", target))
                 return true;
             break;
         case CLASS_WARRIOR:
-            bot->RemoveSpellCooldown(RS_SPELL_TAUNT_WARRIOR, true);
+            if (threatReset)
+                bot->RemoveSpellCooldown(RS_SPELL_TAUNT_WARRIOR, true);
             if (botAI->CastSpell("taunt", target))
                 return true;
             break;
@@ -228,7 +231,7 @@ inline bool RsHalionRealmThrottled(PlayerbotAI* botAI, Player* bot)
     if (!RsHalionOwnCorpIndex(botAI, bot, ownIndex))
         return false;
 
-    static std::map<ObjectGuid, bool> throttled;
+    auto& throttled = RubySanctumHelpers::realmThrottled;
     ObjectGuid const guid = bot->GetGUID();
     bool& held = throttled[guid];
 
@@ -797,6 +800,10 @@ inline bool RsHalionPortalHeldForAdds(PlayerbotAI* botAI)
     if (!RsHalionFindPortal(botAI))
         return false;
 
+    Unit* physBoss = RsHalionAnyPhysicalBoss(botAI);
+    if (physBoss && !physBoss->HealthAbovePct(65))
+        return false;
+
     if (RsHalionAnyAddAlive(botAI))
         return true;
 
@@ -999,7 +1006,7 @@ inline bool RsHalionMeteorTargetedBossTank(PlayerbotAI* botAI)
 inline bool RsHalionTankMeteorCommitted(PlayerbotAI* botAI)
 {
     Player* bot = botAI->GetBot();
-    static std::set<ObjectGuid> committed;
+    auto& committed = RubySanctumHelpers::meteorCommitted;
     ObjectGuid const guid = bot->GetGUID();
 
     if (RsHalionBossTank(botAI) != bot)
@@ -1029,7 +1036,7 @@ inline bool RsHalionTankMeteorCommitted(PlayerbotAI* botAI)
 
 inline bool RsHalionMeteorShouldRally(Player* bot)
 {
-    static std::set<ObjectGuid> committed;
+    auto& committed = RubySanctumHelpers::rallyCommitted;
     ObjectGuid const guid = bot->GetGUID();
 
     if (RsHalionInTwilight(bot))
@@ -1054,7 +1061,7 @@ inline bool RsHalionMeteorShouldRally(Player* bot)
 
 inline bool RsHalionCombustionReturning(Player* bot)
 {
-    static std::set<ObjectGuid> returning;
+    auto& returning = RubySanctumHelpers::combustionReturning;
     ObjectGuid const guid = bot->GetGUID();
 
     if (RsHalionHasCombustion(bot))
@@ -1165,7 +1172,7 @@ inline bool RsHalionCutterBeamDanger(PlayerbotAI* botAI, Player* bot)
     if (!RsHalionInTwilight(bot) || !RsHalionCutterShouldMove(bot->GetInstanceId()))
         return false;
 
-    static std::map<ObjectGuid, std::pair<uint32, bool>> cache;
+    auto& cache = RubySanctumHelpers::cutterDangerCache;
     uint32 const now = getMSTime();
     auto it = cache.find(bot->GetGUID());
     if (it != cache.end() && getMSTimeDiff(it->second.first, now) < 250)
