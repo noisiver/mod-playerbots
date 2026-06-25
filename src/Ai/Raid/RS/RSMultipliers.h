@@ -80,4 +80,11 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class RsTrashAddsMultiplier : public Multiplier
+{
+public:
+    RsTrashAddsMultiplier(PlayerbotAI* ai) : Multiplier(ai, "rs trash adds") {}
+    virtual float GetValue(Action* action);
+};
+
 #endif

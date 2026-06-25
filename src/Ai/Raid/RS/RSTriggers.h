@@ -5,6 +5,8 @@
 #include "Playerbots.h"
 #include "Trigger.h"
 
+inline constexpr uint32 RS_MAP_RUBY_SANCTUM = 724;
+
 enum CreatureIdsRS
 {
 
@@ -15,6 +17,15 @@ enum CreatureIdsRS
 
     NPC_GENERAL_ZARITHRIAN              = 39746,
     NPC_ONYX_FLAMECALLER                = 39814,
+
+    NPC_CHARSCALE_INVOKER               = 40417,
+    NPC_CHARSCALE_INVOKER_H             = 40418,
+    NPC_CHARSCALE_ASSAULTER             = 40419,
+    NPC_CHARSCALE_ASSAULTER_H           = 40420,
+    NPC_CHARSCALE_ELITE                 = 40421,
+    NPC_CHARSCALE_ELITE_H               = 40422,
+    NPC_CHARSCALE_COMMANDER             = 40423,
+    NPC_CHARSCALE_COMMANDER_H           = 40424,
 
     NPC_HALION                          = 39863,
     NPC_TWILIGHT_HALION                 = 40142,
@@ -239,6 +250,41 @@ class RsHalionHealConsumptionTrigger : public Trigger
 {
 public:
     RsHalionHealConsumptionTrigger(PlayerbotAI* botAI) : Trigger(botAI, "rs halion heal consumption") {}
+    bool IsActive() override;
+};
+
+class RsTrashAddsTrigger : public Trigger
+{
+public:
+    RsTrashAddsTrigger(PlayerbotAI* botAI) : Trigger(botAI, "rs trash adds") {}
+    bool IsActive() override;
+};
+
+class RsTrashMainTankTrigger : public Trigger
+{
+public:
+    RsTrashMainTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "rs trash main tank") {}
+    bool IsActive() override;
+};
+
+class RsTrashAssistTankTrigger : public Trigger
+{
+public:
+    RsTrashAssistTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "rs trash assist tank") {}
+    bool IsActive() override;
+};
+
+class RsTrashRangedTrigger : public Trigger
+{
+public:
+    RsTrashRangedTrigger(PlayerbotAI* botAI) : Trigger(botAI, "rs trash ranged") {}
+    bool IsActive() override;
+};
+
+class RsTrashMeleeFlankTrigger : public Trigger
+{
+public:
+    RsTrashMeleeFlankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "rs trash melee flank") {}
     bool IsActive() override;
 };
 

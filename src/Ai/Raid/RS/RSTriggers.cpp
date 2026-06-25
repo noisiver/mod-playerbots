@@ -274,3 +274,46 @@ bool RsHalionHealConsumptionTrigger::IsActive()
 
     return RsHalionConsumptionHealTarget(botAI) != nullptr;
 }
+
+bool RsTrashAddsTrigger::IsActive()
+{
+    if (botAI->IsTank(bot) || botAI->IsHeal(bot))
+        return false;
+
+    return RsTrashActive(botAI, bot);
+}
+
+bool RsTrashMainTankTrigger::IsActive()
+{
+    if (!botAI->IsMainTank(bot))
+        return false;
+
+    return RsTrashActive(botAI, bot);
+}
+
+bool RsTrashAssistTankTrigger::IsActive()
+{
+    if (!botAI->IsAssistTank(bot))
+        return false;
+
+    return RsTrashActive(botAI, bot);
+}
+
+bool RsTrashRangedTrigger::IsActive()
+{
+    if (botAI->IsTank(bot))
+        return false;
+
+    if (!botAI->IsRanged(bot) && !botAI->IsHeal(bot))
+        return false;
+
+    return RsTrashActive(botAI, bot);
+}
+
+bool RsTrashMeleeFlankTrigger::IsActive()
+{
+    if (botAI->IsTank(bot) || botAI->IsHeal(bot) || !botAI->IsMelee(bot))
+        return false;
+
+    return RsTrashActive(botAI, bot);
+}

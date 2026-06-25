@@ -33,20 +33,23 @@ bool RsHalionTankPositionAction::Execute(Event )
     std::vector<Unit*> adds;
     RsHalionCollectAdds(botAI, adds);
 
-    for (Unit* add : adds)
+    if (sPlayerbotAIConfig.EnableRSThreatReset)
     {
-        if (add->GetVictim() == bot)
-            continue;
-        ThreatManager& mgr = add->GetThreatMgr();
-        mgr.AddThreat(bot, 1000000.0f, nullptr, true, true);
-        mgr.FixateTarget(bot);
+        for (Unit* add : adds)
+        {
+            if (add->GetVictim() == bot)
+                continue;
+            ThreatManager& mgr = add->GetThreatMgr();
+            mgr.AddThreat(bot, 1000000.0f, nullptr, true, true);
+            mgr.FixateTarget(bot);
+        }
     }
 
     if (Group* group = bot->GetGroup())
     {
         Unit* skullTarget = nullptr;
 
-        Unit* current = ObjectAccessor::GetUnit(*bot, group->GetTargetIcon(RS_ICON_SKULL));
+        Unit* current = ObjectAccessor::GetUnit(*bot, group->GetTargetIcon(RtiTargetValue::skullIndex));
         bool const currentIsAliveAdd = current && current->IsAlive() &&
             std::find(adds.begin(), adds.end(), current) != adds.end();
 
@@ -83,21 +86,21 @@ bool RsHalionTankPositionAction::Execute(Event )
             skullTarget = boss;
         }
 
-        if (skullTarget && group->GetTargetIcon(RS_ICON_SKULL) != skullTarget->GetGUID())
-            group->SetTargetIcon(RS_ICON_SKULL, bot->GetGUID(), skullTarget->GetGUID());
+        if (skullTarget && group->GetTargetIcon(RtiTargetValue::skullIndex) != skullTarget->GetGUID())
+            group->SetTargetIcon(RtiTargetValue::skullIndex, bot->GetGUID(), skullTarget->GetGUID());
 
         if (!adds.empty())
         {
-            if (group->GetTargetIcon(RS_ICON_STAR) != boss->GetGUID())
-                group->SetTargetIcon(RS_ICON_STAR, bot->GetGUID(), boss->GetGUID());
+            if (group->GetTargetIcon(RtiTargetValue::starIndex) != boss->GetGUID())
+                group->SetTargetIcon(RtiTargetValue::starIndex, bot->GetGUID(), boss->GetGUID());
         }
-        else if (!group->GetTargetIcon(RS_ICON_STAR).IsEmpty())
+        else if (!group->GetTargetIcon(RtiTargetValue::starIndex).IsEmpty())
         {
-            group->SetTargetIcon(RS_ICON_STAR, bot->GetGUID(), ObjectGuid::Empty);
+            group->SetTargetIcon(RtiTargetValue::starIndex, bot->GetGUID(), ObjectGuid::Empty);
         }
     }
 
-    if (boss->GetVictim() != bot)
+    if (sPlayerbotAIConfig.EnableRSThreatReset && boss->GetVictim() != bot)
     {
         ThreatManager& mgr = boss->GetThreatMgr();
         mgr.AddThreat(bot, 1000000.0f, nullptr, true, true);
@@ -161,7 +164,7 @@ bool RsHalionAvoidConesAction::Execute(Event )
     float const dA = bot->GetExactDist2d(RS_HALION_METEOR_SPOT_A.GetPositionX(), RS_HALION_METEOR_SPOT_A.GetPositionY());
     float const dB = bot->GetExactDist2d(RS_HALION_METEOR_SPOT_B.GetPositionX(), RS_HALION_METEOR_SPOT_B.GetPositionY());
 
-    static std::map<ObjectGuid, bool> botUsesSpotA;
+    auto& botUsesSpotA = RubySanctumHelpers::meteorSpotUsesA;
     ObjectGuid const botGuid = bot->GetGUID();
     auto memIt = botUsesSpotA.find(botGuid);
     bool usesA = memIt != botUsesSpotA.end() ? memIt->second : dA <= dB;
@@ -231,8 +234,6 @@ bool RsHalionCombustionAction::Execute(Event )
 
     if (!RsHalionHasCombustion(bot))
     {
-        RubySanctumHelpers::combustionSpotUsesA.erase({bot->GetInstanceId(), bot->GetGUID()});
-
         if (RsHalionCombustionReturning(bot))
         {
             Position const& rally = RsHalionMeteorSpot(bot->GetInstanceId());
@@ -341,7 +342,7 @@ bool RsHalionEnterPortalAction::Execute(Event )
             uint32 const remaining = RsHalionPortalAddHoldRemainingMs(botAI);
             uint32 const shown = (remaining + 999) / 1000 + 2;
 
-            static std::map<uint32, uint32> lastShown;
+            auto& lastShown = RubySanctumHelpers::portalCountdownLastShown;
             uint32& last = lastShown[bot->GetInstanceId()];
             if (last != shown)
             {
@@ -352,7 +353,7 @@ bool RsHalionEnterPortalAction::Execute(Event )
         return false;
     }
 
-    static std::map<ObjectGuid, ObjectGuid> botPortalTarget;
+    auto& botPortalTarget = RubySanctumHelpers::botPortalTarget;
     ObjectGuid const botGuid = bot->GetGUID();
 
     GameObject* portal = nullptr;
@@ -379,7 +380,7 @@ bool RsHalionEnterPortalAction::Execute(Event )
         if (!firstCrosser || !RsHalionInTwilight(firstCrosser))
             return false;
 
-        static std::map<uint32, std::map<ObjectGuid, uint32>> portalSeen;
+        auto& portalSeen = RubySanctumHelpers::portalSeen;
         uint32& seen = portalSeen[bot->GetInstanceId()][bot->GetGUID()];
         if (seen == 0)
             seen = getMSTime();
@@ -479,14 +480,17 @@ bool RsHalionP2TankPositionAction::Execute(Event )
 
     if (Group* group = bot->GetGroup())
     {
-        if (group->GetTargetIcon(RS_ICON_CROSS) != boss->GetGUID())
-            group->SetTargetIcon(RS_ICON_CROSS, bot->GetGUID(), boss->GetGUID());
+        if (group->GetTargetIcon(RtiTargetValue::crossIndex) != boss->GetGUID())
+            group->SetTargetIcon(RtiTargetValue::crossIndex, bot->GetGUID(), boss->GetGUID());
     }
 
-    ThreatManager& mgr = boss->GetThreatMgr();
-    if (boss->GetVictim() != bot)
-        mgr.AddThreat(bot, 1000000.0f, nullptr, true, true);
-    mgr.FixateTarget(bot);
+    if (sPlayerbotAIConfig.EnableRSThreatReset)
+    {
+        ThreatManager& mgr = boss->GetThreatMgr();
+        if (boss->GetVictim() != bot)
+            mgr.AddThreat(bot, 1000000.0f, nullptr, true, true);
+        mgr.FixateTarget(bot);
+    }
 
     context->GetValue<std::string>("rti")->Set("cross");
 
@@ -513,6 +517,21 @@ bool RsHalionP2AvoidConesAction::Execute(Event )
     Unit* boss = RsHalionTwilightBoss(botAI);
     if (!boss)
         return false;
+
+    if (RsHalionCutterShouldMove(bot->GetInstanceId()))
+    {
+        auto& botPortalTarget = RubySanctumHelpers::botPortalTarget;
+        auto portalIt = botPortalTarget.find(bot->GetGUID());
+        if (portalIt != botPortalTarget.end())
+        {
+            botPortalTarget.erase(portalIt);
+            if (bot->GetMotionMaster()->GetCurrentMovementGeneratorType() == POINT_MOTION_TYPE)
+            {
+                bot->GetMotionMaster()->Clear();
+                bot->StopMoving();
+            }
+        }
+    }
 
     if (!PlayerbotAI::IsTank(bot) && RsHalionRealmThrottled(botAI, bot))
     {
@@ -587,7 +606,7 @@ bool RsHalionP2AvoidConesAction::Execute(Event )
     float const bossY = boss->GetPositionY();
     float const bossToTank = std::atan2(tank->GetPositionY() - bossY, tank->GetPositionX() - bossX);
     float const radius = botAI->IsMelee(bot) ? RS_HALION_P2_MELEE_DIST : RS_HALION_P2_RANGED_DIST;
-    float slotAngle = bossToTank + static_cast<float>(M_PI) * 105.0f / 180.0f;
+    float slotAngle = bossToTank + static_cast<float>(M_PI) * 95.0f / 180.0f;
 
     if (singleCutter && cutterFiring)
     {
@@ -660,7 +679,7 @@ bool RsHalionP2AvoidConesAction::Execute(Event )
 
 bool RsHalionConsumptionAction::Execute(Event )
 {
-    static std::set<ObjectGuid> clearedForConsumption;
+    auto& clearedForConsumption = RubySanctumHelpers::clearedForConsumption;
     ObjectGuid const botGuid = bot->GetGUID();
 
     if (!bot->HasAura(SPELL_MARK_OF_CONSUMPTION) && !bot->HasAura(SPELL_SOUL_CONSUMPTION))

@@ -535,8 +535,8 @@ bool RsBaltharusTankPositionAction::Execute(Event )
 
         if (Group* group = bot->GetGroup())
         {
-            if (group->GetTargetIcon(RS_ICON_SKULL) != boss->GetGUID())
-                group->SetTargetIcon(RS_ICON_SKULL, bot->GetGUID(), boss->GetGUID());
+            if (group->GetTargetIcon(RtiTargetValue::skullIndex) != boss->GetGUID())
+                group->SetTargetIcon(RtiTargetValue::skullIndex, bot->GetGUID(), boss->GetGUID());
         }
 
         if (boss->GetVictim() != bot)

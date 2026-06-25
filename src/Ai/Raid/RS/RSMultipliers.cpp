@@ -237,10 +237,16 @@ float RsHalionMeleeFlankMultiplier::GetValue(Action* action)
 
 float RsHalionHpBalanceMultiplier::GetValue(Action* action)
 {
-    if (botAI->IsTank(bot))
+    if (botAI->IsTank(bot) || botAI->IsHeal(bot))
         return 1.0f;
 
     if (!RsHalionRealmThrottled(botAI, bot))
+        return 1.0f;
+
+    if (!RsHalionInTwilight(bot) && RsHalionAnyAddAlive(botAI))
+        return 1.0f;
+
+    if (!RsHalionLeadingTooMuch(botAI, bot) && !RsHalionInThrottledHalf(botAI, bot))
         return 1.0f;
 
     if (dynamic_cast<RsHalionAvoidConesAction*>(action) ||
@@ -281,6 +287,20 @@ float RsHalionRealmIsolationMultiplier::GetValue(Action* action)
         return 1.0f;
 
     if (RsHalionInTwilight(member) != RsHalionInTwilight(bot))
+        return 0.0f;
+
+    return 1.0f;
+}
+
+float RsTrashAddsMultiplier::GetValue(Action* action)
+{
+    if (botAI->IsTank(bot) || botAI->IsHeal(bot))
+        return 1.0f;
+
+    if (!RsTrashActive(botAI, bot))
+        return 1.0f;
+
+    if (dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<FollowAction*>(action))
         return 0.0f;
 
     return 1.0f;

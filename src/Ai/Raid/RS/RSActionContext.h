@@ -33,6 +33,10 @@ public:
         creators["rs halion consumption"] = &RaidRsActionContext::rs_halion_consumption;
         creators["rs halion cutter"] = &RaidRsActionContext::rs_halion_cutter;
         creators["rs halion heal consumption"] = &RaidRsActionContext::rs_halion_heal_consumption;
+        creators["rs trash adds"] = &RaidRsActionContext::rs_trash_adds;
+        creators["rs trash main tank"] = &RaidRsActionContext::rs_trash_main_tank;
+        creators["rs trash assist tank"] = &RaidRsActionContext::rs_trash_assist_tank;
+        creators["rs trash ranged"] = &RaidRsActionContext::rs_trash_ranged;
     }
 
 private:
@@ -59,6 +63,10 @@ private:
     static Action* rs_halion_consumption(PlayerbotAI* ai) { return new RsHalionConsumptionAction(ai); }
     static Action* rs_halion_cutter(PlayerbotAI* ai) { return new RsHalionCutterAction(ai); }
     static Action* rs_halion_heal_consumption(PlayerbotAI* ai) { return new RsHalionHealConsumptionAction(ai); }
+    static Action* rs_trash_adds(PlayerbotAI* ai) { return new RsTrashAddsAction(ai); }
+    static Action* rs_trash_main_tank(PlayerbotAI* ai) { return new RsTrashMainTankAction(ai); }
+    static Action* rs_trash_assist_tank(PlayerbotAI* ai) { return new RsTrashAssistTankAction(ai); }
+    static Action* rs_trash_ranged(PlayerbotAI* ai) { return new RsTrashRangedAction(ai); }
 };
 
 #endif
