@@ -57,6 +57,15 @@ namespace RubySanctumHelpers
 
     extern std::unordered_map<uint32, HalionCorporeality> halionCorporeality;
 
+    // boss health % stamped server-side (visible in every phase), read by bots that cannot see the boss through a portal
+    struct BossHealth
+    {
+        uint8 pct;
+        uint32 stamp;
+    };
+
+    extern std::unordered_map<uint32, BossHealth> bossHealth;
+
     // throttle/state keyed by instance, cleared on encounter reset
     extern std::unordered_map<uint32, uint32> tankAuraLastApply;
     extern std::unordered_map<uint32, uint32> addBuffLastApply;

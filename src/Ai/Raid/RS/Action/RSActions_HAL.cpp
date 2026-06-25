@@ -518,6 +518,21 @@ bool RsHalionP2AvoidConesAction::Execute(Event )
     if (!boss)
         return false;
 
+    if (RsHalionCutterShouldMove(bot->GetInstanceId()))
+    {
+        auto& botPortalTarget = RubySanctumHelpers::botPortalTarget;
+        auto portalIt = botPortalTarget.find(bot->GetGUID());
+        if (portalIt != botPortalTarget.end())
+        {
+            botPortalTarget.erase(portalIt);
+            if (bot->GetMotionMaster()->GetCurrentMovementGeneratorType() == POINT_MOTION_TYPE)
+            {
+                bot->GetMotionMaster()->Clear();
+                bot->StopMoving();
+            }
+        }
+    }
+
     if (!PlayerbotAI::IsTank(bot) && RsHalionRealmThrottled(botAI, bot))
     {
         if (bot->GetVictim())

@@ -800,14 +800,18 @@ inline bool RsHalionPortalHeldForAdds(PlayerbotAI* botAI)
     if (!RsHalionFindPortal(botAI))
         return false;
 
-    Unit* physBoss = RsHalionAnyPhysicalBoss(botAI);
-    if (physBoss && !physBoss->HealthAbovePct(65))
+    uint32 const instanceId = botAI->GetBot()->GetInstanceId();
+
+    auto const hpIt = RubySanctumHelpers::bossHealth.find(instanceId);
+    bool const bossHigh = hpIt != RubySanctumHelpers::bossHealth.end() &&
+                          GetMSTimeDiffToNow(hpIt->second.stamp) <= RS_HALION_CORP_FRESH_MS &&
+                          hpIt->second.pct >= 65;
+    if (!bossHigh)
         return false;
 
     if (RsHalionAnyAddAlive(botAI))
         return true;
 
-    uint32 const instanceId = botAI->GetBot()->GetInstanceId();
     RubySanctumHelpers::PortalAddGate& gate = RubySanctumHelpers::portalAddGate[instanceId];
     uint32 const now = getMSTime();
 

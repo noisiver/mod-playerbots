@@ -18,6 +18,7 @@ namespace RubySanctumHelpers
     std::unordered_map<uint32, PortalAddGate> portalAddGate;
     std::map<std::pair<uint32, ObjectGuid>, bool> p3TwilightAssignment;
     std::unordered_map<uint32, HalionCorporeality> halionCorporeality;
+    std::unordered_map<uint32, BossHealth> bossHealth;
 
     std::unordered_map<uint32, uint32> tankAuraLastApply;
     std::unordered_map<uint32, uint32> addBuffLastApply;
@@ -49,6 +50,7 @@ namespace RubySanctumHelpers
         halionRootLastScan.erase(instanceId);
         portalCountdownLastShown.erase(instanceId);
         portalSeen.erase(instanceId);
+        bossHealth.erase(instanceId);
 
         for (auto it = p3TwilightAssignment.begin(); it != p3TwilightAssignment.end(); )
         {
@@ -437,6 +439,7 @@ private:
             RubySanctumHelpers::HalionCorporeality& corp = RubySanctumHelpers::halionCorporeality[instanceId];
             corp.twilightIndex = RsHalionReadCorporealityIndex(creature, false);
             corp.twilightStamp = getMSTime();
+            RubySanctumHelpers::bossHealth[instanceId] = { uint8(creature->GetHealthPct()), getMSTime() };
         }
 
         RubySanctumHelpers::CutterTiming& state = RubySanctumHelpers::cutterTiming[instanceId];
@@ -528,6 +531,7 @@ private:
             RubySanctumHelpers::HalionCorporeality& corp = RubySanctumHelpers::halionCorporeality[instanceId];
             corp.physicalIndex = RsHalionReadCorporealityIndex(creature, true);
             corp.physicalStamp = getMSTime();
+            RubySanctumHelpers::bossHealth[instanceId] = { uint8(creature->GetHealthPct()), getMSTime() };
         }
 
         if (!fightActive)
