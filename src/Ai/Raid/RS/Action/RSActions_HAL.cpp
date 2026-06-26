@@ -13,8 +13,6 @@
 #include "ThreatManager.h"
 #include "Timer.h"
 #include "Vehicle.h"
-#include "WorldPacket.h"
-#include "Opcodes.h"
 
 bool RsHalionTankPositionAction::Execute(Event )
 {
@@ -128,6 +126,7 @@ bool RsHalionTankPositionAction::Execute(Event )
 
 bool RsHalionAvoidConesAction::Execute(Event )
 {
+    std::lock_guard<std::recursive_mutex> lock(RubySanctumHelpers::stateMutex);
     if (PlayerbotAI::IsMainTank(bot))
         return false;
 
@@ -313,6 +312,7 @@ bool RsHalionAddTankAction::Execute(Event )
 
 bool RsHalionEnterPortalAction::Execute(Event )
 {
+    std::lock_guard<std::recursive_mutex> lock(RubySanctumHelpers::stateMutex);
     if (PlayerbotAI::IsMainTank(bot))
         return false;
 
@@ -444,9 +444,7 @@ bool RsHalionEnterPortalAction::Execute(Event )
     bot->StopMoving();
     bot->SetFacingToObject(portal);
 
-    WorldPacket data(CMSG_GAMEOBJ_USE);
-    data << portal->GetGUID();
-    bot->GetSession()->HandleGameObjectUseOpcode(data);
+    portal->Use(bot);
 
     if (p3TwilightExit)
         bot->RemoveAura(SPELL_TWILIGHT_REALM);
@@ -511,6 +509,7 @@ bool RsHalionP2TankPositionAction::Execute(Event )
 
 bool RsHalionP2AvoidConesAction::Execute(Event )
 {
+    std::lock_guard<std::recursive_mutex> lock(RubySanctumHelpers::stateMutex);
     if (RsHalionTwilightTank(botAI) == bot)
         return false;
 
@@ -679,6 +678,7 @@ bool RsHalionP2AvoidConesAction::Execute(Event )
 
 bool RsHalionConsumptionAction::Execute(Event )
 {
+    std::lock_guard<std::recursive_mutex> lock(RubySanctumHelpers::stateMutex);
     auto& clearedForConsumption = RubySanctumHelpers::clearedForConsumption;
     ObjectGuid const botGuid = bot->GetGUID();
 
@@ -827,6 +827,7 @@ bool RsHalionHealConsumptionAction::Execute(Event )
 
 bool RsHalionCutterAction::Execute(Event )
 {
+    std::lock_guard<std::recursive_mutex> lock(RubySanctumHelpers::stateMutex);
     if (bot->HasAura(SPELL_MARK_OF_CONSUMPTION) || bot->HasAura(SPELL_SOUL_CONSUMPTION))
         return false;
 

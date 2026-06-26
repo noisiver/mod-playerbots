@@ -13,6 +13,7 @@
 
 namespace RubySanctumHelpers
 {
+    std::recursive_mutex stateMutex;
     std::unordered_map<uint32, MeteorPingPong> meteorPingPong;
     std::unordered_map<uint32, CutterTiming> cutterTiming;
     std::unordered_map<uint32, PortalAddGate> portalAddGate;
@@ -87,13 +88,13 @@ namespace RubySanctumHelpers
     }
 }
 
-static uint8 RsHalionReadCorporealityIndex(Creature* creature, bool physical)
+static uint8 RsHalionReadCorporealityIndex(Creature* creature)
 {
     using namespace RubySanctumHelpers;
     for (uint8 i = 0; i <= 10; ++i)
     {
         if (creature->HasAura(HALION_CORPOREALITY_AURAS[i]))
-            return physical ? i : 10 - i;
+            return i;
     }
     return 5;
 }
@@ -107,6 +108,8 @@ public:
     {
         if (!creature || creature->GetMapId() != RS_MAP_RUBY_SANCTUM)
             return;
+
+        std::lock_guard<std::recursive_mutex> lock(RubySanctumHelpers::stateMutex);
 
         if (creature->GetEntry() == NPC_METEOR_STRIKE_MARK)
         {
@@ -188,7 +191,7 @@ private:
         for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
         {
             Player* player = it->GetSource();
-            if (!player || !player->IsAlive() || !PlayerbotAI::IsTank(player))
+            if (!player || !player->IsAlive() || !GET_PLAYERBOT_AI(player) || !PlayerbotAI::IsTank(player))
                 continue;
             if (!player->HasAura(RS_SPELL_PAIN_SUPPRESION))
                 player->AddAura(RS_SPELL_PAIN_SUPPRESION, player);
@@ -228,7 +231,7 @@ private:
         for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
         {
             Player* player = it->GetSource();
-            if (!player || !player->IsAlive())
+            if (!player || !player->IsAlive() || !GET_PLAYERBOT_AI(player))
                 continue;
             bool const wantEmpowered = addsAlive && !player->HasAura(SPELL_TWILIGHT_REALM);
             if (wantEmpowered && !player->HasAura(RS_SPELL_EMPOWERED_BLOOD))
@@ -264,7 +267,7 @@ private:
         for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
         {
             Player* player = it->GetSource();
-            if (!player || !player->IsAlive() || !PlayerbotAI::IsTank(player))
+            if (!player || !player->IsAlive() || !GET_PLAYERBOT_AI(player) || !PlayerbotAI::IsTank(player))
                 continue;
 
             bool const tankTwilight = RsHalionInTwilight(player);
@@ -327,7 +330,7 @@ private:
         for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
         {
             Player* player = it->GetSource();
-            if (!player || !player->IsAlive() || PlayerbotAI::IsTank(player) || RsHalionInTwilight(player) != twilight)
+            if (!player || !player->IsAlive() || !GET_PLAYERBOT_AI(player) || PlayerbotAI::IsTank(player) || RsHalionInTwilight(player) != twilight)
                 continue;
 
             ObjectGuid const guid = player->GetGUID();
@@ -382,7 +385,7 @@ private:
         for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
         {
             Player* player = it->GetSource();
-            if (!player || !player->IsAlive())
+            if (!player || !player->IsAlive() || !GET_PLAYERBOT_AI(player))
                 continue;
 
             ObjectGuid const guid = player->GetGUID();
@@ -437,7 +440,7 @@ private:
         if (creature->IsAlive() && creature->IsInCombat())
         {
             RubySanctumHelpers::HalionCorporeality& corp = RubySanctumHelpers::halionCorporeality[instanceId];
-            corp.twilightIndex = RsHalionReadCorporealityIndex(creature, false);
+            corp.twilightIndex = RsHalionReadCorporealityIndex(creature);
             corp.twilightStamp = getMSTime();
             RubySanctumHelpers::bossHealth[instanceId] = { uint8(creature->GetHealthPct()), getMSTime() };
         }
@@ -529,8 +532,9 @@ private:
         if (fightActive)
         {
             RubySanctumHelpers::HalionCorporeality& corp = RubySanctumHelpers::halionCorporeality[instanceId];
-            corp.physicalIndex = RsHalionReadCorporealityIndex(creature, true);
+            corp.physicalIndex = RsHalionReadCorporealityIndex(creature);
             corp.physicalStamp = getMSTime();
+            corp.physicalGuid = creature->GetGUID();
             RubySanctumHelpers::bossHealth[instanceId] = { uint8(creature->GetHealthPct()), getMSTime() };
         }
 

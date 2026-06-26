@@ -2,6 +2,7 @@
 #define _PLAYERBOT_RSSCRIPTS_H
 
 #include <map>
+#include <mutex>
 #include <set>
 #include <unordered_map>
 #include <utility>
@@ -13,6 +14,8 @@ class Map;
 
 namespace RubySanctumHelpers
 {
+
+    extern std::recursive_mutex stateMutex;
 
     struct MeteorPingPong
     {
@@ -53,6 +56,7 @@ namespace RubySanctumHelpers
         uint32 physicalStamp;
         uint8 twilightIndex;
         uint32 twilightStamp;
+        ObjectGuid physicalGuid;
     };
 
     extern std::unordered_map<uint32, HalionCorporeality> halionCorporeality;
