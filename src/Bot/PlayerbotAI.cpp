@@ -1746,6 +1746,9 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
         case 668:
             strategyName = "wotlk-hor";  // Halls of Reflection
             break;
+        case 724:
+            strategyName = "rs";  // Ruby Sanctum
+            break;
         default:
             break;
     }
@@ -4409,16 +4412,6 @@ bool IsAlliance(uint8 race)
            race == RACE_DRAENEI;
 }
 
-BotType PlayerbotAI::GetBotType() const
-{
-    if (_botType == BotType::UNDEFINED)
-    {
-        LOG_ERROR("playerbots", "GetBotType() called before the bot type was initialized for bot {}",
-                  bot ? bot->GetName() : "<unknown>");
-    }
-    return _botType;
-}
-
 Player* PlayerbotAI::FindNewMaster()
 {
     // Ideally we want to have the leader as master.
@@ -4474,6 +4467,8 @@ bool PlayerbotAI::HasRealPlayerMaster()
 }
 
 bool PlayerbotAI::HasActivePlayerMaster() { return master && !GET_PLAYERBOT_AI(master); }
+
+bool PlayerbotAI::IsAlt() { return HasRealPlayerMaster() && !sRandomPlayerbotMgr.IsRandomBot(bot); }
 
 Player* PlayerbotAI::GetGroupLeader()
 {
