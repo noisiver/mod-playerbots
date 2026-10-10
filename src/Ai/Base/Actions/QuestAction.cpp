@@ -219,7 +219,9 @@ bool QuestAction::AcceptQuest(Quest const* quest, ObjectGuid questGiver)
 
     uint32 questId = quest->GetQuestId();
 
-    if (bot->GetQuestStatus(questId) == QUEST_STATUS_COMPLETE)
+    if (quest->IsAutoComplete() && quest->IsRepeatable())
+        return true;
+    else if (bot->GetQuestStatus(questId) == QUEST_STATUS_COMPLETE)
         out << "Already completed";
     else if (!bot->CanTakeQuest(quest, false))
     {
